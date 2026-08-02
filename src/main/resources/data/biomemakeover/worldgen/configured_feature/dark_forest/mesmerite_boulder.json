@@ -1,8 +1,27 @@
 {
-  "type": "biomemakeover:mesmerite_boulder",
+  "type": "minecraft:ore",
   "config": {
-    "state": {
-      "Name": "biomemakeover:mesmerite"
-    }
+    "discard_chance_on_air_exposure": 0.0,
+    "size": 18,
+    "targets": [
+      {
+        "state": {
+          "Name": "biomemakeover:mesmerite"
+        },
+        "target": {
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:stone_ore_replaceables"
+        }
+      },
+      {
+        "state": {
+          "Name": "biomemakeover:mesmerite"
+        },
+        "target": {
+          "predicate_type": "minecraft:tag_match",
+          "tag": "minecraft:deepslate_ore_replaceables"
+        }
+      }
+    ]
   }
 }

@@ -112,10 +112,14 @@ public class OwlEntity extends ShoulderRidingEntity {
     ) {
         long time = level.getLevelData().getDayTime() % 24000L;
         boolean night = time >= 12500L && time <= 23500L;
-        if (!night) return false;
+        // Chunk-generation spawns must be allowed regardless of time of day,
+        // otherwise a new world generated during daytime can never seed owls.
+        if (!night && reason != EntitySpawnReason.CHUNK_GENERATION) return false;
         BlockState support = level.getBlockState(pos.below());
-        boolean canopy = support.is(BlockTags.LOGS) || support.getBlock() instanceof LeavesBlock;
-        return canopy && level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir();
+        boolean validSupport = support.is(BlockTags.LOGS)
+            || support.getBlock() instanceof LeavesBlock
+            || support.is(net.minecraft.tags.BlockTags.DIRT);
+        return validSupport && level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isAir();
     }
 
     @Override

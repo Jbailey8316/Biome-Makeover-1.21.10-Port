@@ -1,5 +1,6 @@
 package party.lemons.biomemakeover.init;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
@@ -12,18 +13,36 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
-import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.TallFlowerBlock;
+import net.minecraft.world.level.block.WallBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.grower.TreeGrower;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.material.MapColor;
 import party.lemons.biomemakeover.BiomeMakeover;
-import party.lemons.biomemakeover.block.WildMushroomBlock;
 import party.lemons.biomemakeover.block.OwlNestBlock;
+import party.lemons.biomemakeover.block.WildMushroomBlock;
 
 public final class BMBlocks {
+    private static final ResourceKey<ConfiguredFeature<?, ?>> ANCIENT_OAK_TREE = ResourceKey.create(
+        Registries.CONFIGURED_FEATURE,
+        BiomeMakeover.id("dark_forest/ancient_oak")
+    );
+    private static final ResourceKey<ConfiguredFeature<?, ?>> ANCIENT_OAK_SMALL_TREE = ResourceKey.create(
+        Registries.CONFIGURED_FEATURE,
+        BiomeMakeover.id("dark_forest/ancient_oak_small")
+    );
+    private static final TreeGrower ANCIENT_OAK_GROWER = new TreeGrower(
+        "biomemakeover:ancient_oak",
+        Optional.of(ANCIENT_OAK_TREE),
+        Optional.of(ANCIENT_OAK_SMALL_TREE),
+        Optional.empty()
+    );
     private static BlockBehaviour.Properties mesmeriteProperties() {
         return BlockBehaviour.Properties.of()
             .strength(1.5F)
@@ -81,8 +100,54 @@ public final class BMBlocks {
             .sound(SoundType.FUNGUS)
     );
 
-    private BMBlocks() {
-    }
+    public static final Block ANCIENT_OAK_LOG = register(
+        "ancient_oak_log",
+        RotatedPillarBlock::new,
+        BlockBehaviour.Properties.of()
+            .mapColor(MapColor.WOOD)
+            .strength(2.0F)
+            .sound(SoundType.WOOD)
+    );
+
+    /*
+     * Beta foundation: registered as a regular block so the original worldgen
+     * data can load reliably. Leaf decay/tint behavior can be restored after
+     * the complete Dark Forest feature set is generating.
+     */
+    public static final Block ANCIENT_OAK_LEAVES = register(
+        "ancient_oak_leaves",
+        Block::new,
+        BlockBehaviour.Properties.of()
+            .mapColor(MapColor.PLANT)
+            .strength(0.2F)
+            .sound(SoundType.GRASS)
+            .noOcclusion()
+    );
+
+    public static final Block FOXGLOVE = register(
+        "foxglove",
+        TallFlowerBlock::new,
+        BlockBehaviour.Properties.of()
+            .mapColor(MapColor.PLANT)
+            .noCollision()
+            .noOcclusion()
+            .instabreak()
+            .sound(SoundType.GRASS)
+    );
+
+    public static final Block ANCIENT_OAK_SAPLING = register(
+        "ancient_oak_sapling",
+        properties -> new SaplingBlock(ANCIENT_OAK_GROWER, properties),
+        BlockBehaviour.Properties.of()
+            .mapColor(MapColor.PLANT)
+            .noCollision()
+            .noOcclusion()
+            .randomTicks()
+            .instabreak()
+            .sound(SoundType.GRASS)
+    );
+
+    private BMBlocks() {}
 
     private static Block register(
         String name,
@@ -114,12 +179,16 @@ public final class BMBlocks {
             entries.accept(POLISHED_MESMERITE_STAIRS);
             entries.accept(POLISHED_MESMERITE_SLAB);
             entries.accept(POLISHED_MESMERITE_WALL);
+            entries.accept(ANCIENT_OAK_LOG);
         });
 
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(entries -> {
             entries.accept(WILD_MUSHROOMS);
             entries.accept(BLACK_THISTLE);
             entries.accept(OWL_NEST);
+            entries.accept(ANCIENT_OAK_LEAVES);
+            entries.accept(FOXGLOVE);
+            entries.accept(ANCIENT_OAK_SAPLING);
         });
     }
 }

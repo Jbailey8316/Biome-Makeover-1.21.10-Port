@@ -2,20 +2,23 @@
   "feature": "biomemakeover:dark_forest/mesmerite_underground",
   "placement": [
     {
-      "chance": 4,
-      "type": "minecraft:rarity_filter"
+      "type": "minecraft:rarity_filter",
+      "chance": 4
     },
     {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
       "height": {
+        "type": "minecraft:uniform",
         "min_inclusive": {
-          "above_bottom": 0
+          "absolute": -64
         },
         "max_inclusive": {
           "absolute": 64
-        },
-        "type": "minecraft:uniform"
-      },
-      "type": "minecraft:height_range"
+        }
+      }
     },
     {
       "type": "minecraft:biome"
