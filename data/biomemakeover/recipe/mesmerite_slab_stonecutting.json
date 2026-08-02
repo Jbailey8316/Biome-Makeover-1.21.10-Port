@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": "biomemakeover:mesmerite",
+  "result": {
+    "id": "biomemakeover:mesmerite_slab",
+    "count": 2
+  },
+  "category": "building"
+}
