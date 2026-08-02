@@ -1,9 +1,8 @@
-DarkForest Beta 0.4.7
+DarkForest Beta 0.4.8.2
 
-Changes:
-- Reduced Black Thistle generation frequency.
-- Increased owl spawn weight for testing.
-- Prepared for owl nest debug tooling.
+Fixes:
+- Removes invalid @Override annotation from BlackThistleBlock.java.
+- Keeps the previous berry-bush style behavior intact.
 
-Note:
-This patch preserves the working tree/mushroom fixes.
+Apply, then run:
+./gradlew clean build

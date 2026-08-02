@@ -21,6 +21,7 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.material.MapColor;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.block.OwlNestBlock;
+import party.lemons.biomemakeover.block.BlackThistleBlock;
 import party.lemons.biomemakeover.block.WildMushroomBlock;
 
 public final class BMBlocks {
@@ -47,8 +48,10 @@ public final class BMBlocks {
     public static final Block POLISHED_MESMERITE_SLAB = register("polished_mesmerite_slab", SlabBlock::new, stoneProps());
     public static final Block POLISHED_MESMERITE_WALL = register("polished_mesmerite_wall", WallBlock::new, stoneProps());
 
-    public static final Block BLACK_THISTLE = register("black_thistle", TallFlowerBlock::new,
+    public static final Block BLACK_THISTLE = register("black_thistle", BlackThistleBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
+    public static final Block ITCHING_IVY = register("itching_ivy", VineBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().noOcclusion().randomTicks().strength(0.2F).sound(SoundType.VINE));
     public static final Block FOXGLOVE = register("foxglove", TallFlowerBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
     public static final Block OWL_NEST = register("owl_nest", OwlNestBlock::new,
@@ -102,7 +105,7 @@ public final class BMBlocks {
             entries.accept(ANCIENT_OAK_PRESSURE_PLATE); entries.accept(ANCIENT_OAK_BUTTON);
         });
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(entries -> {
-            entries.accept(WILD_MUSHROOMS); entries.accept(BLACK_THISTLE); entries.accept(FOXGLOVE); entries.accept(OWL_NEST);
+            entries.accept(WILD_MUSHROOMS); entries.accept(BLACK_THISTLE); entries.accept(FOXGLOVE); entries.accept(ITCHING_IVY); entries.accept(OWL_NEST);
             entries.accept(ANCIENT_OAK_LEAVES); entries.accept(ANCIENT_OAK_SAPLING);
         });
     }
