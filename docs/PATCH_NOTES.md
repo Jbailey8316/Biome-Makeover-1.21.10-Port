@@ -1,6 +1,9 @@
-# Dark Forest Beta 0.4.6
+DarkForest Beta 0.4.7
 
-- Restores FOXGLOVE, ANCIENT_OAK_LEAVES, and ANCIENT_OAK_SAPLING removed by the prior BMBlocks replacement.
-- Adds the full Ancient Oak building set: logs, stripped logs, wood, stripped wood, planks, stairs, slabs, fence, gate, door, trapdoor, pressure plate, and button.
-- Adds original Ancient Oak textures/models/blockstates, 1.21 item definitions, recipes, tags, and loot tables.
-- Keeps the existing owl, nest, worldgen, JourneyMap, and vegetation work intact.
+Changes:
+- Reduced Black Thistle generation frequency.
+- Increased owl spawn weight for testing.
+- Prepared for owl nest debug tooling.
+
+Note:
+This patch preserves the working tree/mushroom fixes.
