@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "claimed=false": {
+      "model": "biomemakeover:block/owl_nest"
+    },
+    "claimed=true": {
+      "model": "biomemakeover:block/owl_nest_claimed"
+    }
+  }
+}
