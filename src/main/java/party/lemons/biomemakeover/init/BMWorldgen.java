@@ -4,53 +4,70 @@ import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraft.world.entity.MobCategory;
 import party.lemons.biomemakeover.BiomeMakeover;
-import party.lemons.biomemakeover.init.BMEntities;
 
 public final class BMWorldgen {
-    public static final ResourceKey<PlacedFeature> MESMERITE_UNDERGROUND = ResourceKey.create(
-        Registries.PLACED_FEATURE,
-        BiomeMakeover.id("dark_forest/mesmerite_underground")
-    );
 
-    public static final ResourceKey<PlacedFeature> WILD_MUSHROOMS = ResourceKey.create(
-        Registries.PLACED_FEATURE,
-        BiomeMakeover.id("dark_forest/wild_mushrooms")
-    );
+    public static final ResourceKey<PlacedFeature> MESMERITE_UNDERGROUND = key("dark_forest/mesmerite_underground");
+    public static final ResourceKey<PlacedFeature> MESMERITE_BOULDER = key("dark_forest/mesmerite_boulder");
+    public static final ResourceKey<PlacedFeature> MESMERITE_FISSURE = key("dark_forest/mesmerite_fissure");
 
-    public static final ResourceKey<PlacedFeature> BLACK_THISTLE = ResourceKey.create(
-        Registries.PLACED_FEATURE,
-        BiomeMakeover.id("dark_forest/black_thistle")
-    );
+    public static final ResourceKey<PlacedFeature> WILD_MUSHROOMS = key("dark_forest/wild_mushrooms");
+    public static final ResourceKey<PlacedFeature> BLACK_THISTLE = key("dark_forest/black_thistle");
 
-    private BMWorldgen() {
+    public static final ResourceKey<PlacedFeature> ANCIENT_OAK = key("dark_forest/ancient_oak");
+    public static final ResourceKey<PlacedFeature> ANCIENT_OAK_SMALL = key("dark_forest/ancient_oak_small");
+    public static final ResourceKey<PlacedFeature> DARK_OAK_SMALL = key("dark_forest/dark_oak_small");
+
+    public static final ResourceKey<PlacedFeature> FLOWERS = key("dark_forest/flowers");
+    public static final ResourceKey<PlacedFeature> ITCHING_IVY = key("dark_forest/itching_ivy");
+    public static final ResourceKey<PlacedFeature> TALL_GRASS = key("dark_forest/tall_grass");
+
+    private BMWorldgen() {}
+
+    private static ResourceKey<PlacedFeature> key(String name) {
+        return ResourceKey.create(
+            Registries.PLACED_FEATURE,
+            BiomeMakeover.id(name)
+        );
+    }
+
+    private static void addFeature(
+        java.util.function.Predicate<net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext> selector,
+        GenerationStep.Decoration step,
+        ResourceKey<PlacedFeature> feature
+    ) {
+        BiomeModifications.addFeature(selector, step, feature);
     }
 
     public static void initialize() {
+        var darkForest = BiomeSelectors.includeByKey(Biomes.DARK_FOREST);
+
         BiomeModifications.addSpawn(
-            BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
-            MobCategory.CREATURE, BMEntities.OWL, 2, 1, 2
-        );
-        BiomeModifications.addFeature(
-            BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
-            GenerationStep.Decoration.UNDERGROUND_ORES,
-            MESMERITE_UNDERGROUND
-        );
-
-        BiomeModifications.addFeature(
-            BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
-            GenerationStep.Decoration.VEGETAL_DECORATION,
-            WILD_MUSHROOMS
+            darkForest,
+            MobCategory.CREATURE,
+            BMEntities.OWL,
+            2,
+            1,
+            2
         );
 
-        BiomeModifications.addFeature(
-            BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
-            GenerationStep.Decoration.VEGETAL_DECORATION,
-            BLACK_THISTLE
-        );
+        addFeature(darkForest, GenerationStep.Decoration.UNDERGROUND_ORES, MESMERITE_UNDERGROUND);
+        addFeature(darkForest, GenerationStep.Decoration.UNDERGROUND_ORES, MESMERITE_BOULDER);
+        addFeature(darkForest, GenerationStep.Decoration.UNDERGROUND_ORES, MESMERITE_FISSURE);
+
+        addFeature(darkForest, GenerationStep.Decoration.VEGETAL_DECORATION, WILD_MUSHROOMS);
+        addFeature(darkForest, GenerationStep.Decoration.VEGETAL_DECORATION, BLACK_THISTLE);
+        addFeature(darkForest, GenerationStep.Decoration.VEGETAL_DECORATION, FLOWERS);
+        addFeature(darkForest, GenerationStep.Decoration.VEGETAL_DECORATION, ITCHING_IVY);
+        addFeature(darkForest, GenerationStep.Decoration.VEGETAL_DECORATION, TALL_GRASS);
+
+        addFeature(darkForest, GenerationStep.Decoration.VEGETAL_DECORATION, ANCIENT_OAK);
+        addFeature(darkForest, GenerationStep.Decoration.VEGETAL_DECORATION, ANCIENT_OAK_SMALL);
+        addFeature(darkForest, GenerationStep.Decoration.VEGETAL_DECORATION, DARK_OAK_SMALL);
     }
 }

@@ -1,9 +1,9 @@
 {
-  "feature": "biomemakeover:dark_forest/wild_mushrooms",
+  "feature": "biomemakeover:dark_forest/tall_grass",
   "placement": [
     {
-      "count": 2,
-      "type": "minecraft:count"
+      "chance": 3,
+      "type": "minecraft:rarity_filter"
     },
     {
       "type": "minecraft:in_square"

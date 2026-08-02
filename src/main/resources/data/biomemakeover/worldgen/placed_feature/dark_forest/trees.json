@@ -1,15 +1,19 @@
 {
-  "feature": "biomemakeover:dark_forest/wild_mushrooms",
+  "feature": "biomemakeover:dark_forest/trees",
   "placement": [
     {
-      "count": 2,
+      "count": 3,
       "type": "minecraft:count"
     },
     {
       "type": "minecraft:in_square"
     },
     {
-      "heightmap": "WORLD_SURFACE_WG",
+      "max_water_depth": 0,
+      "type": "minecraft:surface_water_depth_filter"
+    },
+    {
+      "heightmap": "OCEAN_FLOOR",
       "type": "minecraft:heightmap"
     },
     {

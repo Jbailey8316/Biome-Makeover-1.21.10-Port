@@ -1,10 +1,6 @@
 {
-  "feature": "biomemakeover:dark_forest/wild_mushrooms",
+  "feature": "minecraft:patch_grass",
   "placement": [
-    {
-      "count": 2,
-      "type": "minecraft:count"
-    },
     {
       "type": "minecraft:in_square"
     },

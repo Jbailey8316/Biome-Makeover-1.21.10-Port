@@ -1,9 +1,9 @@
 {
-  "feature": "biomemakeover:dark_forest/wild_mushrooms",
+  "feature": "biomemakeover:dark_forest/mesmerite_boulder",
   "placement": [
     {
-      "count": 2,
-      "type": "minecraft:count"
+      "chance": 10,
+      "type": "minecraft:rarity_filter"
     },
     {
       "type": "minecraft:in_square"
