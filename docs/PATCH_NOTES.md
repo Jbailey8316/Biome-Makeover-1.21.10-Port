@@ -1,9 +1,13 @@
-# DarkForest Beta 0.4.13.1 Compile Fix
+# DarkForest Beta 0.4.14 Wildlife Polish
 
-Fixes the remaining compile blockers:
-- Removes invalid @Override annotations from BlackThistleBlock
-- Removes invalid @Override annotations from ItchingIvyBlock
+Included:
+- Owl spawn weight reduced from test level to 10.
+- Fox added to Dark Forest creature spawns.
+- Rabbit added to Dark Forest creature spawns.
 
-Apply:
-bash apply-darkforest-beta-0.4.13.1.sh
-./gradlew clean build
+Still pending:
+- Owl nest frequency reduction (requires the current nest placed feature JSON path).
+- Baby owl entity/model/command.
+- Ancient Oak boats.
+
+This patch is based on the uploaded repo state.
