@@ -52,7 +52,7 @@ public final class BMEntities {
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,
-            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            Heightmap.Types.MOTION_BLOCKING,
             OwlEntity::checkOwlSpawnRules
         );
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS)

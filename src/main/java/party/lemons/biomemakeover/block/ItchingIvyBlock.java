@@ -5,14 +5,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.TallFlowerBlock;
+import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.Vec3;
 
-/** Tall thorn plant with sweet-berry-bush style collision behavior. */
-public class BlackThistleBlock extends TallFlowerBlock {
-    public BlackThistleBlock(Properties properties) {
+/** A wall-clinging vine that scratches and slows entities moving through it. */
+public class ItchingIvyBlock extends VineBlock {
+    public ItchingIvyBlock(Properties properties) {
         super(properties);
     }
 
@@ -22,11 +21,7 @@ public class BlackThistleBlock extends TallFlowerBlock {
         }
 
         entity.makeStuckInBlock(state, new Vec3(0.72D, 0.75D, 0.72D));
-
-        // Players normally intersect the lower half first. The previous upper-half
-        // check meant the damage hook rarely ran at all.
-        if (state.getValue(HALF) == DoubleBlockHalf.LOWER
-            && level instanceof net.minecraft.server.level.ServerLevel server) {
+        if (level instanceof net.minecraft.server.level.ServerLevel server) {
             entity.hurtServer(server, level.damageSources().sweetBerryBush(), 1.0F);
         }
     }

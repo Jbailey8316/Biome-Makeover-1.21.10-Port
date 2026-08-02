@@ -22,6 +22,7 @@ import net.minecraft.world.level.material.MapColor;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.block.OwlNestBlock;
 import party.lemons.biomemakeover.block.BlackThistleBlock;
+import party.lemons.biomemakeover.block.ItchingIvyBlock;
 import party.lemons.biomemakeover.block.WildMushroomBlock;
 
 public final class BMBlocks {
@@ -50,7 +51,7 @@ public final class BMBlocks {
 
     public static final Block BLACK_THISTLE = register("black_thistle", BlackThistleBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
-    public static final Block ITCHING_IVY = register("itching_ivy", VineBlock::new,
+    public static final Block ITCHING_IVY = register("itching_ivy", ItchingIvyBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().noOcclusion().randomTicks().strength(0.2F).sound(SoundType.VINE));
     public static final Block FOXGLOVE = register("foxglove", TallFlowerBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));

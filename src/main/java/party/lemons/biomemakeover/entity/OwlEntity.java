@@ -1,5 +1,6 @@
 package party.lemons.biomemakeover.entity;
 
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -112,11 +113,15 @@ public class OwlEntity extends ShoulderRidingEntity {
     ) {
         long time = level.getLevelData().getDayTime() % 24000L;
         boolean night = time >= 12500L && time <= 23500L;
-        if (!night || !level.getBlockState(pos).isAir() || !level.getBlockState(pos.above()).isAir()) return false;
         BlockState support = level.getBlockState(pos.below());
-        // Allow ordinary forest floor as well as canopy surfaces. Vanilla natural spawning
-        // chooses ground positions, so the old canopy-only rule prevented every attempt.
-        return support.isSolidRender();
+        boolean validSupport = support.is(Blocks.GRASS_BLOCK)
+            || support.is(Blocks.DIRT)
+            || support.is(Blocks.PODZOL)
+            || support.is(BlockTags.LEAVES)
+            || support.is(BlockTags.LOGS);
+        return night && validSupport
+            && level.getBlockState(pos).isAir()
+            && level.getBlockState(pos.above()).isAir();
     }
 
     @Override

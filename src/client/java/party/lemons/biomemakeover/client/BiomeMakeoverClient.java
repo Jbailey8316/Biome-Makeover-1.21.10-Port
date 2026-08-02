@@ -14,7 +14,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT,
-            BMBlocks.WILD_MUSHROOMS, BMBlocks.BLACK_THISTLE, BMBlocks.FOXGLOVE,
+            BMBlocks.WILD_MUSHROOMS, BMBlocks.ITCHING_IVY, BMBlocks.BLACK_THISTLE, BMBlocks.FOXGLOVE,
             BMBlocks.ANCIENT_OAK_LEAVES, BMBlocks.ANCIENT_OAK_SAPLING,
             BMBlocks.ANCIENT_OAK_DOOR, BMBlocks.ANCIENT_OAK_TRAPDOOR);
         BMModelLayers.register();
