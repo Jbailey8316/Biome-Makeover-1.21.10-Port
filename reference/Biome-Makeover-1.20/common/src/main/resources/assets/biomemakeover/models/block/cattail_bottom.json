@@ -1,0 +1,7 @@
+{
+  "parent": "biomemakeover:block/tinted_crop",
+  "ambientocclusion": true,
+  "textures": {
+    "crop": "biomemakeover:block/cattail_bottom"
+  }
+}

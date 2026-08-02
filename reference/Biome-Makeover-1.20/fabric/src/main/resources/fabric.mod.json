@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "biomemakeover",
+  "version": "${version}",
+  "name": "Biome Makeover",
+  "description": "Biome Makeover is a mod designed to update vanilla's biomes.",
+  "authors": [
+    "LASER KNIGHTS"
+  ],
+  "contact": {
+    "issues": "https://github.com/Lemonszz/Biome-Makeover/issues",
+    "sources": "https://github.com/Lemonszz/Biome-Makeover/",
+    "homepage": "https://biomemakeover.laserknights.com"
+  },
+  "license": "CUSTOM",
+  "icon": "bm-logo.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "party.lemons.biomemakeover.fabric.BMFabric"
+    ],
+    "client": [
+      "party.lemons.biomemakeover.fabric.BMFabricClient"
+    ]
+  },
+  "mixins": ["biomemakeover.mixins.json", "biomemakeover-common.mixins.json"],
+  "depends": {
+    "fabric-api": "*",
+    "minecraft": ">=1.20-beta.1",
+    "architectury": ">=9.0.0"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "biomemakeover:block/tinted_crop",
+  "ambientocclusion": false,
+  "textures": {
+    "crop": "biomemakeover:block/willow_vine_0"
+  }
+}

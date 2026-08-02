@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#c:beach",
+      "required": false
+    },
+    "minecraft:beach",
+    "minecraft:stony_shore"
+  ]
+}
