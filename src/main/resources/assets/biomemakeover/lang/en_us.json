@@ -1,0 +1,20 @@
+{
+  "block.biomemakeover.mesmerite": "Mesmerite",
+  "block.biomemakeover.mesmerite_stairs": "Mesmerite Stairs",
+  "block.biomemakeover.mesmerite_slab": "Mesmerite Slab",
+  "block.biomemakeover.mesmerite_wall": "Mesmerite Wall",
+  "block.biomemakeover.polished_mesmerite": "Polished Mesmerite",
+  "block.biomemakeover.polished_mesmerite_stairs": "Polished Mesmerite Stairs",
+  "block.biomemakeover.polished_mesmerite_slab": "Polished Mesmerite Slab",
+  "block.biomemakeover.polished_mesmerite_wall": "Polished Mesmerite Wall",
+  "block.biomemakeover.wild_mushrooms": "Wild Mushrooms",
+  "block.biomemakeover.black_thistle": "Black Thistle",
+  "entity.biomemakeover.owl": "Owl",
+  "item.biomemakeover.owl_spawn_egg": "Owl Spawn Egg",
+  "subtitles.biomemakeover.owl_idle": "Owl hoots",
+  "subtitles.biomemakeover.owl_hurt": "Owl hurts",
+  "subtitles.biomemakeover.owl_death": "Owl dies",
+  "block.biomemakeover.owl_nest": "Owl Nest",
+  "item.biomemakeover.leaf_litter": "Leaf Litter",
+  "item.biomemakeover.owl_egg": "Owl Egg"
+}

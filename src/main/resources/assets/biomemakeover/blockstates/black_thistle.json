@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "half=lower": { "model": "biomemakeover:block/black_thistle_bottom" },
+    "half=upper": { "model": "biomemakeover:block/black_thistle_top" }
+  }
+}
