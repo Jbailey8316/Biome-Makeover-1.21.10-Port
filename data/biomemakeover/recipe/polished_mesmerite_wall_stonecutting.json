@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:stonecutting",
-  "ingredient": "biomemakeover:polished_mesmerite",
-  "result": {
-    "id": "biomemakeover:polished_mesmerite_wall",
-    "count": 1
-  },
-  "category": "building"
-}
