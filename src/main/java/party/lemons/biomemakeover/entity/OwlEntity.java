@@ -113,13 +113,17 @@ public class OwlEntity extends ShoulderRidingEntity {
     ) {
         long time = level.getLevelData().getDayTime() % 24000L;
         boolean night = time >= 12500L && time <= 23500L;
+        if (!night) return false;
+
+        // Owls are canopy animals. They must spawn attached to existing trees,
+        // never on terrain, water, or open ground.
         BlockState support = level.getBlockState(pos.below());
-        boolean validSupport = support.is(Blocks.GRASS_BLOCK)
-            || support.is(Blocks.DIRT)
-            || support.is(Blocks.PODZOL)
-            || support.is(BlockTags.LEAVES)
-            || support.is(BlockTags.LOGS);
-        return night && validSupport
+
+        boolean treeSupport =
+            support.is(BlockTags.LOGS)
+            || support.is(BlockTags.LEAVES);
+
+        return treeSupport
             && level.getBlockState(pos).isAir()
             && level.getBlockState(pos.above()).isAir();
     }
