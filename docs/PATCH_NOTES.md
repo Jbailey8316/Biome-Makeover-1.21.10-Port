@@ -1,10 +1,6 @@
-# Dark Forest Beta 0.4.3
+# Dark Forest Beta 0.4.6
 
-- Fixes the Ancient Oak Leaves inventory sprite by adding the missing 1.21.10 item definition.
-- Registers Ancient Oak Leaves, Foxglove, and the new sapling on the client cutout render layer.
-- Adds an Ancient Oak Sapling. A single sapling grows the small variant; a 2x2 grows the large Ancient Oak.
-- Raises owl test spawn weight to 40 and permits chunk-generation owl spawns during daytime so fresh chunks can seed the population.
-- Raises pre-generated owl-nest frequency from 1-in-12 chunks to approximately 1-in-3 test chunks.
-- Keeps the successful tree and mushroom placement corrections from Beta 0.4.2.
-
-Test owl/nest world generation in newly generated Dark Forest chunks.
+- Restores FOXGLOVE, ANCIENT_OAK_LEAVES, and ANCIENT_OAK_SAPLING removed by the prior BMBlocks replacement.
+- Adds the full Ancient Oak building set: logs, stripped logs, wood, stripped wood, planks, stairs, slabs, fence, gate, door, trapdoor, pressure plate, and button.
+- Adds original Ancient Oak textures/models/blockstates, 1.21 item definitions, recipes, tags, and loot tables.
+- Keeps the existing owl, nest, worldgen, JourneyMap, and vegetation work intact.

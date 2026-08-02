@@ -13,9 +13,12 @@ import party.lemons.biomemakeover.init.BMEntities;
 public final class BiomeMakeoverClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT, BMBlocks.WILD_MUSHROOMS, BMBlocks.BLACK_THISTLE, BMBlocks.FOXGLOVE, BMBlocks.ANCIENT_OAK_LEAVES, BMBlocks.ANCIENT_OAK_SAPLING);
+        BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT,
+            BMBlocks.WILD_MUSHROOMS, BMBlocks.BLACK_THISTLE, BMBlocks.FOXGLOVE,
+            BMBlocks.ANCIENT_OAK_LEAVES, BMBlocks.ANCIENT_OAK_SAPLING,
+            BMBlocks.ANCIENT_OAK_DOOR, BMBlocks.ANCIENT_OAK_TRAPDOOR);
         BMModelLayers.register();
         EntityRenderers.register(BMEntities.OWL, OwlRenderer::new);
-        BiomeMakeover.LOGGER.info("Biome Makeover Stage 7.2 client initialized: original owl model registered.");
+        BiomeMakeover.LOGGER.info("Biome Makeover client initialized.");
     }
 }

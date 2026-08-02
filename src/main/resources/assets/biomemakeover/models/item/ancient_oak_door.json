@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "biomemakeover:block/ancient_oak_sapling"
+    "layer0": "biomemakeover:item/ancient_oak_door"
   }
 }
