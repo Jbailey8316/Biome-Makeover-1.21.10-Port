@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+
+# Fabric / Minecraft runtime
+run/
+logs/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Compiled files
+*.class
+*.jar
