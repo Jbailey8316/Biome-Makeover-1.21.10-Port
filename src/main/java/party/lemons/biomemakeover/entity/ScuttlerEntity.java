@@ -50,7 +50,7 @@ public final class ScuttlerEntity extends Animal {
     private int rattleTicks;
 
     public ScuttlerEntity(EntityType<? extends Animal> type, Level level) { super(type, level); }
-    public static AttributeSupplier.Builder createAttributes() { return createMobAttributes().add(Attributes.MAX_HEALTH,10).add(Attributes.MOVEMENT_SPEED,.25); }
+    public static AttributeSupplier.Builder createAttributes() { return createAnimalAttributes().add(Attributes.MAX_HEALTH,10).add(Attributes.MOVEMENT_SPEED,.25); }
     public static boolean checkSpawnRules(EntityType<ScuttlerEntity> type, LevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         return random.nextBoolean() && Animal.isBrightEnoughToSpawn(level,pos);
     }

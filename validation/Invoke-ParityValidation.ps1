@@ -275,6 +275,19 @@ if (Test-Path $advancementRoot) {
     }
 }
 
+# Minecraft 1.21.10 TemptGoal reads Attributes.TEMPT_RANGE on every canUse
+# evaluation. Animal.createAnimalAttributes supplies the vanilla 10-block
+# contract; custom builders must add the attribute explicitly.
+Get-ChildItem (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity') -File -Filter '*.java' | ForEach-Object {
+    $entityFile = $_
+    $source = Get-Content $entityFile.FullName -Raw
+    if ($source -match 'new\s+TemptGoal\s*\(' -and
+        $source -notmatch 'createAnimalAttributes\s*\(' -and
+        $source -notmatch 'Attributes\.TEMPT_RANGE') {
+        Add-Failure "Entity uses 1.21.10 TemptGoal without TEMPT_RANGE attribute contract: $($entityFile.Name)"
+    }
+}
+
 $registryByTagDirectory = @{
     'block' = $blocks; 'item' = $items; 'entity_type' = $entities
 }

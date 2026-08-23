@@ -176,3 +176,50 @@ the Pink Bud's new resolvable item path. Static validation supplements, but does
    feature-placement crashes. This is required before the crash can be called runtime-fixed.
 6. Generate fresh Mushroom Fields chunks separately. No Mushroom Fields safety claim exists yet.
 7. Continue entity, save/reload, dedicated-server, multiplayer, and existing-world-copy checks.
+
+## Third runtime checkpoint: Scuttler temptation attribute
+
+The next Prism run passed client/resource/dynamic-registry loading, world creation, initial spawn, all recipe and
+advancement decoding, and application of all 33 biome modifications. Teleporting into newly located Badlands also
+succeeded. Four seconds later the integrated server crashed while ticking `biomemakeover:scuttler` because its
+`TemptGoal` requested absent `minecraft:tempt_range`. No earlier Saguaro exception appeared in that short interval,
+but this is not enough targeted generation coverage to mark Saguaro runtime-validated.
+
+### Historical/current source finding
+
+Released 1.20.1 Scuttler registered `createMobAttributes()` plus 10 health and 0.25 movement speed. Its priority-one
+Taniwha `TagTemptGoal` followed the `scuttler_food` tag at speed 0.7; the remaining released chain included Float,
+Rattle, Panic, Breed, conditional player avoidance, flower eating/search, Follow Parent, daylight avoidance, random
+stroll, player look, and random look goals.
+
+The current local translation correctly replaced tag temptation with vanilla `TemptGoal` over the same item tag and
+preserved speed 0.7. Minecraft 1.21.10 changed the contract: `TemptGoal.canUse()` calls
+`getAttributeValue(Attributes.TEMPT_RANGE)`, and vanilla `Animal.createAnimalAttributes()` now extends the mob builder
+with `TEMPT_RANGE = 10.0`. Scuttler retained the released `createMobAttributes()` call, so the first temptation scan
+threw before ordinary AI could tick. Scuttler now starts from `createAnimalAttributes()` and retains its explicit
+health/speed values. This is the current vanilla compatibility contract and preserves the historical effective
+10-block temptation range; no goal was suppressed or removed.
+
+### Restored-entity sibling audit
+
+| Entity | Goals/base attributes reviewed | Result |
+|---|---|---|
+| Scuttler | Tempt, Float, Rattle, Panic, Breed, Avoid Player, Eat Flower, Follow Parent, random movement/look | `TemptGoal` was the only goal reading a separately required modern attribute. Fixed via the Animal base builder. Existing broader behavioral parity debt is unchanged. |
+| Glowfish | Salmon/AbstractFish movement, schooling, panic/avoidance, bucket persistence | Uses vanilla `AbstractFish.createAttributes()` and no Tempt goal; no missing modern attribute contract found. |
+| Cowboy | Pillager goals, targeting, crossbow movement, patrol/riding/passenger behavior | Registered with current `Pillager.createAttributes()`, including health, movement, attack, and follow range; no custom goal attribute gap found. |
+| Tumbleweed | Non-Mob entity tick, wind movement, collision, water, lifetime | Has no AI goal selector or attribute supplier; not applicable. |
+| Owl | Tempt, breeding, panic, melee/targeting, following, flight | Already explicitly registers `TEMPT_RANGE` (6.0) plus movement/flying/health/attack attributes. No Owl code or approved Mythas behavior changed. |
+
+Current 1.21.10 bytecode inspection found no additional attribute reads in the restored Panic, Breed, Follow Parent,
+Avoid Entity, Melee Attack, Nearest Target, or Follow Owner goal implementations. The validator now rejects any BM
+entity that constructs `TemptGoal` without either using `createAnimalAttributes()` or explicitly adding
+`Attributes.TEMPT_RANGE`.
+
+### Runtime status after this report
+
+- Resource, dynamic-registry, recipe, advancement, and 33-biome-modification loading: **CLIENT RUNTIME VALIDATED for
+  the reported run**.
+- Scuttler attribute remediation: **STATICALLY/PACKAGED VALIDATED ONLY; Prism retest required**.
+- Saguaro: **STILL OPEN for adequate targeted fresh-chunk runtime verification**.
+- Fresh Mushroom Fields, complete Badlands worldgen, Scuttler goals/interactions/persistence, Cowboy riding, Glowfish,
+  Tumbleweed, save/reload, dedicated server, multiplayer, and existing-world copy: **MANUAL TEST REQUIRED**.

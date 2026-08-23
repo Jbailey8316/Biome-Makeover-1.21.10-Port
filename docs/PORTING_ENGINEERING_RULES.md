@@ -144,3 +144,11 @@ Runtime reports must keep these gates distinct: client bootstrap; resource loadi
 creation; initial-spawn generation; recipe/data decoding; advancement decoding; model/texture resolution; targeted
 Mushroom Fields generation; targeted Badlands generation; feature-specific generation; entity behavior; save/reload;
 and dedicated-server/multiplayer behavior. Passing one gate never implies a later gate passed.
+
+## 23. Audit modern base attribute contracts with AI migrations
+
+Adding a modern vanilla goal can add an attribute precondition that did not exist in the historical version. When a
+goal is introduced or translated, inspect its current implementation and the current vanilla base attribute builder;
+do not assume `Mob.createMobAttributes()` remains sufficient because it compiled historically. Audit sibling restored
+entities for the same goal/attribute pattern. Missing attributes must be repaired through the correct modern base
+contract or an evidence-supported explicit value, never exception suppression or removal of historical AI.
