@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "8d5aabdddb0aa9268c60cced5961f854ce657bcf",
+  "namespace": "biomemakeover",
+  "registries": {
+    "block": [
+      "ancient_oak_button", "ancient_oak_door", "ancient_oak_fence", "ancient_oak_fence_gate",
+      "ancient_oak_leaves", "ancient_oak_log", "ancient_oak_planks", "ancient_oak_pressure_plate",
+      "ancient_oak_sapling", "ancient_oak_slab", "ancient_oak_stairs", "ancient_oak_trapdoor",
+      "ancient_oak_wood", "black_thistle", "foxglove", "itching_ivy", "mesmerite",
+      "mesmerite_slab", "mesmerite_stairs", "mesmerite_wall", "owl_nest", "polished_mesmerite",
+      "polished_mesmerite_slab", "polished_mesmerite_stairs", "polished_mesmerite_wall",
+      "stripped_ancient_oak_log", "stripped_ancient_oak_wood", "wild_mushrooms"
+    ],
+    "item": [
+      "ancient_oak_button", "ancient_oak_door", "ancient_oak_fence", "ancient_oak_fence_gate",
+      "ancient_oak_leaves", "ancient_oak_log", "ancient_oak_planks", "ancient_oak_pressure_plate",
+      "ancient_oak_sapling", "ancient_oak_slab", "ancient_oak_stairs", "ancient_oak_trapdoor",
+      "ancient_oak_wood", "black_thistle", "foxglove", "itching_ivy", "leaf_litter", "mesmerite",
+      "mesmerite_slab", "mesmerite_stairs", "mesmerite_wall", "owl_egg", "owl_nest", "owl_spawn_egg",
+      "polished_mesmerite", "polished_mesmerite_slab", "polished_mesmerite_stairs",
+      "polished_mesmerite_wall", "stripped_ancient_oak_log", "stripped_ancient_oak_wood", "wild_mushrooms"
+    ],
+    "entity_type": ["owl"],
+    "sound_event": [
+      "owl_alert", "owl_baby", "owl_contact", "owl_death", "owl_hoot", "owl_hurt", "owl_idle", "owl_takeoff"
+    ],
+    "block_entity_type": [],
+    "mob_effect": [],
+    "particle_type": [],
+    "structure_type": [],
+    "structure_piece": [],
+    "structure_processor": [],
+    "menu": [],
+    "recipe_serializer": [],
+    "recipe_type": [],
+    "data_component_type": []
+  },
+  "worldgen_resources": {
+    "configured_feature": [
+      "dark_forest/ancient_oak", "dark_forest/ancient_oak_small", "dark_forest/black_thistle",
+      "dark_forest/dark_oak_small", "dark_forest/flowers", "dark_forest/foxglove",
+      "dark_forest/itching_ivy", "dark_forest/mesmerite_boulder", "dark_forest/mesmerite_fissure",
+      "dark_forest/mesmerite_underground", "dark_forest/owl_nest", "dark_forest/tall_grass",
+      "dark_forest/wild_mushrooms"
+    ],
+    "placed_feature": [
+      "dark_forest/ancient_oak", "dark_forest/ancient_oak_small", "dark_forest/black_thistle",
+      "dark_forest/dark_oak_small", "dark_forest/flowers", "dark_forest/foxglove",
+      "dark_forest/itching_ivy", "dark_forest/mesmerite_boulder", "dark_forest/mesmerite_fissure",
+      "dark_forest/mesmerite_underground", "dark_forest/owl_nest", "dark_forest/tall_grass",
+      "dark_forest/wild_mushrooms"
+    ],
+    "injected_placed_feature": [
+      "dark_forest/black_thistle", "dark_forest/mesmerite_underground", "dark_forest/wild_mushrooms"
+    ]
+  },
+  "classification": {
+    "historical_already_matching": [
+      "block:ancient_oak_button", "block:ancient_oak_door", "block:ancient_oak_fence",
+      "block:ancient_oak_fence_gate", "block:ancient_oak_leaves", "block:ancient_oak_log",
+      "block:ancient_oak_planks", "block:ancient_oak_pressure_plate", "block:ancient_oak_sapling",
+      "block:ancient_oak_slab", "block:ancient_oak_stairs", "block:ancient_oak_trapdoor",
+      "block:ancient_oak_wood", "block:black_thistle", "block:foxglove", "block:itching_ivy",
+      "block:mesmerite", "block:mesmerite_slab", "block:mesmerite_stairs", "block:mesmerite_wall",
+      "block:polished_mesmerite", "block:polished_mesmerite_slab", "block:polished_mesmerite_stairs",
+      "block:polished_mesmerite_wall", "block:stripped_ancient_oak_log",
+      "block:stripped_ancient_oak_wood", "block:wild_mushrooms", "entity_type:owl",
+      "item:leaf_litter", "sound_event:owl_death", "sound_event:owl_hurt", "sound_event:owl_idle"
+    ],
+    "current_requires_historical_comparison": [
+      "configured_feature:dark_forest/*", "placed_feature:dark_forest/*"
+    ],
+    "current_custom_mythas": [
+      "block:owl_nest", "item:owl_egg", "sound_event:owl_alert", "sound_event:owl_baby",
+      "sound_event:owl_contact", "sound_event:owl_hoot", "sound_event:owl_takeoff"
+    ]
+  }
+}

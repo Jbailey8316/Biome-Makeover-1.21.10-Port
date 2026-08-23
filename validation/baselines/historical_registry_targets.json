@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "source_repository": "Lemonszz/Biome-Makeover",
+  "source_branch": "1.20",
+  "source_commit": "2f314c0596af095a4890995a465f308f69476b4a",
+  "release": "1.20.1-1.11.4",
+  "namespace": "biomemakeover",
+  "target_counts": {
+    "named_block_translations": 285,
+    "direct_static_block_suppliers_plus_generated_families": 123,
+    "standalone_or_generated_items_approximate": 80,
+    "entity_type": 21,
+    "block_entity_type": 5,
+    "configured_feature": 38,
+    "placed_feature": 37,
+    "structure": 4,
+    "structure_templates": 228,
+    "recipe": 374,
+    "loot_table": 329,
+    "advancement": 48,
+    "sound_event": 75,
+    "particle_type": 4,
+    "network_message": 9
+  },
+  "exact_high_risk_registry_targets": {
+    "entity_type": [
+      "adjudicator", "adjudicator_mimic", "blightbat", "cowboy", "decayed", "dragonfly", "ghost",
+      "glowfish", "helmit_crab", "lightning_bottle", "lightning_bug", "lightning_bug_alternate",
+      "moth", "mushroom_trader", "owl", "rootling", "scuttler", "stone_golem", "tadpole", "toad",
+      "tumbleweed"
+    ],
+    "block_entity_type": ["altar", "directional_data", "lightning_bug_bottle", "poltergeist", "tapestry"],
+    "particle_type": ["blossom", "lightning_spark", "poltergeist", "teleport"],
+    "structure_type": ["mansion", "sunken_ruin"],
+    "structure_piece": ["mansion", "sunken_ruin"],
+    "structure_processor": ["fill_bookshelves", "ghost_town_loot"],
+    "attribute": ["projectile_resistance"]
+  },
+  "excluded_registered_or_source_ids": {
+    "historical_dead_unreachable": [
+      "entity_type:blightbat", "entity_type:mushroom_trader", "block_entity_type:directional_data",
+      "entity_type:adjudicator_mimic_when_not_reached_by_phase"
+    ],
+    "historical_reachability_needs_runtime_verification": ["entity_type:toad", "entity_type:tadpole"],
+    "historical_dev_only": [
+      "dust_devil", "grinding", "reinforcement", "caravanning", "succulents", "large_pots",
+      "additional_masonry", "scarab_elytra", "rei_work"
+    ]
+  },
+  "strategy": {
+    "blocks_items_sounds_features_and_data": "Derive exact IDs from the pinned reference checkout during the owning restoration stage; compare Taniwha-generated membership against a 1.20.1 runtime registry dump before registration.",
+    "missing_ids": "Inventory targets only; Stage 0 does not register them.",
+    "conflicts": "Record for explicit migration review; never automatically rename either side."
+  }
+}
