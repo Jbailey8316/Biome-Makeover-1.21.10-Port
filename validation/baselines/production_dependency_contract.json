@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "gradle_properties": {
+    "minecraft_version": "1.21.10",
+    "loader_version": "0.18.4",
+    "loom_version": "1.17.10",
+    "fabric_version": "0.138.4+1.21.10"
+  },
+  "required_runtime_dependencies": ["fabricloader", "minecraft", "java", "fabric-api"],
+  "forbidden_runtime_dependencies": ["taniwha"],
+  "allowed_legacy_plural_tag_files": [
+    "src/main/resources/data/minecraft/tags/blocks/saplings.json",
+    "src/main/resources/data/minecraft/tags/items/saplings.json"
+  ]
+}

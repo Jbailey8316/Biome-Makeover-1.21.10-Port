@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "policy": "Explicit members only. This file validates existing membership and registers nothing.",
+  "families": [
+    {
+      "name": "current_ancient_oak_registered_blocks",
+      "base": "ancient_oak",
+      "members": [
+        "ancient_oak_button", "ancient_oak_door", "ancient_oak_fence", "ancient_oak_fence_gate",
+        "ancient_oak_leaves", "ancient_oak_log", "ancient_oak_planks", "ancient_oak_pressure_plate",
+        "ancient_oak_sapling", "ancient_oak_slab", "ancient_oak_stairs", "ancient_oak_trapdoor",
+        "ancient_oak_wood", "stripped_ancient_oak_log", "stripped_ancient_oak_wood"
+      ]
+    },
+    {
+      "name": "current_mesmerite_registered_blocks",
+      "base": "mesmerite",
+      "members": ["mesmerite", "mesmerite_slab", "mesmerite_stairs", "mesmerite_wall"]
+    },
+    {
+      "name": "current_polished_mesmerite_registered_blocks",
+      "base": "polished_mesmerite",
+      "members": [
+        "polished_mesmerite", "polished_mesmerite_slab", "polished_mesmerite_stairs",
+        "polished_mesmerite_wall"
+      ]
+    }
+  ]
+}

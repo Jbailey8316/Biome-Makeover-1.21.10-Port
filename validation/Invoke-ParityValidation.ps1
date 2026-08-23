@@ -31,8 +31,17 @@ function Resource-Ids([string]$RelativeDirectory) {
 
 $baselinePath = Join-Path $RepositoryRoot 'validation/baselines/current_registry_ids.json'
 $historicalPath = Join-Path $RepositoryRoot 'validation/baselines/historical_registry_targets.json'
+$dependencyPath = Join-Path $RepositoryRoot 'validation/baselines/production_dependency_contract.json'
+$familyPath = Join-Path $RepositoryRoot 'validation/foundations/family_membership.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
+$dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
+$familyContract = Get-Content $familyPath -Raw | ConvertFrom-Json
+
+foreach ($property in $baseline.registries.PSObject.Properties) {
+    $values = @($property.Value)
+    if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in baseline registry $($property.Name)" }
+}
 
 $blocks = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java'
 $standaloneItems = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMItems.java'
@@ -55,6 +64,34 @@ Assert-EqualSet 'placed feature resource IDs' $baseline.worldgen_resources.place
 $worldgenText = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMWorldgen.java') -Raw
 $injected = Sorted ([regex]::Matches($worldgenText, 'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)') | ForEach-Object { $_.Groups[1].Value })
 Assert-EqualSet 'injected placed feature keys' $baseline.worldgen_resources.injected_placed_feature $injected
+
+$familyNames = @($familyContract.families | ForEach-Object { $_.name })
+if ((Sorted $familyNames).Count -ne $familyNames.Count) { Add-Failure 'Duplicate family name in family membership contract' }
+foreach ($family in $familyContract.families) {
+    $members = @($family.members)
+    if ((Sorted $members).Count -ne $members.Count) { Add-Failure "Duplicate member in family $($family.name)" }
+    $notRegistered = @($members | Where-Object { $_ -notin $blocks })
+    if ($notRegistered.Count) { Add-Failure "Family $($family.name) contains unregistered current IDs: $($notRegistered -join ', ')" }
+    $sortedMembers = Sorted $members
+    if (($members -join "`n") -cne ($sortedMembers -join "`n")) { Add-Failure "Family $($family.name) members are not deterministically sorted" }
+}
+
+$gradleProperties = @{}
+Get-Content (Join-Path $RepositoryRoot 'gradle.properties') | ForEach-Object {
+    if ($_ -match '^([a-zA-Z0-9_.-]+)=(.*)$') { $gradleProperties[$matches[1]] = $matches[2] }
+}
+foreach ($property in $dependencyContract.gradle_properties.PSObject.Properties) {
+    if ($gradleProperties[$property.Name] -ne [string]$property.Value) {
+        Add-Failure "Production dependency property changed: $($property.Name)"
+    }
+}
+$buildAndMetadata = (Get-Content (Join-Path $RepositoryRoot 'build.gradle') -Raw) +
+    (Get-Content (Join-Path $RepositoryRoot 'src/main/resources/fabric.mod.json') -Raw)
+foreach ($forbidden in $dependencyContract.forbidden_runtime_dependencies) {
+    if ($buildAndMetadata -match [regex]::Escape([string]$forbidden)) { Add-Failure "Forbidden runtime dependency present: $forbidden" }
+}
+$fabricMetadata = Get-Content (Join-Path $RepositoryRoot 'src/main/resources/fabric.mod.json') -Raw | ConvertFrom-Json
+Assert-EqualSet 'runtime dependency IDs' $dependencyContract.required_runtime_dependencies $fabricMetadata.depends.PSObject.Properties.Name
 
 Get-ChildItem (Join-Path $RepositoryRoot 'src/main/resources') -Recurse -File -Filter '*.json' | ForEach-Object {
     $jsonFile = $_
@@ -91,10 +128,13 @@ foreach ($feature in $placed) {
     }
 }
 
-$tagDirectories = Get-ChildItem (Join-Path $RepositoryRoot 'src/main/resources/data') -Recurse -Directory |
-    Where-Object { $_.FullName -match '[\\/]tags[\\/](block|item)s$' }
-foreach ($directory in $tagDirectories) {
-    $warnings.Add("Legacy plural tag directory requires runtime review: $($directory.FullName.Substring($RepositoryRoot.Length + 1))")
+$legacyTagFiles = Get-ChildItem (Join-Path $RepositoryRoot 'src/main/resources/data') -Recurse -File |
+    Where-Object { $_.FullName -match '[\\/]tags[\\/](blocks|items)[\\/]' } | ForEach-Object {
+        $_.FullName.Substring($RepositoryRoot.Length + 1).Replace('\', '/')
+    }
+Assert-EqualSet 'grandfathered legacy plural tag files' $dependencyContract.allowed_legacy_plural_tag_files $legacyTagFiles
+foreach ($legacyTagFile in $legacyTagFiles) {
+    $warnings.Add("Grandfathered legacy plural tag file; do not copy this path in restored content: $legacyTagFile")
 }
 
 if ($failures.Count) {
@@ -106,7 +146,8 @@ if ($failures.Count) {
 Write-Host 'PARITY VALIDATION PASSED'
 Write-Host " registries: blocks=$($blocks.Count), items=$($items.Count), entities=$($entities.Count), sounds=$($sounds.Count)"
 Write-Host " worldgen resources: configured=$($configured.Count), placed=$($placed.Count), injected=$($injected.Count)"
-Write-Host ' JSON syntax and current block/item/feature resource contracts passed'
+Write-Host " foundations: families=$(@($familyContract.families).Count), runtime_dependencies=$(@($fabricMetadata.depends.PSObject.Properties).Count)"
+Write-Host ' JSON syntax, dependencies, family membership, and current block/item/feature resource contracts passed'
 if ($warnings.Count) {
     Write-Host " warnings=$($warnings.Count)"
     $warnings | ForEach-Object { Write-Host " - $_" }
