@@ -185,6 +185,67 @@ foreach ($feature in $placed) {
     }
 }
 
+# Runtime-remediation resource graph checks. These deliberately validate only
+# deterministic references; vanilla assets and dynamic runtime lookups remain
+# the responsibility of packaged/runtime validation.
+$builtAssets = Join-Path $RepositoryRoot 'build/resources/main/assets/biomemakeover'
+$builtData = Join-Path $RepositoryRoot 'build/resources/main/data'
+if (Test-Path $builtAssets) {
+    Get-ChildItem $builtAssets -Recurse -File -Filter '*.json' | ForEach-Object {
+        $resourceFile = $_
+        $raw = Get-Content $resourceFile.FullName -Raw
+        [regex]::Matches($raw, '"(?:model|parent)"\s*:\s*"biomemakeover:([^"#]+)"') | ForEach-Object {
+            $modelPath = Join-Path $builtAssets ("models/" + $_.Groups[1].Value + '.json')
+            if (-not (Test-Path $modelPath)) { Add-Failure "Missing internal model reference $($_.Groups[0].Value) from $($resourceFile.FullName.Substring($RepositoryRoot.Length + 1))" }
+        }
+        if ($raw -match 'minecraft:item/template_spawn_egg') {
+            Add-Failure "Obsolete 1.20 spawn-egg parent in $($resourceFile.FullName.Substring($RepositoryRoot.Length + 1))"
+        }
+        if ($resourceFile.FullName -match '[\\/]models[\\/]') {
+            $modelJson = $raw | ConvertFrom-Json
+            if ($modelJson.textures) {
+                foreach ($property in $modelJson.textures.PSObject.Properties) {
+                    $texture = [string]$property.Value
+                    if ($texture -like 'biomemakeover:*') {
+                        $texturePath = Join-Path $builtAssets ("textures/" + $texture.Substring('biomemakeover:'.Length) + '.png')
+                        if (-not (Test-Path $texturePath)) { Add-Failure "Missing internal texture reference $texture from $($resourceFile.FullName.Substring($RepositoryRoot.Length + 1))" }
+                    }
+                }
+            }
+        }
+    }
+}
+
+$configuredRoot = Join-Path $builtData 'biomemakeover/worldgen/configured_feature'
+if (Test-Path $configuredRoot) {
+    Get-ChildItem $configuredRoot -Recurse -File -Filter '*.json' | ForEach-Object {
+        $raw = Get-Content $_.FullName -Raw
+        if ($raw -match '"type"\s*:\s*"minecraft:uniform"\s*,\s*"value"\s*:') {
+            Add-Failure "Obsolete nested uniform IntProvider in $($_.FullName.Substring($RepositoryRoot.Length + 1))"
+        }
+    }
+}
+
+$registryByTagDirectory = @{
+    'block' = $blocks; 'item' = $items; 'entity_type' = $entities
+}
+Get-ChildItem $builtData -Recurse -File -Filter '*.json' | Where-Object { $_.FullName -match '[\\/]tags[\\/](block|item|entity_type|damage_type|worldgen[\\/]biome)[\\/]' } | ForEach-Object {
+    $tagFile = $_
+    $tagDirectory = [regex]::Match($tagFile.FullName, '[\\/]tags[\\/](block|item|entity_type|damage_type|worldgen[\\/]biome)[\\/]').Groups[1].Value.Replace('\', '/')
+    $tag = Get-Content $tagFile.FullName -Raw | ConvertFrom-Json
+    foreach ($entry in @($tag.values)) {
+        $id = if ($entry -is [string]) { $entry } else { [string]$entry.id }
+        if ($id -like '#biomemakeover:*') {
+            $target = $id.Substring('#biomemakeover:'.Length)
+            $targetFile = Join-Path $builtData ("biomemakeover/tags/$tagDirectory/$target.json")
+            if (-not (Test-Path $targetFile)) { Add-Failure "Missing internal tag reference $id from $($tagFile.FullName.Substring($RepositoryRoot.Length + 1))" }
+        } elseif ($id -like 'biomemakeover:*' -and $registryByTagDirectory.ContainsKey($tagDirectory)) {
+            $target = $id.Substring('biomemakeover:'.Length)
+            if ($target -notin @($registryByTagDirectory[$tagDirectory])) { Add-Failure "Tag references missing BM $tagDirectory ID $id from $($tagFile.FullName.Substring($RepositoryRoot.Length + 1))" }
+        }
+    }
+}
+
 $legacyTagFiles = Get-ChildItem (Join-Path $RepositoryRoot 'src/main/resources/data') -Recurse -File |
     Where-Object { $_.FullName -match '[\\/]tags[\\/](blocks|items)[\\/]' } | ForEach-Object {
         $_.FullName.Substring($RepositoryRoot.Length + 1).Replace('\', '/')

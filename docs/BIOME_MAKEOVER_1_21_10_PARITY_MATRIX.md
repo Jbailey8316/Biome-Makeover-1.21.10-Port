@@ -79,7 +79,7 @@ rechecked at runtime before final exclusion.
 |---|---|---|---|
 | Barrel/saguaro vegetation, paydirt, surface fossils, tumbleweed | Stage 4 registrations, mechanics, resources and four injected worldgen chains | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Runtime distribution, codec and visual checks remain |
 | Terracotta bricks and related decoration | All 17 verified families plus Cracked Bricks, recipes, loot, tags and resources | COMPATIBLE | Runtime geometry/connection/recipe checks remain |
-| Scuttler | Natural spawn, attributes, core AI/interactions, persistence, renderer/model, loot/sounds/resources | PARTIAL / NEEDS-RUNTIME-VERIFICATION | Exact flower-eating loot output and legacy animation timing require closure |
+| Scuttler | Natural spawn, attributes, core AI/interactions, Pink Bud flower-eating output, persistence, renderer/model, loot/sounds/resources | PARTIAL / NEEDS-RUNTIME-VERIFICATION | Legacy animation timing and observable AI still require runtime verification |
 | Cowboy/horse patrols and hats | Cowboy, equipment, mounted Badlands patrol injection and custom texture | PARTIAL | Historical horse hat layer and horse persistence fields remain open |
 | Ghost Town archaeology and structure loot | None | MISSING | Suspicious sand/pottery data, processors/templates, structures and loot |
 

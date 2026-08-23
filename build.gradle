@@ -5,6 +5,9 @@ plugins {
 
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import javax.imageio.ImageIO
+import java.awt.image.BufferedImage
+import java.util.zip.ZipFile
 
 version = project.mod_version
 group = project.maven_group
@@ -54,6 +57,11 @@ tasks.register('generateStage3ItemDefinitions') {
 
 tasks.register('generateStage4ItemDefinitions') {
     inputs.file('validation/foundations/stage_4_badlands_contract.json')
+    inputs.files(
+        'reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover/textures/permutations/buds/bud.png',
+        'reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover/textures/permutations/buds/color_palettes/bud_palette.png',
+        'reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover/textures/permutations/buds/color_palettes/pink_bud.png'
+    )
     outputs.dir(stage4GeneratedResources)
     doLast {
         def contract = new JsonSlurper().parse(file('validation/foundations/stage_4_badlands_contract.json'))
@@ -64,6 +72,46 @@ tasks.register('generateStage4ItemDefinitions') {
             new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson(
                 [model: [type: 'minecraft:model', model: "biomemakeover:item/${id}"]])) + System.lineSeparator()
         }
+        def clientJar = fileTree("${projectDir}/.gradle/loom-cache/minecraftMaven").matching {
+            include '**/minecraft-clientOnly-*.jar'
+        }.files.sort { it.absolutePath }.last()
+        def eggColors = [glowfish_spawn_egg:[0xdea26a,0xdea26a], scuttler_spawn_egg:[0x473427,0x806553], cowboy_spawn_egg:[0x9bc2c2,0x6b3f39]]
+        def textureOutput = stage4GeneratedResources.get().dir('assets/biomemakeover/textures/item').asFile
+        def modelOutput = stage4GeneratedResources.get().dir('assets/biomemakeover/models/item').asFile
+        textureOutput.mkdirs()
+        modelOutput.mkdirs()
+        new ZipFile(clientJar).withCloseable { zip ->
+            def template = ImageIO.read(zip.getInputStream(zip.getEntry('assets/minecraft/textures/item/pig_spawn_egg.png')))
+            eggColors.each { id, colors ->
+                def image = new BufferedImage(template.width, template.height, BufferedImage.TYPE_INT_ARGB)
+                for (int x=0; x<template.width; x++) for (int y=0; y<template.height; y++) {
+                    int argb=template.getRGB(x,y), alpha=(argb>>>24)&255
+                    if(alpha==0){image.setRGB(x,y,0);continue}
+                    int r=(argb>>>16)&255,g=(argb>>>8)&255,b=argb&255,brightness=(r+g+b)/3
+                    int target=brightness<190?colors[1]:colors[0]
+                    float shade=brightness/220F
+                    int tr=Math.min(255,Math.round(((target>>>16)&255)*shade))
+                    int tg=Math.min(255,Math.round(((target>>>8)&255)*shade))
+                    int tb=Math.min(255,Math.round((target&255)*shade))
+                    image.setRGB(x,y,(alpha<<24)|(tr<<16)|(tg<<8)|tb)
+                }
+                ImageIO.write(image,'png',new File(textureOutput,"${id}.png"))
+                new File(modelOutput,"${id}.json").text=JsonOutput.prettyPrint(JsonOutput.toJson(
+                    [parent:'minecraft:item/generated',textures:[layer0:"biomemakeover:item/${id}"]]))+System.lineSeparator()
+            }
+        }
+        def budRoot=file('reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover/textures/permutations/buds')
+        def bud=ImageIO.read(new File(budRoot,'bud.png'))
+        def sourcePalette=ImageIO.read(new File(budRoot,'color_palettes/bud_palette.png'))
+        def pinkPalette=ImageIO.read(new File(budRoot,'color_palettes/pink_bud.png'))
+        def palette=[:]
+        for(int x=0;x<sourcePalette.width;x++) for(int y=0;y<sourcePalette.height;y++) palette[sourcePalette.getRGB(x,y)]=pinkPalette.getRGB(x,y)
+        def pinkBud=new BufferedImage(bud.width,bud.height,BufferedImage.TYPE_INT_ARGB)
+        for(int x=0;x<bud.width;x++) for(int y=0;y<bud.height;y++) {
+            int color=bud.getRGB(x,y); pinkBud.setRGB(x,y,palette.containsKey(color)?palette[color]:color)
+        }
+        def budOutput=stage4GeneratedResources.get().dir('assets/biomemakeover/textures/permutations/buds').asFile
+        budOutput.mkdirs(); ImageIO.write(pinkBud,'png',new File(budOutput,'bud_pink.png'))
     }
 }
 
@@ -112,10 +160,13 @@ processResources {
         include 'assets/biomemakeover/models/item/mycelium_*.json'
         include 'assets/biomemakeover/models/item/tall_*_mushroom.json'
         include 'assets/biomemakeover/models/item/blighted_balsa*.json'
+        exclude 'assets/biomemakeover/models/item/blighted_balsa_boat.json'
+        exclude 'assets/biomemakeover/models/item/blighted_balsa_chest_boat.json'
         include 'assets/biomemakeover/models/item/*blighted_balsa*.json'
         include 'assets/biomemakeover/models/item/blighted_cobblestone*.json'
         include 'assets/biomemakeover/models/item/blighted_stone_bricks*.json'
         include 'assets/biomemakeover/models/item/glowfish*.json'
+        exclude 'assets/biomemakeover/models/item/glowfish_spawn_egg.json'
         include 'assets/biomemakeover/models/item/cooked_glowfish.json'
         include 'assets/biomemakeover/models/item/glowshroom_stew.json'
         include 'assets/biomemakeover/textures/block/*glowshroom*.png'
@@ -227,6 +278,7 @@ processResources {
         include 'assets/biomemakeover/blockstates/tumbleweed.json'
         include 'assets/biomemakeover/models/block/*terracotta_brick*.json'
         include 'assets/biomemakeover/models/block/cracked_brick*.json'
+        include 'assets/biomemakeover/models/block/decoration/cracked_bricks/**/*.json'
         include 'assets/biomemakeover/models/block/paydir*.json'
         include 'assets/biomemakeover/models/block/*cactus*.json'
         include 'assets/biomemakeover/models/block/tumbleweed.json'
@@ -235,15 +287,19 @@ processResources {
         include 'assets/biomemakeover/models/item/paydir*.json'
         include 'assets/biomemakeover/models/item/*cactus*.json'
         include 'assets/biomemakeover/models/item/scuttler_tail.json'
+        include 'assets/biomemakeover/models/item/pink_bud.json'
         include 'assets/biomemakeover/models/item/cowboy_hat.json'
-        include 'assets/biomemakeover/models/item/scuttler_spawn_egg.json'
-        include 'assets/biomemakeover/models/item/cowboy_spawn_egg.json'
         include 'assets/biomemakeover/textures/block/*terracotta_brick*.png'
         include 'assets/biomemakeover/textures/block/cracked_brick*.png'
         include 'assets/biomemakeover/textures/block/paydir*.png'
         include 'assets/biomemakeover/textures/block/*cactus*.png'
         include 'assets/biomemakeover/textures/block/tumbleweed.png'
+        include 'assets/biomemakeover/textures/block/tumbleweeb.png'
         include 'assets/biomemakeover/textures/item/scuttler_tail.png'
+        include 'assets/biomemakeover/textures/item/pink_bud.png'
+        include 'assets/biomemakeover/textures/item/bud_base.png'
+        include 'assets/biomemakeover/textures/item/mycelium_sprouts.png'
+        include 'assets/biomemakeover/textures/item/cracked_brick.png'
         include 'assets/biomemakeover/textures/item/cowboy_hat.png'
         include 'assets/biomemakeover/textures/misc/cowboy_hat.png'
         include 'assets/biomemakeover/textures/entity/scuttler.png'
@@ -262,9 +318,11 @@ processResources {
         include 'data/biomemakeover/recipes/decoration/terracotta_bricks/**/*.json'
         include 'data/biomemakeover/recipes/decoration/cracked_bricks/**/*.json'
         include 'data/biomemakeover/recipes/cracked_brick.json'
+        include 'data/biomemakeover/recipes/dye/pink_dye_from_pink_bud.json'
         include 'data/biomemakeover/advancements/biomemakeover/enter_badlands.json'
         include 'data/biomemakeover/advancements/biomemakeover/cacti.json'
         include 'data/biomemakeover/advancements/biomemakeover/scuttler_tail.json'
+        include 'data/biomemakeover/advancements/biomemakeover/pink_bud.json'
         include 'data/biomemakeover/tags/blocks/*cactus*.json'
         include 'data/biomemakeover/tags/items/scuttler_food.json'
         include 'data/biomemakeover/tags/items/barrel_cactus_immune.json'
@@ -272,6 +330,7 @@ processResources {
         include 'data/biomemakeover/tags/damage_type/scuttler_immune_to.json'
         include 'data/biomemakeover/tags/damage_type/tumbleweed_immune_to.json'
         include 'data/biomemakeover/tags/worldgen/biome/spawns_tumbleweed.json'
+        include 'data/biomemakeover/tags/worldgen/biome/badlands.json'
         eachFile { details ->
             details.path = details.path.replace('/loot_tables/','/loot_table/').replace('/recipes/','/recipe/')
                 .replace('/advancements/','/advancement/').replace('/tags/blocks/','/tags/block/').replace('/tags/items/','/tags/item/')
@@ -291,12 +350,23 @@ processResources {
         def langOut = new File(destinationDir, 'assets/biomemakeover/lang/en_us.json')
         def currentLang = langOut.exists() ? new JsonSlurper().parse(langOut) : [:]
         def historicalLang = new JsonSlurper().parse(new File(historicalRoot, 'lang/en_us.json'))
-        def stage4Tokens = ['badlands','terracotta_brick','cracked_brick','paydirt','saguaro','barrel_cactus','scuttler','cowboy','tumbleweed']
+        def stage4Tokens = ['badlands','terracotta_brick','cracked_brick','paydirt','saguaro','barrel_cactus','scuttler','pink_bud','cowboy','tumbleweed']
         historicalLang.each { key, value -> if (stage4Tokens.any { key.contains(it) }) currentLang[key] = value }
         langOut.text = JsonOutput.prettyPrint(JsonOutput.toJson(currentLang)) + System.lineSeparator()
     }
 
     doLast {
+        def configuredRoot = destinationDir.toPath().resolve('data/biomemakeover/worldgen/configured_feature').toFile()
+        if (configuredRoot.exists()) {
+            fileTree(configuredRoot).matching { include '**/*.json' }.files.each { configuredFile ->
+                def configured = new JsonSlurper().parse(configuredFile)
+                def radius = configured.config?.xz_radius
+                if (radius instanceof Map && radius.type == 'minecraft:uniform' && radius.value instanceof Map) {
+                    radius.putAll(radius.remove('value'))
+                    configuredFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(configured)) + System.lineSeparator()
+                }
+            }
+        }
         def recipeRoot = destinationDir.toPath().resolve('data/biomemakeover/recipe').toFile()
         if (recipeRoot.exists()) {
             fileTree(recipeRoot).matching { include '**/*.json' }.files.each { recipeFile ->
@@ -331,7 +401,10 @@ processResources {
             }
         }
         def contract = new JsonSlurper().parse(file('validation/foundations/stage_3_mushroom_fields_contract.json'))
-        def allowed = (contract.blocks + contract.no_item_blocks + contract.standalone_items + contract.spawn_eggs + contract.entities) as Set
+        def stage4Contract = new JsonSlurper().parse(file('validation/foundations/stage_4_badlands_contract.json'))
+        def allowed = (contract.blocks + contract.no_item_blocks + contract.standalone_items + contract.spawn_eggs + contract.entities +
+            stage4Contract.registry.blocks_with_items + stage4Contract.registry.no_item_blocks + stage4Contract.registry.items +
+            stage4Contract.registry.spawn_eggs + stage4Contract.registry.entities) as Set
         def minecraftTags = destinationDir.toPath().resolve('data/minecraft/tags').toFile()
         if (minecraftTags.exists()) {
             fileTree(minecraftTags).matching { include '**/*.json' }.files.each { tagFile ->
@@ -339,6 +412,7 @@ processResources {
                 if (tag.values instanceof List) {
                     tag.values = tag.values.findAll { entry ->
                         def id = entry instanceof Map ? entry.id : entry
+                        if (id == '#biomemakeover:tapestries') return false
                         !id?.startsWith('biomemakeover:') || allowed.contains(id.substring('biomemakeover:'.length()))
                     }
                     tagFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(tag)) + System.lineSeparator()

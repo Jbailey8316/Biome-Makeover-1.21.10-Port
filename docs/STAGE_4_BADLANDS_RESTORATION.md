@@ -32,7 +32,7 @@ plural base (`terracotta_bricks`) and singular decoration suffixes (`terracotta_
 
 This restores 72 masonry blocks. With Paydirt, three cactus blocks, the no-item Tumbleweed render block,
 and three no-item flowerpots, the Stage 4 block delta is 80. Ordinary block items number 76; three
-standalone items and two spawn eggs bring the item delta to 81.
+standalone items, Pink Bud, and two spawn eggs bring the item delta to 82 after runtime gap closure.
 
 ## C. Blocks, items, vegetation, and mechanics
 
@@ -41,7 +41,8 @@ standalone items and two spawn eggs bring the item delta to 81.
   released plantable-on tag contract.
 - Barrel Cactus retains its compact collision shape, careful-walking exemption, young/tagged-item
   immunity, random flowering, flower particles, and cactus damage.
-- Scuttler Tail, Cowboy Hat, and Cracked Brick use historical IDs. The tail's Antidote brewing/progression
+- Scuttler Tail, Pink Bud, Cowboy Hat, and Cracked Brick use historical IDs. Pink Bud is the released
+  Scuttler flower-eating output and food/immunity contract. The tail's Antidote brewing/progression
   dependency remains with its cross-theme Witch/progression owner rather than introducing a partial potion.
 - Transparent cacti are explicitly registered on the current cutout layer.
 
@@ -92,7 +93,7 @@ Generated item definitions are deterministic. Ghost Town/archaeology data is exc
 ## G. Registry and existing-world safety
 
 Before: 100 blocks, 100 items, 2 entities, 8 sounds, 28 configured features, 25 placed features, 14
-injected feature keys. After: 180 blocks, 181 items, 5 entities, 14 sounds, 32 configured features, 29
+injected feature keys. After runtime gap closure: 180 blocks, 182 items, 5 entities, 14 sounds, 32 configured features, 29
 placed features, 18 injected keys. This is additive: no existing ID was removed, renamed, or repurposed.
 
 Placed features affect newly generated Badlands terrain only. No retro-generation or existing-chunk rewrite

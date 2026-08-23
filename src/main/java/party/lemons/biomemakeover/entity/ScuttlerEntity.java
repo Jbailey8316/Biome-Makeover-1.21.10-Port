@@ -40,6 +40,8 @@ import org.jetbrains.annotations.Nullable;
 import party.lemons.biomemakeover.init.BMEntities;
 import party.lemons.biomemakeover.init.BMSounds;
 import party.lemons.biomemakeover.init.BMBlocks;
+import party.lemons.biomemakeover.init.BMItems;
+import net.minecraft.world.level.block.Block;
 import java.util.EnumSet;
 
 public final class ScuttlerEntity extends Animal {
@@ -92,7 +94,7 @@ public final class ScuttlerEntity extends Animal {
             for(BlockPos pos:BlockPos.betweenClosed(center.offset(-8,-3,-8),center.offset(8,3,8))) if(level().getBlockState(pos).is(BMBlocks.BARREL_CACTUS_FLOWERED)){target=pos.immutable();return true;}
             return false;
         }
-        @Override public void tick(){ if(target==null)return; getNavigation().moveTo(target.getX()+.5,target.getY(),target.getZ()+.5,1); if(blockPosition().closerThan(target,2)){level().setBlock(target,BMBlocks.BARREL_CACTUS.defaultBlockState(),3);level().blockEvent(target,BMBlocks.BARREL_CACTUS,1,0);target=null;} }
+        @Override public void tick(){ if(target==null)return; getNavigation().moveTo(target.getX()+.5,target.getY(),target.getZ()+.5,1); if(blockPosition().closerThan(target,2)){level().setBlock(target,BMBlocks.BARREL_CACTUS.defaultBlockState(),3);level().blockEvent(target,BMBlocks.BARREL_CACTUS,1,0);Block.popResource(level(),target,new ItemStack(BMItems.PINK_BUD,1+random.nextInt(2)));target=null;} }
         @Override public boolean canContinueToUse(){return target!=null&&level().getBlockState(target).is(BMBlocks.BARREL_CACTUS_FLOWERED);}
     }
 }
