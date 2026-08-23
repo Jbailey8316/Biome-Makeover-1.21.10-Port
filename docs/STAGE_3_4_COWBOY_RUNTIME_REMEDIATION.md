@@ -163,3 +163,9 @@ attachment now retains the released head transform, `-0.4` lift, then `-25` degr
 `+1.5 / 16` (`3/32`) local Z to center the hat over that skull geometry rather than over the forward edge. This value
 comes from the authoritative model cuboid, not visual tuning. Shared model/texture/UVs, scales, Cowboy/player paths,
 synchronized state and all patrol/captain behavior remain unchanged; runtime visual acceptance is still required.
+
+Prism confirmed the `3/32` Z correction, animated head tracking and orientation. The remaining forward-brim overlap was
+vertical only. With the horse skull top at local Y `-11`, the hat brim center remains approximately one model pixel
+below that surface after the historical hat scale and leveling rotation. The horse-only lift therefore adds exactly
+one model pixel (`1/16`) upward to the released `-0.4` Y translation. Z, rotation, scale, transform order, ear exposure,
+shared geometry and every non-horse render/gameplay path remain frozen pending the final visual check.
