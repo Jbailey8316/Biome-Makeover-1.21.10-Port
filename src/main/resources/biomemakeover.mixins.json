@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "party.lemons.biomemakeover.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["MyceliumBlockMixin"],
+  "injectors": {"defaultRequire": 1}
+}

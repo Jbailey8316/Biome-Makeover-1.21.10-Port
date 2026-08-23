@@ -24,6 +24,27 @@
         "polished_mesmerite", "polished_mesmerite_slab", "polished_mesmerite_stairs",
         "polished_mesmerite_wall"
       ]
-    }
+    },
+    {
+      "name": "stage_3_blighted_balsa_wood_blocks",
+      "base": "blighted_balsa",
+      "members": [
+        "blighted_balsa_button", "blighted_balsa_door", "blighted_balsa_fence", "blighted_balsa_fence_gate",
+        "blighted_balsa_hanging_sign", "blighted_balsa_log", "blighted_balsa_planks",
+        "blighted_balsa_pressure_plate", "blighted_balsa_sign", "blighted_balsa_slab",
+        "blighted_balsa_stairs", "blighted_balsa_trapdoor", "blighted_balsa_wall_hanging_sign",
+        "blighted_balsa_wall_sign", "blighted_balsa_wood", "stripped_blighted_balsa_log",
+        "stripped_blighted_balsa_wood"
+      ]
+    },
+    {"name":"stage_3_blighted_cobblestone_decoration","base":"blighted_cobblestone","members":["blighted_cobblestone","blighted_cobblestone_slab","blighted_cobblestone_stairs","blighted_cobblestone_wall"]},
+    {"name":"stage_3_blighted_stone_bricks_decoration","base":"blighted_stone_bricks","members":["blighted_stone_bricks","blighted_stone_bricks_slab","blighted_stone_bricks_stairs","blighted_stone_bricks_wall"]},
+    {"name":"stage_3_brown_mushroom_brick_decoration","base":"brown_mushroom_brick","members":["brown_mushroom_brick","brown_mushroom_brick_slab","brown_mushroom_brick_stairs","brown_mushroom_brick_wall"]},
+    {"name":"stage_3_glowshroom_stem_brick_decoration","base":"glowshroom_stem_brick","members":["glowshroom_stem_brick","glowshroom_stem_brick_slab","glowshroom_stem_brick_stairs","glowshroom_stem_brick_wall"]},
+    {"name":"stage_3_green_glowshroom_brick_decoration","base":"green_glowshroom_brick","members":["green_glowshroom_brick","green_glowshroom_brick_slab","green_glowshroom_brick_stairs","green_glowshroom_brick_wall"]},
+    {"name":"stage_3_mushroom_stem_brick_decoration","base":"mushroom_stem_brick","members":["mushroom_stem_brick","mushroom_stem_brick_slab","mushroom_stem_brick_stairs","mushroom_stem_brick_wall"]},
+    {"name":"stage_3_orange_glowshroom_brick_decoration","base":"orange_glowshroom_brick","members":["orange_glowshroom_brick","orange_glowshroom_brick_slab","orange_glowshroom_brick_stairs","orange_glowshroom_brick_wall"]},
+    {"name":"stage_3_purple_glowshroom_brick_decoration","base":"purple_glowshroom_brick","members":["purple_glowshroom_brick","purple_glowshroom_brick_slab","purple_glowshroom_brick_stairs","purple_glowshroom_brick_wall"]},
+    {"name":"stage_3_red_mushroom_brick_decoration","base":"red_mushroom_brick","members":["red_mushroom_brick","red_mushroom_brick_slab","red_mushroom_brick_stairs","red_mushroom_brick_wall"]}
   ]
 }

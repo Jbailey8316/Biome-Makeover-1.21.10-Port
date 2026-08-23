@@ -17,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.entity.OwlEntity;
+import party.lemons.biomemakeover.entity.GlowfishEntity;
 
 public final class BMEntities {
     public static final EntityType<OwlEntity> OWL = registerEntity(
@@ -27,6 +28,10 @@ public final class BMEntities {
     );
 
     public static final Item OWL_SPAWN_EGG = registerSpawnEgg("owl_spawn_egg", OWL);
+    public static final EntityType<GlowfishEntity> GLOWFISH = registerEntity(
+        "glowfish", EntityType.Builder.<GlowfishEntity>of(GlowfishEntity::new, MobCategory.WATER_AMBIENT)
+            .sized(0.7F, 0.4F).clientTrackingRange(4));
+    public static final Item GLOWFISH_SPAWN_EGG = registerSpawnEgg("glowfish_spawn_egg", GLOWFISH);
 
     private BMEntities() {
     }
@@ -49,13 +54,16 @@ public final class BMEntities {
 
     public static void initialize() {
         FabricDefaultAttributeRegistry.register(OWL, OwlEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(GLOWFISH, GlowfishEntity.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,
             Heightmap.Types.MOTION_BLOCKING,
             OwlEntity::checkOwlSpawnRules
         );
+        SpawnPlacements.register(GLOWFISH, SpawnPlacementTypes.IN_WATER,
+            Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, net.minecraft.world.entity.animal.WaterAnimal::checkSurfaceWaterAnimalSpawnRules);
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS)
-            .register(entries -> entries.accept(OWL_SPAWN_EGG));
+            .register(entries -> { entries.accept(OWL_SPAWN_EGG); entries.accept(GLOWFISH_SPAWN_EGG); });
     }
 }

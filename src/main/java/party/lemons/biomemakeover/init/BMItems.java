@@ -8,25 +8,64 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.MobBucketItem;
+import net.minecraft.world.item.SignItem;
+import net.minecraft.world.item.HangingSignItem;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.Consumables;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.sounds.SoundEvents;
 import party.lemons.biomemakeover.BiomeMakeover;
+import party.lemons.biomemakeover.item.GlowfishBucketItem;
 
 public final class BMItems {
     public static final Item LEAF_LITTER = register("leaf_litter");
     public static final Item OWL_EGG = register("owl_egg");
+    private static final FoodProperties GLOWFISH_FOOD = new FoodProperties(1, 0.1F, true);
+    private static final FoodProperties COOKED_GLOWFISH_FOOD = new FoodProperties(5, 0.6F, true);
+    private static final Consumable GLOWFISH_CONSUMABLE = glowingFood(200, 0.5F);
+    private static final Consumable STEW_CONSUMABLE = glowingFood(1200, 1.0F);
+    public static final Item GLOWSHROOM_STEW = register("glowshroom_stew", p -> new Item(p.stacksTo(1)
+        .usingConvertsTo(Items.BOWL).food(COOKED_GLOWFISH_FOOD, STEW_CONSUMABLE)));
+    public static final Item GLOWFISH = register("glowfish", p -> new Item(p.food(GLOWFISH_FOOD, GLOWFISH_CONSUMABLE)));
+    public static final Item COOKED_GLOWFISH = register("cooked_glowfish", p -> new Item(p.food(COOKED_GLOWFISH_FOOD, GLOWFISH_CONSUMABLE)));
+    public static final Item GLOWFISH_BUCKET = register("glowfish_bucket", p -> new GlowfishBucketItem(
+        BMEntities.GLOWFISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p.stacksTo(1)));
+    public static final Item BLIGHTED_BALSA_SIGN = register("blighted_balsa_sign", p -> new SignItem(
+        BMBlocks.BLIGHTED_BALSA_SIGN, BMBlocks.BLIGHTED_BALSA_WALL_SIGN, p.stacksTo(16)));
+    public static final Item BLIGHTED_BALSA_HANGING_SIGN = register("blighted_balsa_hanging_sign", p -> new HangingSignItem(
+        BMBlocks.BLIGHTED_BALSA_HANGING_SIGN, BMBlocks.BLIGHTED_BALSA_WALL_HANGING_SIGN, p.stacksTo(16)));
 
     private BMItems() {}
 
     private static Item register(String name) {
+        return register(name, Item::new);
+    }
+
+    private static Item register(String name, java.util.function.Function<Item.Properties, Item> factory) {
         ResourceLocation id = BiomeMakeover.id(name);
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
         return Registry.register(BuiltInRegistries.ITEM, key,
-            new Item(new Item.Properties().setId(key)));
+            factory.apply(new Item.Properties().setId(key)));
+    }
+
+    private static Consumable glowingFood(int duration, float probability) {
+        return Consumables.defaultFood()
+            .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, duration), probability))
+            .onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.GLOWING, duration), probability))
+            .build();
     }
 
     public static void initialize() {
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(entries -> {
             entries.accept(LEAF_LITTER);
             entries.accept(OWL_EGG);
+            entries.accept(GLOWSHROOM_STEW); entries.accept(GLOWFISH); entries.accept(COOKED_GLOWFISH); entries.accept(GLOWFISH_BUCKET);
         });
     }
 }

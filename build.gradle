@@ -3,6 +3,9 @@ plugins {
     id 'maven-publish'
 }
 
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
 version = project.mod_version
 group = project.maven_group
 
@@ -32,10 +35,219 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
+def stage3GeneratedResources = layout.buildDirectory.dir('generated/stage3Resources')
+tasks.register('generateStage3ItemDefinitions') {
+    inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
+    outputs.dir(stage3GeneratedResources)
+    doLast {
+        def contract = new JsonSlurper().parse(file('validation/foundations/stage_3_mushroom_fields_contract.json'))
+        def ids = (contract.blocks + contract.standalone_items + contract.spawn_eggs).unique().sort()
+        def output = stage3GeneratedResources.get().dir('assets/biomemakeover/items').asFile
+        output.mkdirs()
+        ids.each { id ->
+            def definition = [model: [type: 'minecraft:model', model: "biomemakeover:item/${id}"]]
+            new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson(definition)) + System.lineSeparator()
+        }
+    }
+}
+
 processResources {
+    dependsOn tasks.named('generateStage3ItemDefinitions')
+    from(stage3GeneratedResources)
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
+    }
+
+    // Stage 3 parity resources are sourced verbatim from the pinned, tracked
+    // 1.20.1 release tree. The includes are deliberately ownership-scoped;
+    // structures and unrelated biome themes are excluded.
+    from('reference/Biome-Makeover-1.20/common/src/main/resources') {
+        include 'assets/biomemakeover/blockstates/*glowshroom*.json'
+        include 'assets/biomemakeover/blockstates/*mushroom_brick*.json'
+        include 'assets/biomemakeover/blockstates/*mushroom_stem_brick*.json'
+        include 'assets/biomemakeover/blockstates/glowshroom_stem*.json'
+        include 'assets/biomemakeover/blockstates/mycelium_*.json'
+        include 'assets/biomemakeover/blockstates/*mycelium_*.json'
+        include 'assets/biomemakeover/blockstates/potted_wild_mushrooms.json'
+        include 'assets/biomemakeover/blockstates/tall_*_mushroom.json'
+        include 'assets/biomemakeover/blockstates/blighted_balsa*.json'
+        include 'assets/biomemakeover/blockstates/*blighted_balsa*.json'
+        include 'assets/biomemakeover/blockstates/blighted_cobblestone*.json'
+        include 'assets/biomemakeover/blockstates/blighted_stone_bricks*.json'
+        include 'assets/biomemakeover/models/block/*glowshroom*.json'
+        include 'assets/biomemakeover/models/block/*mushroom_brick*.json'
+        include 'assets/biomemakeover/models/block/*mushroom_stem_brick*.json'
+        include 'assets/biomemakeover/models/block/glowshroom_stem*.json'
+        include 'assets/biomemakeover/models/block/mycelium_*.json'
+        include 'assets/biomemakeover/models/block/*mycelium_*.json'
+        include 'assets/biomemakeover/models/block/potted_wild_mushrooms.json'
+        include 'assets/biomemakeover/models/block/tall_*_mushroom*.json'
+        include 'assets/biomemakeover/models/block/blighted_balsa*.json'
+        include 'assets/biomemakeover/models/block/*blighted_balsa*.json'
+        include 'assets/biomemakeover/models/block/blighted_cobblestone*.json'
+        include 'assets/biomemakeover/models/block/blighted_stone_bricks*.json'
+        include 'assets/biomemakeover/models/item/*glowshroom*.json'
+        include 'assets/biomemakeover/models/item/*mushroom_brick*.json'
+        include 'assets/biomemakeover/models/item/*mushroom_stem_brick*.json'
+        include 'assets/biomemakeover/models/item/glowshroom_stem*.json'
+        include 'assets/biomemakeover/models/item/mycelium_*.json'
+        include 'assets/biomemakeover/models/item/tall_*_mushroom.json'
+        include 'assets/biomemakeover/models/item/blighted_balsa*.json'
+        include 'assets/biomemakeover/models/item/*blighted_balsa*.json'
+        include 'assets/biomemakeover/models/item/blighted_cobblestone*.json'
+        include 'assets/biomemakeover/models/item/blighted_stone_bricks*.json'
+        include 'assets/biomemakeover/models/item/glowfish*.json'
+        include 'assets/biomemakeover/models/item/cooked_glowfish.json'
+        include 'assets/biomemakeover/models/item/glowshroom_stew.json'
+        include 'assets/biomemakeover/textures/block/*glowshroom*.png'
+        include 'assets/biomemakeover/textures/block/*mushroom_brick*.png'
+        include 'assets/biomemakeover/textures/block/*mushroom_stem_brick*.png'
+        include 'assets/biomemakeover/textures/block/glowshroom_stem*.png'
+        include 'assets/biomemakeover/textures/block/mycelium_*.png'
+        include 'assets/biomemakeover/textures/block/*mycelium_*.png'
+        include 'assets/biomemakeover/textures/block/wild_mushrooms_potted.png'
+        include 'assets/biomemakeover/textures/block/tall_*_mushroom*.png'
+        include 'assets/biomemakeover/textures/block/blighted_balsa*.png'
+        include 'assets/biomemakeover/textures/block/*blighted_balsa*.png'
+        include 'assets/biomemakeover/textures/block/blighted_cobblestone.png'
+        include 'assets/biomemakeover/textures/block/blighted_stone_bricks.png'
+        include 'assets/biomemakeover/textures/item/glowfish*.png'
+        include 'assets/biomemakeover/textures/item/cooked_glowfish.png'
+        include 'assets/biomemakeover/textures/item/glowshroom_stew.png'
+        include 'assets/biomemakeover/textures/item/blighted_balsa_sign.png'
+        include 'assets/biomemakeover/textures/item/blighted_balsa_hanging_sign.png'
+        include 'assets/biomemakeover/textures/item/blighted_balsa_door.png'
+        include 'assets/biomemakeover/textures/entity/glow_fish.png'
+        include 'assets/biomemakeover/textures/entity/signs/blighted_balsa.png'
+        include 'assets/biomemakeover/textures/entity/signs/hanging/blighted_balsa.png'
+        include 'assets/biomemakeover/textures/gui/hanging_signs/blighted_balsa.png'
+        include 'data/biomemakeover/worldgen/configured_feature/mushroom_fields/*.json'
+        include 'data/biomemakeover/worldgen/placed_feature/mushroom_fields/*.json'
+        include 'data/biomemakeover/loot_tables/entities/glowfish.json'
+        include 'data/biomemakeover/loot_tables/blocks/*glowshroom*.json'
+        include 'data/biomemakeover/loot_tables/blocks/*mushroom_brick*.json'
+        include 'data/biomemakeover/loot_tables/blocks/*mushroom_stem_brick*.json'
+        include 'data/biomemakeover/loot_tables/blocks/glowshroom_stem*.json'
+        include 'data/biomemakeover/loot_tables/blocks/mycelium_*.json'
+        include 'data/biomemakeover/loot_tables/blocks/*mycelium_*.json'
+        include 'data/biomemakeover/loot_tables/blocks/potted_wild_mushrooms.json'
+        include 'data/biomemakeover/loot_tables/blocks/tall_*_mushroom.json'
+        include 'data/biomemakeover/loot_tables/blocks/blighted_balsa*.json'
+        include 'data/biomemakeover/loot_tables/blocks/*blighted_balsa*.json'
+        include 'data/biomemakeover/loot_tables/blocks/blighted_cobblestone*.json'
+        include 'data/biomemakeover/loot_tables/blocks/blighted_stone_bricks*.json'
+        include 'data/biomemakeover/recipes/**/*glowshroom*.json'
+        include 'data/biomemakeover/recipes/**/*mushroom_brick*.json'
+        include 'data/biomemakeover/recipes/**/glowshroom_stem*.json'
+        include 'data/biomemakeover/recipes/**/blighted_balsa*.json'
+        include 'data/biomemakeover/recipes/**/blighted_cobblestone*.json'
+        include 'data/biomemakeover/recipes/**/blighted_stone_brick*.json'
+        include 'data/biomemakeover/recipes/**/cooked_glowfish*.json'
+        include 'data/biomemakeover/recipes/**/glowshroom_stew*.json'
+        include 'data/biomemakeover/advancements/biomemakeover/enter_mushroom_fields.json'
+        include 'data/biomemakeover/advancements/biomemakeover/all_glowshrooms.json'
+        include 'data/biomemakeover/advancements/biomemakeover/blighted_balsa_sapling.json'
+        include 'data/biomemakeover/advancements/biomemakeover/blighted_stone.json'
+        include 'data/biomemakeover/advancements/biomemakeover/glowfish_save.json'
+        include 'data/biomemakeover/advancements/biomemakeover/glowshroom_stew.json'
+        include 'data/biomemakeover/advancements/recipes/**/*glowshroom*.json'
+        include 'data/biomemakeover/advancements/recipes/**/*mushroom_brick*.json'
+        include 'data/biomemakeover/advancements/recipes/**/glowshroom_stem*.json'
+        include 'data/biomemakeover/advancements/recipes/**/blighted_balsa*.json'
+        include 'data/biomemakeover/advancements/recipes/**/blighted_cobblestone*.json'
+        include 'data/biomemakeover/advancements/recipes/**/blighted_stone_brick*.json'
+        include 'data/biomemakeover/advancements/recipes/**/cooked_glowfish*.json'
+        include 'data/biomemakeover/advancements/recipes/**/glowshroom_stew*.json'
+        include 'data/minecraft/tags/blocks/ceiling_hanging_signs.json'
+        include 'data/minecraft/tags/blocks/combination_step_sound_blocks.json'
+        include 'data/minecraft/tags/blocks/fence_gates.json'
+        include 'data/minecraft/tags/blocks/flower_pots.json'
+        include 'data/minecraft/tags/blocks/leaves.json'
+        include 'data/minecraft/tags/blocks/planks.json'
+        include 'data/minecraft/tags/blocks/replaceable.json'
+        include 'data/minecraft/tags/blocks/replaceable_by_trees.json'
+        include 'data/minecraft/tags/blocks/saplings.json'
+        include 'data/minecraft/tags/blocks/slabs.json'
+        include 'data/minecraft/tags/blocks/stairs.json'
+        include 'data/minecraft/tags/blocks/standing_signs.json'
+        include 'data/minecraft/tags/blocks/wall_hanging_signs.json'
+        include 'data/minecraft/tags/blocks/wall_signs.json'
+        include 'data/minecraft/tags/blocks/wooden_*.json'
+        include 'data/minecraft/tags/blocks/mineable/axe.json'
+        include 'data/minecraft/tags/blocks/mineable/hoe.json'
+        include 'data/minecraft/tags/blocks/mineable/pickaxe.json'
+        include 'data/minecraft/tags/entity_types/axolotl_hunt_targets.json'
+        include 'data/minecraft/tags/items/fishes.json'
+        include 'data/minecraft/tags/items/hanging_signs.json'
+        include 'data/minecraft/tags/items/leaves.json'
+        include 'data/minecraft/tags/items/planks.json'
+        include 'data/minecraft/tags/items/saplings.json'
+        include 'data/minecraft/tags/items/signs.json'
+        include 'data/minecraft/tags/items/slabs.json'
+        include 'data/minecraft/tags/items/stairs.json'
+        include 'data/minecraft/tags/items/walls.json'
+        include 'data/minecraft/tags/items/wooden_*.json'
+        eachFile { details ->
+            details.path = details.path
+                .replace('/loot_tables/', '/loot_table/')
+                .replace('/recipes/', '/recipe/')
+                .replace('/advancements/', '/advancement/')
+                .replace('/tags/blocks/', '/tags/block/')
+                .replace('/tags/items/', '/tags/item/')
+                .replace('/tags/entity_types/', '/tags/entity_type/')
+        }
+    }
+
+    doLast {
+        def recipeRoot = destinationDir.toPath().resolve('data/biomemakeover/recipe').toFile()
+        if (recipeRoot.exists()) {
+            fileTree(recipeRoot).matching { include '**/*.json' }.files.each { recipeFile ->
+                def recipe = new JsonSlurper().parse(recipeFile)
+                def ingredient = { value ->
+                    if (value instanceof Map && value.item) return value.item
+                    if (value instanceof Map && value.tag) return "#${value.tag}"
+                    return value
+                }
+                if (recipe.key instanceof Map) recipe.key.replaceAll { k, v -> ingredient(v) }
+                if (recipe.ingredient != null) recipe.ingredient = ingredient(recipe.ingredient)
+                if (recipe.ingredients instanceof List) recipe.ingredients = recipe.ingredients.collect { ingredient(it) }
+                if (recipe.result instanceof Map && recipe.result.item) {
+                    recipe.result.id = recipe.result.remove('item')
+                }
+                recipeFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(recipe)) + System.lineSeparator()
+            }
+        }
+        def advancementRoot = destinationDir.toPath().resolve('data/biomemakeover/advancement').toFile()
+        if (advancementRoot.exists()) {
+            fileTree(advancementRoot).matching { include '**/*.json' }.files.each { advancementFile ->
+                def advancement = new JsonSlurper().parse(advancementFile)
+                if (advancement.display?.icon instanceof Map && advancement.display.icon.item) {
+                    advancement.display.icon.id = advancement.display.icon.remove('item')
+                }
+                advancement.criteria?.values()?.each { criterion ->
+                    criterion.conditions?.items?.each { predicate ->
+                        if (predicate.items instanceof List && predicate.items.size() == 1) predicate.items = predicate.items[0]
+                    }
+                }
+                advancementFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(advancement)) + System.lineSeparator()
+            }
+        }
+        def contract = new JsonSlurper().parse(file('validation/foundations/stage_3_mushroom_fields_contract.json'))
+        def allowed = (contract.blocks + contract.no_item_blocks + contract.standalone_items + contract.spawn_eggs + contract.entities) as Set
+        def minecraftTags = destinationDir.toPath().resolve('data/minecraft/tags').toFile()
+        if (minecraftTags.exists()) {
+            fileTree(minecraftTags).matching { include '**/*.json' }.files.each { tagFile ->
+                def tag = new JsonSlurper().parse(tagFile)
+                if (tag.values instanceof List) {
+                    tag.values = tag.values.findAll { entry ->
+                        def id = entry instanceof Map ? entry.id : entry
+                        !id?.startsWith('biomemakeover:') || allowed.contains(id.substring('biomemakeover:'.length()))
+                    }
+                    tagFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(tag)) + System.lineSeparator()
+                }
+            }
+        }
     }
 }
 

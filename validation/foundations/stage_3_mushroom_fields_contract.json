@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "historical_source_commit": "2f314c0596af095a4890995a465f308f69476b4a",
+  "blocks": [
+    "blighted_balsa_button", "blighted_balsa_door", "blighted_balsa_fence", "blighted_balsa_fence_gate",
+    "blighted_balsa_leaves", "blighted_balsa_log", "blighted_balsa_planks", "blighted_balsa_pressure_plate",
+    "blighted_balsa_sapling", "blighted_balsa_slab", "blighted_balsa_stairs", "blighted_balsa_trapdoor",
+    "blighted_balsa_wood", "blighted_cobblestone", "blighted_cobblestone_slab",
+    "blighted_cobblestone_stairs", "blighted_cobblestone_wall", "blighted_stone_bricks",
+    "blighted_stone_bricks_slab", "blighted_stone_bricks_stairs", "blighted_stone_bricks_wall",
+    "brown_mushroom_brick", "brown_mushroom_brick_slab", "brown_mushroom_brick_stairs",
+    "brown_mushroom_brick_wall", "glowshroom_stem", "glowshroom_stem_brick",
+    "glowshroom_stem_brick_slab", "glowshroom_stem_brick_stairs", "glowshroom_stem_brick_wall",
+    "green_glowshroom", "green_glowshroom_block", "green_glowshroom_brick",
+    "green_glowshroom_brick_slab", "green_glowshroom_brick_stairs", "green_glowshroom_brick_wall",
+    "mushroom_stem_brick", "mushroom_stem_brick_slab", "mushroom_stem_brick_stairs",
+    "mushroom_stem_brick_wall", "mycelium_roots", "mycelium_sprouts", "orange_glowshroom",
+    "orange_glowshroom_block", "orange_glowshroom_brick", "orange_glowshroom_brick_slab",
+    "orange_glowshroom_brick_stairs", "orange_glowshroom_brick_wall", "purple_glowshroom",
+    "purple_glowshroom_block", "purple_glowshroom_brick", "purple_glowshroom_brick_slab",
+    "purple_glowshroom_brick_stairs", "purple_glowshroom_brick_wall", "red_mushroom_brick",
+    "red_mushroom_brick_slab", "red_mushroom_brick_stairs", "red_mushroom_brick_wall",
+    "stripped_blighted_balsa_log", "stripped_blighted_balsa_wood", "tall_brown_mushroom", "tall_red_mushroom"
+  ],
+  "standalone_items": ["blighted_balsa_hanging_sign", "blighted_balsa_sign", "cooked_glowfish", "glowfish", "glowfish_bucket", "glowshroom_stew"],
+  "no_item_blocks": [
+    "blighted_balsa_hanging_sign", "blighted_balsa_sign", "blighted_balsa_wall_hanging_sign",
+    "blighted_balsa_wall_sign", "potted_blighted_balsa_sapling", "potted_green_glowshroom", "potted_mycelium_roots",
+    "potted_orange_glowshroom", "potted_purple_glowshroom", "potted_wild_mushrooms"
+  ],
+  "entities": ["glowfish"],
+  "spawn_eggs": ["glowfish_spawn_egg"],
+  "configured_features": [
+    "mushroom_fields/blighted_balsa", "mushroom_fields/blighted_balsa_trees", "mushroom_fields/green_glowshrooms",
+    "mushroom_fields/huge_green_glowshroom", "mushroom_fields/huge_orange_glowshroom",
+    "mushroom_fields/huge_purple_glowshroom", "mushroom_fields/mycelium_roots",
+    "mushroom_fields/mycelium_sprouts", "mushroom_fields/orange_glowshrooms",
+    "mushroom_fields/purple_glowshrooms", "mushroom_fields/tall_brown_mushrooms",
+    "mushroom_fields/tall_red_mushrooms", "mushroom_fields/underground_huge_glowshrooms",
+    "mushroom_fields/underground_mycelium", "mushroom_fields/underground_vegetation"
+  ],
+  "placed_features": [
+    "mushroom_fields/blighted_balsa_checked", "mushroom_fields/blighted_balsa_trees",
+    "mushroom_fields/green_glowshrooms", "mushroom_fields/mycelium_roots",
+    "mushroom_fields/mycelium_sprouts", "mushroom_fields/orange_glowshrooms",
+    "mushroom_fields/purple_glowshrooms", "mushroom_fields/tall_brown_mushrooms",
+    "mushroom_fields/tall_red_mushrooms", "mushroom_fields/underground_huge_glowshrooms",
+    "mushroom_fields/underground_mycelium", "mushroom_fields/wild_mushrooms"
+  ],
+  "custom_feature_types": ["grass_patch", "huge_green_glowshroom", "huge_orange_glowshroom", "huge_purple_glowshroom", "orange_glowshroom"],
+  "custom_trunk_placers": ["blighted_balsa"],
+  "deferred_released_ids": [
+    "blighted_balsa_boat", "blighted_balsa_chest_boat", "button_mushrooms_music_disk"
+  ],
+  "excluded_unreachable_entities": ["blightbat", "mushroom_trader"]
+}

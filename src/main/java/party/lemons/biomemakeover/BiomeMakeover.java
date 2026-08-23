@@ -9,6 +9,8 @@ import party.lemons.biomemakeover.init.BMEntities;
 import party.lemons.biomemakeover.init.BMItems;
 import party.lemons.biomemakeover.init.BMWorldgen;
 import party.lemons.biomemakeover.init.BMSounds;
+import party.lemons.biomemakeover.init.BMFeatures;
+import party.lemons.biomemakeover.init.BMAdvancements;
 
 public final class BiomeMakeover implements ModInitializer {
     public static final String MOD_ID = "biomemakeover";
@@ -23,6 +25,8 @@ public final class BiomeMakeover implements ModInitializer {
         BMBlocks.initialize();
         BMItems.initialize();
         BMSounds.initialize();
+        BMFeatures.initialize();
+        BMAdvancements.initialize();
         BMEntities.initialize();
         BMWorldgen.initialize();
         LOGGER.info("Biome Makeover owl nest full-test build loaded.");

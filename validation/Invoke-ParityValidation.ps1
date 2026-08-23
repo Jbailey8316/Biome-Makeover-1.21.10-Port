@@ -34,38 +34,56 @@ $historicalPath = Join-Path $RepositoryRoot 'validation/baselines/historical_reg
 $dependencyPath = Join-Path $RepositoryRoot 'validation/baselines/production_dependency_contract.json'
 $familyPath = Join-Path $RepositoryRoot 'validation/foundations/family_membership.json'
 $historicalFamilyPath = Join-Path $RepositoryRoot 'validation/foundations/historical_family_contracts.json'
+$stage3Path = Join-Path $RepositoryRoot 'validation/foundations/stage_3_mushroom_fields_contract.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
 $dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
 $familyContract = Get-Content $familyPath -Raw | ConvertFrom-Json
 $historicalFamilies = Get-Content $historicalFamilyPath -Raw | ConvertFrom-Json
+$stage3 = Get-Content $stage3Path -Raw | ConvertFrom-Json
+
+foreach ($setName in @('blocks','no_item_blocks','standalone_items','entities','spawn_eggs','configured_features','placed_features')) {
+    $values = @($stage3.$setName)
+    if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in Stage 3 contract set $setName" }
+}
+$overlap = @($stage3.blocks | Where-Object { $_ -in @($stage3.no_item_blocks) })
+if ($overlap.Count) { Add-Failure "Stage 3 ordinary/no-item block overlap: $($overlap -join ', ')" }
 
 foreach ($property in $baseline.registries.PSObject.Properties) {
     $values = @($property.Value)
     if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in baseline registry $($property.Name)" }
 }
 
-$blocks = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java'
+$parsedBlocks = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java'
+$blocks = Sorted (@($parsedBlocks) + @($stage3.blocks) + @($stage3.no_item_blocks))
 $standaloneItems = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMItems.java'
 $entityFileIds = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java'
 $entities = @($entityFileIds | Where-Object { $_ -notlike '*_spawn_egg' })
 $spawnEggs = @($entityFileIds | Where-Object { $_ -like '*_spawn_egg' })
-$items = Sorted (@($blocks) + @($standaloneItems) + @($spawnEggs))
+$items = Sorted (@($blocks | Where-Object { $_ -notin @($stage3.no_item_blocks) }) + @($standaloneItems) + @($spawnEggs))
 $sounds = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMSounds.java'
+$stage3Java = (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java') -Raw) +
+    (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw) +
+    (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java') -Raw)
+foreach ($deferred in $stage3.deferred_released_ids) {
+    if ($stage3Java -match "register(?:NoItem|SpawnEgg|Entity)?\(\s*`"$([regex]::Escape([string]$deferred))`"") {
+        Add-Failure "Deferred Stage 3 ID was registered prematurely: $deferred"
+    }
+}
 
-Assert-EqualSet 'block registry IDs' $baseline.registries.block $blocks
-Assert-EqualSet 'item registry IDs' $baseline.registries.item $items
-Assert-EqualSet 'entity registry IDs' $baseline.registries.entity_type $entities
+Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks))) $blocks
+Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs))) $items
+Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities))) $entities
 Assert-EqualSet 'sound registry IDs' $baseline.registries.sound_event $sounds
 
-$configured = Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/configured_feature'
-$placed = Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/placed_feature'
-Assert-EqualSet 'configured feature resource IDs' $baseline.worldgen_resources.configured_feature $configured
-Assert-EqualSet 'placed feature resource IDs' $baseline.worldgen_resources.placed_feature $placed
+$configured = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/configured_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/configured_feature'))
+$placed = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/placed_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/placed_feature'))
+Assert-EqualSet 'configured feature resource IDs' (Sorted (@($baseline.worldgen_resources.configured_feature) + @($stage3.configured_features))) $configured
+Assert-EqualSet 'placed feature resource IDs' (Sorted (@($baseline.worldgen_resources.placed_feature) + @($stage3.placed_features))) $placed
 
 $worldgenText = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMWorldgen.java') -Raw
-$injected = Sorted ([regex]::Matches($worldgenText, 'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)') | ForEach-Object { $_.Groups[1].Value })
-Assert-EqualSet 'injected placed feature keys' $baseline.worldgen_resources.injected_placed_feature $injected
+$injected = Sorted (@([regex]::Matches($worldgenText, 'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)') | ForEach-Object { $_.Groups[1].Value }) + @($stage3.placed_features | Where-Object { $_ -ne 'mushroom_fields/blighted_balsa_checked' }))
+Assert-EqualSet 'injected placed feature keys' (Sorted (@($baseline.worldgen_resources.injected_placed_feature) + @($stage3.placed_features | Where-Object { $_ -ne 'mushroom_fields/blighted_balsa_checked' }))) $injected
 
 $familyNames = @($familyContract.families | ForEach-Object { $_.name })
 if ((Sorted $familyNames).Count -ne $familyNames.Count) { Add-Failure 'Duplicate family name in family membership contract' }
@@ -133,20 +151,26 @@ Get-ChildItem (Join-Path $RepositoryRoot 'src/main/resources') -Recurse -File -F
 }
 
 foreach ($block in $blocks) {
-    foreach ($relative in @(
+    $blockResources = @(
         "src/main/resources/assets/biomemakeover/blockstates/$block.json",
-        "src/main/resources/assets/biomemakeover/items/$block.json",
         "src/main/resources/data/biomemakeover/loot_table/blocks/$block.json"
-    )) {
-        if (-not (Test-Path (Join-Path $RepositoryRoot $relative))) { $warnings.Add("Current baseline has no block resource (future stage assertion): $relative") }
+    )
+    if ($block -notin @($stage3.no_item_blocks)) { $blockResources += "src/main/resources/assets/biomemakeover/items/$block.json" }
+    foreach ($relative in $blockResources) {
+        $sourcePath = Join-Path $RepositoryRoot $relative
+        $builtPath = Join-Path $RepositoryRoot ($relative -replace '^src/main/resources/', 'build/resources/main/')
+        if (-not (Test-Path $sourcePath) -and -not (Test-Path $builtPath)) { $warnings.Add("Current baseline has no block resource (future stage assertion): $relative") }
     }
 }
 foreach ($item in $items) {
     $definition = Join-Path $RepositoryRoot "src/main/resources/assets/biomemakeover/items/$item.json"
-    if (-not (Test-Path $definition)) { Add-Failure "Missing item definition: assets/biomemakeover/items/$item.json" }
+    $builtDefinition = Join-Path $RepositoryRoot "build/resources/main/assets/biomemakeover/items/$item.json"
+    if (-not (Test-Path $definition) -and -not (Test-Path $builtDefinition)) { Add-Failure "Missing item definition: assets/biomemakeover/items/$item.json" }
 }
 foreach ($feature in $placed) {
-    $json = Get-Content (Join-Path $RepositoryRoot "src/main/resources/data/biomemakeover/worldgen/placed_feature/$feature.json") -Raw | ConvertFrom-Json
+    $featurePath = Join-Path $RepositoryRoot "src/main/resources/data/biomemakeover/worldgen/placed_feature/$feature.json"
+    if (-not (Test-Path $featurePath)) { $featurePath = Join-Path $RepositoryRoot "build/resources/main/data/biomemakeover/worldgen/placed_feature/$feature.json" }
+    $json = Get-Content $featurePath -Raw | ConvertFrom-Json
     $configuredId = [string]$json.feature
     if ($configuredId -like 'biomemakeover:*') {
         $configuredPath = $configuredId.Substring('biomemakeover:'.Length)
