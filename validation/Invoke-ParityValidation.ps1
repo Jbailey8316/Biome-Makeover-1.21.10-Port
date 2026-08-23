@@ -300,6 +300,11 @@ $glowfishSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/le
 if ($glowfishSource -notmatch 'Salmon\.Variant\.DEFAULT') {
     Add-Failure 'Glowfish must opt out of post-1.20 random Salmon size variants'
 }
+$glowfishRendererSource = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/GlowfishRenderer.java') -Raw
+if ($glowfishRendererSource -notmatch 'extends\s+RenderLayer<SalmonRenderState,SalmonModel>' -or
+    $glowfishRendererSource -notmatch 'getParentModel\(\)\.root\(\)\.getChild\("body_back"\)\.translateAndRotate') {
+    Add-Failure 'Glowfish attachment must render as a LivingEntity render layer inheriting Salmon/body_back transforms'
+}
 $attachedBlockRenderers = @(
     'src/client/java/party/lemons/biomemakeover/client/render/TumbleweedRenderer.java',
     'src/client/java/party/lemons/biomemakeover/client/render/GlowfishRenderer.java'
@@ -317,6 +322,9 @@ if ($scuttlerEntitySource -notmatch 'getMaxSpawnClusterSize\s*\(' -or $scuttlerE
 }
 if ($scuttlerRendererSource -notmatch 'state\.rattleTime\s*=\s*entity\.getRattleTime') {
     Add-Failure 'Scuttler renderer does not transfer released rattle animation state'
+}
+if ($saguaroSource -notmatch 'support\.is\(Blocks\.SAND\)' -or $saguaroSource -notmatch 'support\.is\(Blocks\.RED_SAND\)') {
+    Add-Failure 'Saguaro growth origins must retain the released sand/red-sand support gate'
 }
 
 $registryByTagDirectory = @{

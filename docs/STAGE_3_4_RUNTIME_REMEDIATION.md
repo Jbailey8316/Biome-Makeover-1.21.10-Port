@@ -409,3 +409,67 @@ leader mounted members, then test equipment, combat, death/drops/reward, save/re
 | Cowboy patrol/mount/leader system | **OPEN** |
 
 Stage 3 and Stage 4 remain short of full runtime parity.
+
+## Sixth runtime checkpoint: focused Glowfish, Saguaro, and Wild Mushroom pass
+
+The input Prism run confirms Tumbleweed rendering/rolling and the Scuttler threat, food, flee, and visible rattler
+remediations as runtime PASS. Those implementations were not modified in this pass. Underwater Orange Glowshrooms
+remain released behavior and their worldgen was not changed.
+
+### Glowfish attachment transform
+
+**Historical contract:** `GlowfishRender` registered a `RenderLayer` on the Salmon renderer. The layer ran inside the
+living-entity renderer's already oriented/scaled/model-animated pose, then applied `body_back.translateAndRotate`,
+translate `(0,0,0.5)`, X rotation `-90`, scale `(-0.75,-0.75,0.75)`, and translate `(-0.5,0,-0.5)`. It submitted the
+Orange Glowshroom with the entity light/overlay. The non-baby visible fish used the default Salmon model, hid
+`top_back_fin`, and received full block light.
+
+**Migration defect:** the port copied the local offsets but submitted the attachment after `super.submit` returned.
+In 1.21.10, `LivingEntityRenderer.submit` owns the entity rotation, Salmon swimming rotation, model animation, scaling,
+and layer traversal inside a pushed pose. The later standalone submission therefore started outside those transforms;
+`body_back` alone could not reconnect it to the fish.
+
+**Change:** the attachment is again a modern `RenderLayer`, so it inherits entity/Salmon animation and then applies
+the exact historical body-part/local transform. Fin suppression still surrounds the complete superclass submission,
+the default variant remains pinned, and full-bright lighting, scale, block model, texture, bucket code, and persistence
+are unchanged. Static/package validation can establish transform structure, not visual attachment; Prism retest is
+required.
+
+### Saguaro repeated-growth origin
+
+The feature entry, mutable cursor, 4-7 exclusive segment range, arm placement, separate shape RNG, recursion origins,
+and 10%/2% continuation logic now match the released source. The remaining defect was outside the feature method:
+released `isValidBonemealTarget` additionally required the block below the growth origin to be sand or red sand.
+Current code had lost that check, so any exposed ordinary vertical Saguaro segment could random-tick and generate an
+entire new 4-7-block structure from itself. Repetition produced the frequent tall thin towers despite correct feature
+recursion probabilities.
+
+The exact sand/red-sand growth-origin gate is restored. Natural feature generation, recursion percentages, RNG draws,
+branching, IDs, placement density, and shape are unchanged. Existing already-generated towers are not rewritten;
+fresh chunks are required for meaningful runtime evidence.
+
+### Wild Mushroom visual audit
+
+The released and current blockstates both select, with equal unweighted alternatives, the same three
+`wild_mushrooms_1/2/3` models. Each model deliberately inherits `minecraft:block/cross`, so crossed/intersecting flat
+planes are the historical geometry. Model parents and texture references are semantically identical; all three PNGs
+are byte-identical to the pinned released assets. The current block retains the released 12x9x12 voxel shape, CUTOUT
+layer, no collision/no occlusion, random ticks, fungus sound, flammability, three-variant placement-independent state,
+loot, and worldgen resources. No model rotation or directional block state existed historically.
+
+**Result:** the reported crossed cluster appearance is source-confirmed released behavior. No Wild Mushroom code,
+resource, worldgen, loot, recipe, placement, or interaction change was made. Visual confirmation remains useful, but
+there is no evidence-supported migration defect to patch.
+
+### Focused status
+
+| Contract | Status |
+|---|---|
+| Tumbleweed major rendering/rolling remediation | **RUNTIME PASS; UNCHANGED** |
+| Scuttler major threat/food/flee/rattler remediation | **RUNTIME PASS; UNCHANGED** |
+| Glowfish attachment transform | **STATIC REMEDIATION; VISUAL/BUCKET/RELOAD RETEST REQUIRED** |
+| Saguaro feature crash/generation | **RUNTIME PASS** |
+| Saguaro repeated growth / fresh-chunk height distribution | **STATIC REMEDIATION; RETEST REQUIRED** |
+| Wild Mushroom model/resources | **SOURCE-CONFIRMED HISTORICAL; NO CHANGE** |
+
+Stage 3 and Stage 4 remain short of full runtime parity.

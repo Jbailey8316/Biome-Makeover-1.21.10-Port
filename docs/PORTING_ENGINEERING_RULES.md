@@ -189,3 +189,16 @@ seed's total structure height. Trace which RNG instance owns every draw as well 
 Spawn weight and group bounds do not completely describe effective abundance. Preserve custom predicates, nearby-
 entity exclusion radii, brightness/height/substrate rules, and `getMaxSpawnClusterSize`; validate direct summons and
 natural/finalized spawns separately because setup paths can differ.
+
+## 30. Entity attachments belong inside the transformed layer pipeline
+
+Historical living-entity render layers inherited the renderer's entity orientation, scale, animation setup, and model
+pose before applying a parent-part transform. A 1.21.10 attachment submitted after `super.submit` starts again from the
+outer entity pose and will visibly detach even if its local offsets are identical. Port such attachments as modern
+`RenderLayer` submissions and retain the historical parent-part transform order.
+
+## 31. Growth predicates are worldgen termination contracts
+
+When a generated plant also random-ticks or accepts bonemeal, compare its historical growth-origin predicate as part
+of the generation algorithm. Dropping a substrate check can turn every exposed segment into a new recursive origin,
+producing unbounded-looking structures without changing the nominal feature height or recursion probabilities.

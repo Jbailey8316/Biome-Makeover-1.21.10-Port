@@ -65,7 +65,7 @@ functional blocks/block entities, and the bulk of recipes/loot/advancements.
 | Blighted Balsa wood set | None | MISSING | Foundational wood-family registration before trees/recipes/boats |
 | Glowshrooms, huge variants, sprouts, roots, tall mushrooms | One generic Wild Mushrooms block | PARTIAL | Plant behavior, huge-feature codecs, placement, loot and models |
 | Glowshroom/blighted masonry | None | MISSING | Block families, recipes, stonecutting, tags, loot |
-| Glowfish ecology | None | MISSING | Entity, water spawning, AI, renderer, loot and sounds |
+| Glowfish ecology | Restored entity, water spawning, Salmon AI, renderer/attachment, loot and bucket behavior | PARTIAL / NEEDS-RUNTIME-VERIFICATION | Historical default model and transformed Glowshroom layer are statically restored; visual attachment, bucket release and save/reload remain runtime-open |
 | Mushroom House structure and loot | None | MISSING | Structure registration, pieces/templates/processors and loot |
 
 Mushroom Trader and Blight Bat registrations/resources are historical, but
@@ -77,7 +77,7 @@ rechecked at runtime before final exclusion.
 
 | Original released content | Current | Status | Restoration/dependencies |
 |---|---|---|---|
-| Barrel/saguaro vegetation, paydirt, surface fossils, tumbleweed | Stage 4 registrations, mechanics, resources and four injected worldgen chains | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Runtime distribution, codec and visual checks remain |
+| Barrel/saguaro vegetation, paydirt, surface fossils, tumbleweed | Stage 4 registrations, mechanics, resources and four injected worldgen chains | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Tumbleweed major rendering/movement is runtime PASS; Saguaro sand/red-sand growth-origin parity is statically restored and fresh-chunk height distribution remains retest-open |
 | Terracotta bricks and related decoration | All 17 verified families plus Cracked Bricks, recipes, loot, tags and resources | COMPATIBLE | Runtime geometry/connection/recipe checks remain |
 | Scuttler | Natural spawn, attributes, core AI/interactions, Pink Bud flower-eating output, persistence, renderer/model, loot/sounds/resources | PARTIAL / NEEDS-RUNTIME-VERIFICATION | TEMPT_RANGE, Pink Bud attraction/breeding, fleeing and contextual threat/rattle are runtime PASS; restored tail animation and exact natural-spawn density remain retest-open |
 | Cowboy/horse patrols and hats | Cowboy, equipment, mounted Badlands patrol injection and custom texture | PARTIAL | Direct summon/base Pillager behavior and Hat item/player rendering are runtime PASS; natural patrol finalization, leader/banner, horse hat state/rendering, persistence/despawn and modern raid-omen behavior remain open |

@@ -16,6 +16,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -68,7 +69,11 @@ public final class SaguaroCactusBlock extends Block implements BonemealableBlock
 
     @Override protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean intersects) { entity.hurt(level.damageSources().cactus(), 1F); }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(HORIZONTAL, HORIZONTAL_DIRECTION, NORTH, SOUTH, EAST, WEST); }
-    @Override public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) { return state.equals(defaultBlockState()) && level.getBlockState(pos.above()).isAir(); }
+    @Override public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
+        BlockState support = level.getBlockState(pos.below());
+        return state.equals(defaultBlockState()) && (support.is(Blocks.SAND) || support.is(Blocks.RED_SAND))
+            && level.getBlockState(pos.above()).isAir();
+    }
     @Override public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) { return random.nextFloat() < .45F; }
     @Override public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) { generateCactus(this, level, random.nextBoolean(), pos, random, false); }
     @Override protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) { if (random.nextInt(10) == 0 && isValidBonemealTarget(level, pos, state)) performBonemeal(level, random, pos, state); }
