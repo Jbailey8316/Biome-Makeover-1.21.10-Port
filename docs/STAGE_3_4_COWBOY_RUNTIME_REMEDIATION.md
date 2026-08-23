@@ -169,3 +169,8 @@ vertical only. With the horse skull top at local Y `-11`, the hat brim center re
 below that surface after the historical hat scale and leveling rotation. The horse-only lift therefore adds exactly
 one model pixel (`1/16`) upward to the released `-0.4` Y translation. Z, rotation, scale, transform order, ear exposure,
 shared geometry and every non-horse render/gameplay path remain frozen pending the final visual check.
+
+The next Prism check confirmed that geometry, Z centering, orientation, tracking and ear exposure remained correct,
+but the forward brim still obscured the upper face slightly. The final horse-only checkpoint raises the same seating
+translation by one additional model pixel, for a total `2/16` above released `-0.4`. No other transform or Cowboy
+system changed.

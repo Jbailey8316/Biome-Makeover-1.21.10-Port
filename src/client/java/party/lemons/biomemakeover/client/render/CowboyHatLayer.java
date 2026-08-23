@@ -31,7 +31,7 @@ public final class CowboyHatLayer<S extends LivingEntityRenderState,M extends En
         if(horse) {
             pose.scale(1.05F,1.05F,1.05F);
             getParentModel().root().getChild("head_parts").translateAndRotate(pose);
-            pose.translate(0,-.4F-1F/16F,3F/32F);
+            pose.translate(0,-.4F-2F/16F,3F/32F);
             pose.mulPose(Axis.XP.rotationDegrees(-25));
         } else {
             getParentModel().root().getChild("head").translateAndRotate(pose);
