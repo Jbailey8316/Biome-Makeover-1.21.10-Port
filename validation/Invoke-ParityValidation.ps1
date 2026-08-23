@@ -288,6 +288,19 @@ Get-ChildItem (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeov
     }
 }
 
+$saguaroSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/SaguaroCactusBlock.java') -Raw
+if ($saguaroSource -notmatch 'nextInt\(maximum\s*-\s*minimum\)' -or $saguaroSource -match 'maximum\s*-\s*minimum\s*\+\s*1') {
+    Add-Failure 'Saguaro historical randomRange contract must keep its exclusive upper bound'
+}
+$clientInitializer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/BiomeMakeoverClient.java') -Raw
+if ($clientInitializer -notmatch 'BlockRenderLayerMap\.putBlocks[\s\S]*BMBlocks\.TUMBLEWEED') {
+    Add-Failure 'Transparent Tumbleweed block model is missing a client cutout render-layer contract'
+}
+$glowfishSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/GlowfishEntity.java') -Raw
+if ($glowfishSource -notmatch 'Salmon\.Variant\.DEFAULT') {
+    Add-Failure 'Glowfish must opt out of post-1.20 random Salmon size variants'
+}
+
 $registryByTagDirectory = @{
     'block' = $blocks; 'item' = $items; 'entity_type' = $entities
 }

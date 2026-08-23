@@ -137,6 +137,7 @@ public final class SaguaroCactusBlock extends Block implements BonemealableBlock
     }
 
     private static int randomRange(RandomSource random, int minimum, int maximum) {
-        return minimum + random.nextInt(maximum - minimum + 1);
+        // Released RandomUtil.randomRange used an exclusive upper bound.
+        return minimum + random.nextInt(maximum - minimum);
     }
 }

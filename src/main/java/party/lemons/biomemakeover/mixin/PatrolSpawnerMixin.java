@@ -23,7 +23,7 @@ public abstract class PatrolSpawnerMixin {
         if(!level.getBiome(pos).is(BiomeTags.IS_BADLANDS)) return;
         var state=level.getBlockState(pos);
         if(!NaturalSpawner.isValidEmptySpawnBlock(level,pos,state,state.getFluidState(),BMEntities.COWBOY)
-            || !PatrollingMonster.checkPatrollingMonsterSpawnRules(BMEntities.COWBOY,level,EntitySpawnReason.PATROL,pos,random)){cir.setReturnValue(false);return;}
+            || !PatrollingMonster.checkPatrollingMonsterSpawnRules(EntityType.PILLAGER,level,EntitySpawnReason.PATROL,pos,random)){cir.setReturnValue(false);return;}
         var cowboy=BMEntities.COWBOY.create(level,EntitySpawnReason.PATROL); Horse horse=EntityType.HORSE.create(level,EntitySpawnReason.PATROL);
         if(cowboy==null||horse==null){cir.setReturnValue(false);return;}
         horse.setPos(pos.getX(),pos.getY(),pos.getZ()); horse.finalizeSpawn(level,level.getCurrentDifficultyAt(pos),EntitySpawnReason.PATROL,null);

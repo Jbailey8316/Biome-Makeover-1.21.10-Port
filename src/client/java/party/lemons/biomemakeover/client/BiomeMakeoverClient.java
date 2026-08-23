@@ -27,6 +27,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
             BMBlocks.MYCELIUM_SPROUTS, BMBlocks.MYCELIUM_ROOTS, BMBlocks.TALL_BROWN_MUSHROOM,
             BMBlocks.TALL_RED_MUSHROOM, BMBlocks.BLIGHTED_BALSA_LEAVES,
             BMBlocks.SAGUARO_CACTUS, BMBlocks.BARREL_CACTUS, BMBlocks.BARREL_CACTUS_FLOWERED,
+            BMBlocks.TUMBLEWEED,
             BMBlocks.BLIGHTED_BALSA.get("blighted_balsa_door"), BMBlocks.BLIGHTED_BALSA.get("blighted_balsa_trapdoor"));
         BMModelLayers.register();
         EntityRenderers.register(BMEntities.OWL, OwlRenderer::new);

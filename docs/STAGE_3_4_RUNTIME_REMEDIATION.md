@@ -223,3 +223,103 @@ entity that constructs `TemptGoal` without either using `createAnimalAttributes(
 - Saguaro: **STILL OPEN for adequate targeted fresh-chunk runtime verification**.
 - Fresh Mushroom Fields, complete Badlands worldgen, Scuttler goals/interactions/persistence, Cowboy riding, Glowfish,
   Tumbleweed, save/reload, dedicated server, multiplayer, and existing-world copy: **MANUAL TEST REQUIRED**.
+
+## Fourth runtime checkpoint: stable biomes and visual/behavioral parity
+
+The reported Prism run remained stable through extended Badlands and Mushroom Fields exploration and normal saves.
+Scuttler's `TEMPT_RANGE` remediation is runtime PASS. Basic generation/stability, recipe/advancement loading, and all
+33 biome modifications are PASS. This does not establish complete visual, entity, persistence, server, or multiplayer
+parity.
+
+### Tumbleweed
+
+**Historical behavior:** the released entity rendered its cross-model block on the block atlas, accumulated client
+quaternion rotation from actual X/Z travel, and slerped between ticks. Physics included a per-entity 2/3–1 wind
+multiplier, 0.0025 acceleration toward global wind, gravity, a 0.31–2.0 bounce from 75% of prior vertical velocity,
+impact particles/sound, water buoyancy, entity collision, 1500-tick lifetime, 100-stationary-tick removal, and damage
+immunity. Spawning grouped eligible players within 50 blocks and rolled 1/200 per group in the released biome tag.
+
+**Root cause/change:** the port discarded quaternion animation and submitted a static block, omitted Tumbleweed from
+CUTOUT, fixed global wind's initial vector, and omitted several physics/lifetime/collision/immunity/spawn contracts.
+A dedicated render state now extracts and slerps released rotation; CUTOUT, transforms, wind variation, bounce,
+particles, water response, collision, stationary/age removal, immunity, and grouped biome-gated spawning are restored.
+The paired historical `tumbleweeb` model/texture typo remains intentional.
+
+**Status:** statically validated; rendering, smooth rotation, wind, bounce, collision, water, immunity, spawning,
+lifetime, and reload behavior require Prism verification.
+
+### Saguaro dimensions
+
+Historical `RandomUtil.randomRange(min,max)` used `nextInt(max-min)+min`, so its upper bound was exclusive. Released
+trunk segments are 4–7 blocks, and arm-start/arm-height variation use the same exclusive rule. The crash remediation
+made all bounds inclusive, allowing 8-block segments and taller arms; recursion amplified the difference. The helper
+now exactly restores exclusive bounds, with a validator guard and no arbitrary cap. Crash stability is runtime PASS;
+representative height, arms, and recursive visual distribution remain OPEN.
+
+### Scuttler sounds
+
+Released Scuttlers have no ordinary ambient vocalization. Non-fluid steps play `scuttler_step` at volume 0.10 and
+randomized 1.25+ pitch; hurt/death use dedicated events. Rattling occurs only when a non-passive, non-submerged
+Scuttler and a non-creative/non-spectator player have mutual sight, the player is 10–20 blocks away, and is not holding
+Scuttler food. Its cadence follows sign changes in the released sine-driven animation.
+
+The port instead rattled for every player within 20 blocks and used an invented eight-tick cadence. The complete threat
+predicate, released cadence, and step sound are restored. Threat boundaries, sight, creative/spectator/food/water/
+passive suppression, cadence, footsteps, hurt, and death require runtime verification.
+
+### Cowboy audit
+
+Released Badlands patrol members used the Pillager patrol predicate, spawned as finalized Cowboys riding finalized
+horses, inherited Pillager crossbow AI, synchronized horse yaw, wore Cowboy Hats normally, and gave patrol leaders a
+target/banner plus a visible horse Hat. Horse `Hat` and `CowboySpawned` state persisted and affected despawning. Leader
+death integrated the pre-1.21 Bad Omen and Voluntary Exile behavior.
+
+Current patrol replacement, passenger creation, Pillager AI/attributes, yaw, ordinary hat, texture, and modern spawn
+reasons exist. The predicate is corrected from the custom type to historical `EntityType.PILLAGER`. Leader banner
+finalization, horse hat rendering/state, horse persistence/despawn marker, exact hat drop chance, and faithful mapping
+of old leader rewards to 1.21.10's changed raid-omen system remain known gaps; none were guessed here.
+
+Cowboy behavior is UNTESTED. The next run must force a Badlands patrol and verify mount/persistence, ordinary and leader
+equipment, navigation/targets, crossbow combat, yaw, despawn, death/drop/reward, save/reload, and rendering.
+
+### Glowshroom placement and terrain
+
+Released Orange Glowshrooms are attempted twice per chunk at `OCEAN_FLOOR`, sample a fading nine-block radius, require
+water, become waterlogged, and must survive on their substrate. The observed underwater Orange is intended. Green and
+Purple patches are sampled twice per chunk uniformly from Y=-30 through 60 in air subject to plant survival; Purple at
+Y=-8 is intended. Underground huge Purple/Green selection uses the same band with 120 attempts, while underground
+vegetation includes low-weight Green/Purple among roots, sprouts, ordinary mushrooms, and tall mushrooms.
+
+Built configured/placed resources match the pinned released definitions, so no placement change was made. BM injects
+features/spawns only; it does not alter noise routers, terrain shape, sea level, or vanilla Mushroom Fields geometry.
+An ocean-heavy first `/locate` result is not evidence of a BM terrain defect. Full distribution/substrate/huge-feature
+runtime parity remains OPEN.
+
+### Glowfish
+
+Released Glowfish was a fixed-size Salmon using the original/default model, 32x32 texture, full block light, and a
+non-baby Orange Glowshroom attachment on `body_back`; the top rear fin was hidden. Minecraft 1.21.10 added randomized
+small/medium/large Salmon variants after release. Glowfish inherited those new model/dimension choices even though its
+texture and attachment target the historical default, and its migrated renderer stopped hiding the rear fin.
+
+Glowfish now reports the historical default Salmon variant and the renderer hides/restores `top_back_fin` around base
+submission before rendering the released full-bright attachment. Swimming/schooling/bucket behavior remains inherited;
+no generic replacement was introduced. UVs, orientation, animation, fin/attachment, lighting, swimming, flop, bucket
+capture/release, persistence, and baby behavior require Prism verification.
+
+### Updated runtime matrix
+
+| Gate | Status |
+|---|---|
+| Scuttler `TEMPT_RANGE` remediation | **RUNTIME PASS** |
+| Badlands basic generation/stability | **PASS** |
+| Mushroom Fields basic generation/stability | **PASS** |
+| Recipes, advancements, 33 biome modifications | **PASS** |
+| Saguaro crash remediation | **RUNTIME STABILITY PASS; VISUAL PARITY OPEN** |
+| Tumbleweed rendering/movement | **FAIL OBSERVED; STATIC REMEDIATION; RETEST OPEN** |
+| Scuttler sound parity | **OPEN; STATIC REMEDIATION** |
+| Cowboy mob behavior | **UNTESTED; KNOWN GAPS** |
+| Glowshroom placement | **SOURCE-COMPARED; REPORTED PLACEMENTS EXPECTED; FULL DISTRIBUTION OPEN** |
+| Glowfish rendering/runtime | **FAIL OBSERVED; STATIC REMEDIATION; RETEST OPEN** |
+
+Stage 3 and Stage 4 do not yet have full runtime parity.

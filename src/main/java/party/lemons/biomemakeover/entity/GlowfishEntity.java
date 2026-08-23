@@ -14,5 +14,10 @@ public final class GlowfishEntity extends Salmon {
     @Override
     public ItemStack getBucketItemStack() { return new ItemStack(BMItems.GLOWFISH_BUCKET); }
 
+    // Released Glowfish pre-dates Salmon size variants and always used the
+    // original medium Salmon model and dimensions.
+    @Override
+    public Salmon.Variant getVariant() { return Salmon.Variant.DEFAULT; }
+
     public static AttributeSupplier.Builder createAttributes() { return AbstractFish.createAttributes(); }
 }

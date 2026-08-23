@@ -23,7 +23,11 @@ public final class GlowfishRenderer extends SalmonRenderer {
         state.lightCoords = 0x00F000F0;
     }
     @Override public void submit(SalmonRenderState state, PoseStack pose, SubmitNodeCollector output, CameraRenderState camera) {
+        var topBackFin = model.root().getChild("body_back").getChild("top_back_fin");
+        boolean finVisible = topBackFin.visible;
+        if (!state.isBaby && !state.isInvisible) topBackFin.visible = false;
         super.submit(state, pose, output, camera);
+        topBackFin.visible = finVisible;
         if (state.isBaby || state.isInvisible) return;
         pose.pushPose();
         model.root().getChild("body_back").translateAndRotate(pose);

@@ -152,3 +152,21 @@ goal is introduced or translated, inspect its current implementation and the cur
 do not assume `Mob.createMobAttributes()` remains sufficient because it compiled historically. Audit sibling restored
 entities for the same goal/attribute pattern. Missing attributes must be repaired through the correct modern base
 contract or an evidence-supported explicit value, never exception suppression or removal of historical AI.
+
+## 24. Preserve historical random-bound semantics
+
+Utility names such as `randomRange` do not establish whether the upper bound is inclusive. Inspect the historical
+helper and carry its exact bound semantics into modern RNG calls. Audit every call in recursive algorithms, where a
+one-block error can become a large visual difference.
+
+## 25. Render-state migrations must carry custom animation state
+
+The extracted render-state pipeline does not implicitly expose custom entity fields. Custom renderers must define,
+extract, interpolate, and submit every historical rotation, variant, attachment, visibility change, and lighting state.
+A static model submission is not an animation port.
+
+## 26. Audit new vanilla variants inherited by historical subclasses
+
+When a historical entity subclasses vanilla, inspect systems added to that vanilla class after the source release.
+New randomized variants, scales, dimensions, components, or renderer model selections must not silently alter the
+custom entity. Pin the historical default only when source evidence proves it never used the newer system.

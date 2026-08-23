@@ -42,6 +42,7 @@ import party.lemons.biomemakeover.init.BMSounds;
 import party.lemons.biomemakeover.init.BMBlocks;
 import party.lemons.biomemakeover.init.BMItems;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.EnumSet;
 
 public final class ScuttlerEntity extends Animal {
@@ -63,7 +64,14 @@ public final class ScuttlerEntity extends Animal {
         goalSelector.addGoal(8,new WaterAvoidingRandomStrollGoal(this,1)); goalSelector.addGoal(9,new LookAtPlayerGoal(this,Player.class,6)); goalSelector.addGoal(10,new RandomLookAroundGoal(this));
     }
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder) { super.defineSynchedData(builder); builder.define(PASSIVE,false); builder.define(RATTLING,false); }
-    @Override public void tick() { super.tick(); if(entityData.get(RATTLING) && ++rattleTicks%8==0) playSound(BMSounds.SCUTTLER_RATTLE,.25F,.75F+random.nextFloat()); }
+    @Override public void tick() {
+        super.tick();
+        if (entityData.get(RATTLING)) {
+            double direction = Math.signum(Math.sin(rattleTicks));
+            rattleTicks++;
+            if (direction != Math.signum(Math.sin(rattleTicks))) playSound(BMSounds.SCUTTLER_RATTLE,.25F,.75F+random.nextFloat());
+        } else rattleTicks = 0;
+    }
     @Override public boolean isFood(ItemStack stack) { return stack.is(BMEntities.SCUTTLER_FOOD); }
     @Override public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack=player.getItemInHand(hand);
@@ -79,12 +87,32 @@ public final class ScuttlerEntity extends Animal {
     @Override protected void readAdditionalSaveData(ValueInput input){ super.readAdditionalSaveData(input); setPassive(input.getBooleanOr("Passive",false)); }
     @Nullable @Override protected SoundEvent getDeathSound(){ return BMSounds.SCUTTLER_DEATH; }
     @Nullable @Override protected SoundEvent getHurtSound(DamageSource source){ return BMSounds.SCUTTLER_HURT; }
+    @Override protected void playStepSound(BlockPos pos, BlockState state) {
+        if (state.getFluidState().isEmpty()) {
+            playSound(BMSounds.SCUTTLER_STEP, .10F, 1.25F + random.nextFloat());
+            spawnSprintParticle();
+        }
+    }
 
     private final class RattleGoal extends Goal {
         private Player target;
-        @Override public boolean canUse(){ if(isPassive())return false; target=level().getNearestPlayer(ScuttlerEntity.this,20); return target!=null; }
+        RattleGoal(){setFlags(EnumSet.of(Flag.LOOK, Flag.MOVE));}
+        @Override public boolean canUse(){
+            if(isInWater() || isPassive()) return false;
+            target=null;double nearest=Double.MAX_VALUE;
+            for(Player player:level().players())if(isThreatInRattleBand(player)){
+                double distance=distanceToSqr(player);if(distance<nearest){nearest=distance;target=player;}
+            }
+            return target!=null;
+        }
         @Override public void start(){entityData.set(RATTLING,true);} @Override public void stop(){entityData.set(RATTLING,false);target=null;}
-        @Override public void tick(){if(target!=null)getLookControl().setLookAt(target,30,30);} @Override public boolean canContinueToUse(){return target!=null&&!isPassive()&&target.distanceToSqr(ScuttlerEntity.this)<400;}
+        @Override public void tick(){if(target!=null)getLookControl().setLookAt(target,30,30);}
+        private boolean isThreatInRattleBand(Player player) {
+            if (player == null || player.isCreative() || player.isSpectator() || player.isHolding(ScuttlerEntity.this::isFood)) return false;
+            double distance = distanceTo(player);
+            return distance >= 10 && distance < 20 && hasLineOfSight(player) && player.hasLineOfSight(ScuttlerEntity.this);
+        }
+        @Override public boolean canContinueToUse(){ return !isInWater() && !isPassive() && isThreatInRattleBand(target); }
     }
     private final class EatFlowerGoal extends Goal {
         private BlockPos target;

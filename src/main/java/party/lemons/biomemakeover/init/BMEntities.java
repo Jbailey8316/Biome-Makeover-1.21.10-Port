@@ -16,6 +16,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.damagesource.DamageType;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.entity.OwlEntity;
 import party.lemons.biomemakeover.entity.GlowfishEntity;
@@ -25,6 +26,8 @@ import party.lemons.biomemakeover.entity.TumbleweedEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
+    public static final TagKey<DamageType> TUMBLEWEED_IMMUNE_DAMAGE = TagKey.create(Registries.DAMAGE_TYPE,
+        BiomeMakeover.id("tumbleweed_immune_to"));
     public static final EntityType<OwlEntity> OWL = registerEntity(
         "owl",
         EntityType.Builder.<OwlEntity>of(OwlEntity::new, MobCategory.CREATURE)
