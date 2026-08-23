@@ -27,6 +27,10 @@ public final class BMWorldgen {
     public static final ResourceKey<PlacedFeature> TALL_BROWN_MUSHROOMS = mushroom("tall_brown_mushrooms");
     public static final ResourceKey<PlacedFeature> TALL_RED_MUSHROOMS = mushroom("tall_red_mushrooms");
     public static final ResourceKey<PlacedFeature> MUSHROOM_FIELD_WILD_MUSHROOMS = mushroom("wild_mushrooms");
+    public static final ResourceKey<PlacedFeature> BADLANDS_BARREL_CACTUS = badlands("barrel_cactus");
+    public static final ResourceKey<PlacedFeature> BADLANDS_SAGUARO_CACTUS = badlands("saguaro_cactus");
+    public static final ResourceKey<PlacedFeature> BADLANDS_PAYDIRT = badlands("paydirt");
+    public static final ResourceKey<PlacedFeature> BADLANDS_SURFACE_FOSSIL = badlands("surface_fossil");
     public static final ResourceKey<PlacedFeature> MESMERITE_UNDERGROUND = ResourceKey.create(
         Registries.PLACED_FEATURE,
         BiomeMakeover.id("dark_forest/mesmerite_underground")
@@ -48,6 +52,8 @@ public final class BMWorldgen {
     public static void initialize() {
         BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.MUSHROOM_FIELDS),
             MobCategory.WATER_AMBIENT, BMEntities.GLOWFISH, 7, 2, 7);
+        BiomeModifications.addSpawn(BiomeSelectors.tag(net.minecraft.tags.BiomeTags.IS_BADLANDS),
+            MobCategory.CREATURE, BMEntities.SCUTTLER, 4, 1, 2);
         addMushroom(GenerationStep.Decoration.UNDERGROUND_DECORATION, UNDERGROUND_MYCELIUM);
         addMushroom(GenerationStep.Decoration.FLUID_SPRINGS, BLIGHTED_BALSA_TREES);
         addMushroom(GenerationStep.Decoration.VEGETAL_DECORATION, GREEN_GLOWSHROOMS);
@@ -59,6 +65,10 @@ public final class BMWorldgen {
         addMushroom(GenerationStep.Decoration.VEGETAL_DECORATION, TALL_BROWN_MUSHROOMS);
         addMushroom(GenerationStep.Decoration.VEGETAL_DECORATION, TALL_RED_MUSHROOMS);
         addMushroom(GenerationStep.Decoration.VEGETAL_DECORATION, MUSHROOM_FIELD_WILD_MUSHROOMS);
+        addBadlands(GenerationStep.Decoration.VEGETAL_DECORATION, BADLANDS_BARREL_CACTUS);
+        addBadlands(GenerationStep.Decoration.VEGETAL_DECORATION, BADLANDS_SAGUARO_CACTUS);
+        addBadlands(GenerationStep.Decoration.UNDERGROUND_DECORATION, BADLANDS_PAYDIRT);
+        addBadlands(GenerationStep.Decoration.SURFACE_STRUCTURES, BADLANDS_SURFACE_FOSSIL);
         BiomeModifications.addSpawn(
             BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
             MobCategory.CREATURE, BMEntities.OWL, 10, 1, 1
@@ -95,5 +105,9 @@ public final class BMWorldgen {
 
     private static void addMushroom(GenerationStep.Decoration step, ResourceKey<PlacedFeature> feature) {
         BiomeModifications.addFeature(BiomeSelectors.includeByKey(Biomes.MUSHROOM_FIELDS), step, feature);
+    }
+    private static ResourceKey<PlacedFeature> badlands(String path) { return ResourceKey.create(Registries.PLACED_FEATURE, BiomeMakeover.id("badlands/" + path)); }
+    private static void addBadlands(GenerationStep.Decoration step, ResourceKey<PlacedFeature> feature) {
+        BiomeModifications.addFeature(BiomeSelectors.tag(net.minecraft.tags.BiomeTags.IS_BADLANDS), step, feature);
     }
 }

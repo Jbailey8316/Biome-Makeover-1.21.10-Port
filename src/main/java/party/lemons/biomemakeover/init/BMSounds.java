@@ -15,6 +15,12 @@ public final class BMSounds {
     public static final SoundEvent OWL_ALERT = register("owl_alert");
     public static final SoundEvent OWL_BABY = register("owl_baby");
     public static final SoundEvent OWL_TAKEOFF = register("owl_takeoff");
+    public static final SoundEvent SCUTTLER_RATTLE = register("scuttler_rattle");
+    public static final SoundEvent SCUTTLER_STEP = register("scuttler_step");
+    public static final SoundEvent SCUTTLER_HURT = register("scuttler_hurt");
+    public static final SoundEvent SCUTTLER_DEATH = register("scuttler_death");
+    public static final SoundEvent TUMBLEWEED_TUMBLE = register("tumbleweed_tumble");
+    public static final SoundEvent TUMBLEWEED_BREAK = register("tumbleweed_break");
 
     private BMSounds() {}
 

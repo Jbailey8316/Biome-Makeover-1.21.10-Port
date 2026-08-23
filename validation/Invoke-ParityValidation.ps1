@@ -35,12 +35,14 @@ $dependencyPath = Join-Path $RepositoryRoot 'validation/baselines/production_dep
 $familyPath = Join-Path $RepositoryRoot 'validation/foundations/family_membership.json'
 $historicalFamilyPath = Join-Path $RepositoryRoot 'validation/foundations/historical_family_contracts.json'
 $stage3Path = Join-Path $RepositoryRoot 'validation/foundations/stage_3_mushroom_fields_contract.json'
+$stage4Path = Join-Path $RepositoryRoot 'validation/foundations/stage_4_badlands_contract.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
 $dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
 $familyContract = Get-Content $familyPath -Raw | ConvertFrom-Json
 $historicalFamilies = Get-Content $historicalFamilyPath -Raw | ConvertFrom-Json
 $stage3 = Get-Content $stage3Path -Raw | ConvertFrom-Json
+$stage4 = Get-Content $stage4Path -Raw | ConvertFrom-Json
 
 foreach ($setName in @('blocks','no_item_blocks','standalone_items','entities','spawn_eggs','configured_features','placed_features')) {
     $values = @($stage3.$setName)
@@ -48,6 +50,10 @@ foreach ($setName in @('blocks','no_item_blocks','standalone_items','entities','
 }
 $overlap = @($stage3.blocks | Where-Object { $_ -in @($stage3.no_item_blocks) })
 if ($overlap.Count) { Add-Failure "Stage 3 ordinary/no-item block overlap: $($overlap -join ', ')" }
+foreach ($setName in @('blocks_with_items','no_item_blocks','items','spawn_eggs','entities','sounds','features','configured_features','placed_features')) {
+    $values = @($stage4.registry.$setName)
+    if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in Stage 4 contract set $setName" }
+}
 
 foreach ($property in $baseline.registries.PSObject.Properties) {
     $values = @($property.Value)
@@ -55,12 +61,13 @@ foreach ($property in $baseline.registries.PSObject.Properties) {
 }
 
 $parsedBlocks = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java'
-$blocks = Sorted (@($parsedBlocks) + @($stage3.blocks) + @($stage3.no_item_blocks))
+$blocks = Sorted (@($parsedBlocks) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks))
 $standaloneItems = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMItems.java'
 $entityFileIds = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java'
 $entities = @($entityFileIds | Where-Object { $_ -notlike '*_spawn_egg' })
 $spawnEggs = @($entityFileIds | Where-Object { $_ -like '*_spawn_egg' })
-$items = Sorted (@($blocks | Where-Object { $_ -notin @($stage3.no_item_blocks) }) + @($standaloneItems) + @($spawnEggs))
+$allNoItemBlocks = @($stage3.no_item_blocks) + @($stage4.registry.no_item_blocks)
+$items = Sorted (@($blocks | Where-Object { $_ -notin $allNoItemBlocks }) + @($standaloneItems) + @($spawnEggs))
 $sounds = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMSounds.java'
 $stage3Java = (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java') -Raw) +
     (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw) +
@@ -71,19 +78,19 @@ foreach ($deferred in $stage3.deferred_released_ids) {
     }
 }
 
-Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks))) $blocks
-Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs))) $items
-Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities))) $entities
-Assert-EqualSet 'sound registry IDs' $baseline.registries.sound_event $sounds
+Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks))) $blocks
+Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs))) $items
+Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities))) $entities
+Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds))) $sounds
 
 $configured = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/configured_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/configured_feature'))
 $placed = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/placed_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/placed_feature'))
-Assert-EqualSet 'configured feature resource IDs' (Sorted (@($baseline.worldgen_resources.configured_feature) + @($stage3.configured_features))) $configured
-Assert-EqualSet 'placed feature resource IDs' (Sorted (@($baseline.worldgen_resources.placed_feature) + @($stage3.placed_features))) $placed
+Assert-EqualSet 'configured feature resource IDs' (Sorted (@($baseline.worldgen_resources.configured_feature) + @($stage3.configured_features) + @($stage4.registry.configured_features))) $configured
+Assert-EqualSet 'placed feature resource IDs' (Sorted (@($baseline.worldgen_resources.placed_feature) + @($stage3.placed_features) + @($stage4.registry.placed_features))) $placed
 
 $worldgenText = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMWorldgen.java') -Raw
-$injected = Sorted (@([regex]::Matches($worldgenText, 'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)') | ForEach-Object { $_.Groups[1].Value }) + @($stage3.placed_features | Where-Object { $_ -ne 'mushroom_fields/blighted_balsa_checked' }))
-Assert-EqualSet 'injected placed feature keys' (Sorted (@($baseline.worldgen_resources.injected_placed_feature) + @($stage3.placed_features | Where-Object { $_ -ne 'mushroom_fields/blighted_balsa_checked' }))) $injected
+$injected = Sorted (@([regex]::Matches($worldgenText, 'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)') | ForEach-Object { $_.Groups[1].Value }) + @($stage3.placed_features | Where-Object { $_ -ne 'mushroom_fields/blighted_balsa_checked' }) + @($stage4.registry.placed_features))
+Assert-EqualSet 'injected placed feature keys' (Sorted (@($baseline.worldgen_resources.injected_placed_feature) + @($stage3.placed_features | Where-Object { $_ -ne 'mushroom_fields/blighted_balsa_checked' }) + @($stage4.registry.placed_features))) $injected
 
 $familyNames = @($familyContract.families | ForEach-Object { $_.name })
 if ((Sorted $familyNames).Count -ne $familyNames.Count) { Add-Failure 'Duplicate family name in family membership contract' }
@@ -155,7 +162,7 @@ foreach ($block in $blocks) {
         "src/main/resources/assets/biomemakeover/blockstates/$block.json",
         "src/main/resources/data/biomemakeover/loot_table/blocks/$block.json"
     )
-    if ($block -notin @($stage3.no_item_blocks)) { $blockResources += "src/main/resources/assets/biomemakeover/items/$block.json" }
+    if ($block -notin $allNoItemBlocks) { $blockResources += "src/main/resources/assets/biomemakeover/items/$block.json" }
     foreach ($relative in $blockResources) {
         $sourcePath = Join-Path $RepositoryRoot $relative
         $builtPath = Join-Path $RepositoryRoot ($relative -replace '^src/main/resources/', 'build/resources/main/')

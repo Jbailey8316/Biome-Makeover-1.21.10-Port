@@ -16,6 +16,8 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.equipment.ArmorMaterials;
+import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.material.Fluids;
@@ -40,6 +42,9 @@ public final class BMItems {
         BMBlocks.BLIGHTED_BALSA_SIGN, BMBlocks.BLIGHTED_BALSA_WALL_SIGN, p.stacksTo(16)));
     public static final Item BLIGHTED_BALSA_HANGING_SIGN = register("blighted_balsa_hanging_sign", p -> new HangingSignItem(
         BMBlocks.BLIGHTED_BALSA_HANGING_SIGN, BMBlocks.BLIGHTED_BALSA_WALL_HANGING_SIGN, p.stacksTo(16)));
+    public static final Item SCUTTLER_TAIL = register("scuttler_tail");
+    public static final Item COWBOY_HAT = register("cowboy_hat", p -> new Item(p.humanoidArmor(ArmorMaterials.LEATHER, ArmorType.HELMET)));
+    public static final Item CRACKED_BRICK = register("cracked_brick");
 
     private BMItems() {}
 
@@ -66,6 +71,7 @@ public final class BMItems {
             entries.accept(LEAF_LITTER);
             entries.accept(OWL_EGG);
             entries.accept(GLOWSHROOM_STEW); entries.accept(GLOWFISH); entries.accept(COOKED_GLOWFISH); entries.accept(GLOWFISH_BUCKET);
+            entries.accept(SCUTTLER_TAIL); entries.accept(COWBOY_HAT); entries.accept(CRACKED_BRICK);
         });
     }
 }

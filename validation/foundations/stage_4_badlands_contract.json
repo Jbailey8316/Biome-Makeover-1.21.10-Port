@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "stage": 4,
+  "theme": "badlands",
+  "historical_source": {
+    "repository": "Lemonszz/Biome-Makeover",
+    "commit": "2f314c0596af095a4890995a465f308f69476b4a",
+    "release": "1.20.1-1.11.4"
+  },
+  "family_contract": {
+    "decoration_members": [
+      "base",
+      "slab",
+      "stairs",
+      "wall"
+    ],
+    "base_suffix": "_bricks",
+    "decoration_suffixes": [
+      "_brick_slab",
+      "_brick_stairs",
+      "_brick_wall"
+    ],
+    "colors": [
+      "undyed",
+      "white",
+      "orange",
+      "magenta",
+      "light_blue",
+      "yellow",
+      "lime",
+      "pink",
+      "gray",
+      "light_gray",
+      "cyan",
+      "purple",
+      "blue",
+      "brown",
+      "green",
+      "red",
+      "black"
+    ]
+  },
+  "registry": {
+    "blocks_with_items": [
+      "terracotta_bricks",
+      "terracotta_brick_slab",
+      "terracotta_brick_stairs",
+      "terracotta_brick_wall",
+      "white_terracotta_bricks",
+      "white_terracotta_brick_slab",
+      "white_terracotta_brick_stairs",
+      "white_terracotta_brick_wall",
+      "orange_terracotta_bricks",
+      "orange_terracotta_brick_slab",
+      "orange_terracotta_brick_stairs",
+      "orange_terracotta_brick_wall",
+      "magenta_terracotta_bricks",
+      "magenta_terracotta_brick_slab",
+      "magenta_terracotta_brick_stairs",
+      "magenta_terracotta_brick_wall",
+      "light_blue_terracotta_bricks",
+      "light_blue_terracotta_brick_slab",
+      "light_blue_terracotta_brick_stairs",
+      "light_blue_terracotta_brick_wall",
+      "yellow_terracotta_bricks",
+      "yellow_terracotta_brick_slab",
+      "yellow_terracotta_brick_stairs",
+      "yellow_terracotta_brick_wall",
+      "lime_terracotta_bricks",
+      "lime_terracotta_brick_slab",
+      "lime_terracotta_brick_stairs",
+      "lime_terracotta_brick_wall",
+      "pink_terracotta_bricks",
+      "pink_terracotta_brick_slab",
+      "pink_terracotta_brick_stairs",
+      "pink_terracotta_brick_wall",
+      "gray_terracotta_bricks",
+      "gray_terracotta_brick_slab",
+      "gray_terracotta_brick_stairs",
+      "gray_terracotta_brick_wall",
+      "light_gray_terracotta_bricks",
+      "light_gray_terracotta_brick_slab",
+      "light_gray_terracotta_brick_stairs",
+      "light_gray_terracotta_brick_wall",
+      "cyan_terracotta_bricks",
+      "cyan_terracotta_brick_slab",
+      "cyan_terracotta_brick_stairs",
+      "cyan_terracotta_brick_wall",
+      "purple_terracotta_bricks",
+      "purple_terracotta_brick_slab",
+      "purple_terracotta_brick_stairs",
+      "purple_terracotta_brick_wall",
+      "blue_terracotta_bricks",
+      "blue_terracotta_brick_slab",
+      "blue_terracotta_brick_stairs",
+      "blue_terracotta_brick_wall",
+      "brown_terracotta_bricks",
+      "brown_terracotta_brick_slab",
+      "brown_terracotta_brick_stairs",
+      "brown_terracotta_brick_wall",
+      "green_terracotta_bricks",
+      "green_terracotta_brick_slab",
+      "green_terracotta_brick_stairs",
+      "green_terracotta_brick_wall",
+      "red_terracotta_bricks",
+      "red_terracotta_brick_slab",
+      "red_terracotta_brick_stairs",
+      "red_terracotta_brick_wall",
+      "black_terracotta_bricks",
+      "black_terracotta_brick_slab",
+      "black_terracotta_brick_stairs",
+      "black_terracotta_brick_wall",
+      "cracked_bricks",
+      "cracked_brick_slab",
+      "cracked_brick_stairs",
+      "cracked_brick_wall",
+      "paydirt",
+      "saguaro_cactus",
+      "barrel_cactus",
+      "barrel_cactus_flowered"
+    ],
+    "no_item_blocks": [
+      "tumbleweed",
+      "potted_saguaro_cactus",
+      "potted_barrel_cactus",
+      "potted_flowered_barrel_cactus"
+    ],
+    "items": [
+      "scuttler_tail",
+      "cowboy_hat",
+      "cracked_brick"
+    ],
+    "spawn_eggs": [
+      "scuttler_spawn_egg",
+      "cowboy_spawn_egg"
+    ],
+    "entities": [
+      "scuttler",
+      "cowboy",
+      "tumbleweed"
+    ],
+    "sounds": [
+      "scuttler_rattle",
+      "scuttler_step",
+      "scuttler_hurt",
+      "scuttler_death",
+      "tumbleweed_tumble",
+      "tumbleweed_break"
+    ],
+    "features": [
+      "paydirt",
+      "saguaro_cactus",
+      "surface_fossil"
+    ],
+    "configured_features": [
+      "badlands/barrel_cactus",
+      "badlands/saguaro_cactus",
+      "badlands/paydirt",
+      "badlands/surface_fossil"
+    ],
+    "placed_features": [
+      "badlands/barrel_cactus",
+      "badlands/saguaro_cactus",
+      "badlands/paydirt",
+      "badlands/surface_fossil"
+    ]
+  },
+  "defer_stage_10c": [
+    "suspicious_red_sand",
+    "refined_pottery_sherd",
+    "worker_pottery_sherd",
+    "whinny_pottery_sherd",
+    "music_disc_ghost_town",
+    "ghost_town",
+    "taniwha:suspicious_block_replacement"
+  ],
+  "excluded_dev": [
+    "dust_devil",
+    "reinforcement",
+    "caravanning",
+    "succulents",
+    "large_pots",
+    "additional_masonry"
+  ]
+}

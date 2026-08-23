@@ -11,7 +11,11 @@ import party.lemons.biomemakeover.worldgen.OrangeGlowshroomFeature;
 import party.lemons.biomemakeover.worldgen.GrassPatchFeature;
 import party.lemons.biomemakeover.worldgen.BalsaTrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.configurations.VegetationPatchConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacerType;
+import party.lemons.biomemakeover.worldgen.PaydirtFeature;
+import party.lemons.biomemakeover.worldgen.SaguaroCactusFeature;
+import party.lemons.biomemakeover.worldgen.SurfaceFossilFeature;
 
 public final class BMFeatures {
     public static final Feature<HugeMushroomFeatureConfiguration> HUGE_PURPLE_GLOWSHROOM = Registry.register(
@@ -30,6 +34,12 @@ public final class BMFeatures {
         BuiltInRegistries.FEATURE, BiomeMakeover.id("grass_patch"), new GrassPatchFeature(VegetationPatchConfiguration.CODEC));
     public static final TrunkPlacerType<BalsaTrunkPlacer> BLIGHTED_BALSA_TRUNK = Registry.register(
         BuiltInRegistries.TRUNK_PLACER_TYPE, BiomeMakeover.id("blighted_balsa"), new TrunkPlacerType<>(BalsaTrunkPlacer.CODEC));
+    public static final Feature<NoneFeatureConfiguration> PAYDIRT = Registry.register(BuiltInRegistries.FEATURE,
+        BiomeMakeover.id("paydirt"), new PaydirtFeature(NoneFeatureConfiguration.CODEC));
+    public static final Feature<NoneFeatureConfiguration> SAGUARO_CACTUS = Registry.register(BuiltInRegistries.FEATURE,
+        BiomeMakeover.id("saguaro_cactus"), new SaguaroCactusFeature(NoneFeatureConfiguration.CODEC));
+    public static final Feature<NoneFeatureConfiguration> SURFACE_FOSSIL = Registry.register(BuiltInRegistries.FEATURE,
+        BiomeMakeover.id("surface_fossil"), new SurfaceFossilFeature(NoneFeatureConfiguration.CODEC));
 
     private BMFeatures() {}
     public static void initialize() {}

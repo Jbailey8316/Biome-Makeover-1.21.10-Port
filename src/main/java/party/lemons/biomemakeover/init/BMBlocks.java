@@ -13,6 +13,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
@@ -35,8 +38,13 @@ import party.lemons.biomemakeover.block.UnderwaterGlowshroomBlock;
 import party.lemons.biomemakeover.block.MyceliumSproutsBlock;
 import party.lemons.biomemakeover.block.MyceliumRootsBlock;
 import party.lemons.biomemakeover.block.TallMushroomBlock;
+import party.lemons.biomemakeover.block.BarrelCactusBlock;
+import party.lemons.biomemakeover.block.SaguaroCactusBlock;
 
 public final class BMBlocks {
+    public static final TagKey<Block> BARREL_CACTUS_PLANTABLE = blockTag("barrel_cactus_plantable_on");
+    public static final TagKey<Block> SAGUARO_CACTUS_PLANTABLE = blockTag("saguaro_cactus_plantable_on");
+    public static final TagKey<Item> BARREL_CACTUS_IMMUNE = TagKey.create(Registries.ITEM, BiomeMakeover.id("barrel_cactus_immune"));
     public static final WoodType BLIGHTED_BALSA_WOOD_TYPE = new WoodType("biomemakeover:blighted_balsa", BlockSetType.OAK);
     private static final ResourceKey<ConfiguredFeature<?, ?>> ANCIENT_OAK_TREE = ResourceKey.create(
         Registries.CONFIGURED_FEATURE, BiomeMakeover.id("dark_forest/ancient_oak"));
@@ -118,6 +126,23 @@ public final class BMBlocks {
     public static final Block POTTED_ORANGE_GLOWSHROOM = potted("potted_orange_glowshroom", ORANGE_GLOWSHROOM, 13);
     public static final Block POTTED_BLIGHTED_BALSA_SAPLING = potted("potted_blighted_balsa_sapling", BLIGHTED_BALSA_SAPLING, 0);
     public static final Block POTTED_WILD_MUSHROOMS = potted("potted_wild_mushrooms", WILD_MUSHROOMS, 0);
+
+    // Reachable released Badlands content. Suspicious red sand and archaeology rewards remain Stage 10C-owned.
+    public static final Block PAYDIRT = register("paydirt", Block::new, BlockBehaviour.Properties.of().strength(1.4F)
+        .requiresCorrectToolForDrops().sound(SoundType.GRAVEL).mapColor(MapColor.TERRACOTTA_GRAY));
+    public static final Block TUMBLEWEED = registerNoItem("tumbleweed", Block::new,
+        BlockBehaviour.Properties.of().strength(0).mapColor(MapColor.COLOR_YELLOW));
+    public static final Block SAGUARO_CACTUS = register("saguaro_cactus", SaguaroCactusBlock::new,
+        BlockBehaviour.Properties.of().strength(0.4F).mapColor(MapColor.COLOR_GREEN).pushReaction(PushReaction.DESTROY).sound(SoundType.WOOL).randomTicks().noOcclusion());
+    public static final Block BARREL_CACTUS = register("barrel_cactus", p -> new BarrelCactusBlock(false, p),
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).pushReaction(PushReaction.DESTROY).randomTicks().sound(SoundType.WOOL).noOcclusion().instabreak().noCollision());
+    public static final Block BARREL_CACTUS_FLOWERED = register("barrel_cactus_flowered", p -> new BarrelCactusBlock(true, p),
+        BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).pushReaction(PushReaction.DESTROY).sound(SoundType.WOOL).noOcclusion().instabreak().noCollision());
+    public static final Block POTTED_SAGUARO_CACTUS = potted("potted_saguaro_cactus", SAGUARO_CACTUS, 0);
+    public static final Block POTTED_BARREL_CACTUS = potted("potted_barrel_cactus", BARREL_CACTUS, 0);
+    public static final Block POTTED_FLOWERED_BARREL_CACTUS = potted("potted_flowered_barrel_cactus", BARREL_CACTUS_FLOWERED, 0);
+    public static final Map<String, Block> TERRACOTTA_BRICKS = createTerracottaBricks();
+    public static final Map<String, Block> CRACKED_BRICKS = createCrackedBricks();
 
     public static final Block ANCIENT_OAK_LOG = register("ancient_oak_log", RotatedPillarBlock::new, woodProps());
     public static final Block STRIPPED_ANCIENT_OAK_LOG = register("stripped_ancient_oak_log", RotatedPillarBlock::new, woodProps());
@@ -208,6 +233,57 @@ public final class BMBlocks {
         return Map.copyOf(blocks);
     }
 
+    private static Map<String, Block> createTerracottaBricks() {
+        Map<String, Block> blocks = new LinkedHashMap<>();
+        terracottaFamily(blocks, "", MapColor.COLOR_ORANGE);
+        terracottaFamily(blocks, "white_", MapColor.SNOW);
+        terracottaFamily(blocks, "orange_", MapColor.COLOR_ORANGE);
+        terracottaFamily(blocks, "magenta_", MapColor.COLOR_MAGENTA);
+        terracottaFamily(blocks, "light_blue_", MapColor.COLOR_LIGHT_BLUE);
+        terracottaFamily(blocks, "yellow_", MapColor.COLOR_YELLOW);
+        terracottaFamily(blocks, "lime_", MapColor.COLOR_LIGHT_GREEN);
+        terracottaFamily(blocks, "pink_", MapColor.COLOR_PINK);
+        terracottaFamily(blocks, "gray_", MapColor.COLOR_GRAY);
+        terracottaFamily(blocks, "light_gray_", MapColor.COLOR_LIGHT_GRAY);
+        terracottaFamily(blocks, "cyan_", MapColor.COLOR_CYAN);
+        terracottaFamily(blocks, "purple_", MapColor.COLOR_PURPLE);
+        terracottaFamily(blocks, "blue_", MapColor.COLOR_BLUE);
+        terracottaFamily(blocks, "brown_", MapColor.COLOR_BROWN);
+        terracottaFamily(blocks, "green_", MapColor.COLOR_GREEN);
+        terracottaFamily(blocks, "red_", MapColor.COLOR_RED);
+        terracottaFamily(blocks, "black_", MapColor.COLOR_BLACK);
+        return Map.copyOf(blocks);
+    }
+
+    private static void terracottaFamily(Map<String, Block> result, String prefix, MapColor color) {
+        String base = prefix + "terracotta_bricks";
+        String decoration = prefix + "terracotta_brick";
+        Block block = register(base, Block::new, terracottaProps(color));
+        result.put(base, block);
+        result.put(decoration + "_slab", register(decoration + "_slab", SlabBlock::new, terracottaProps(color)));
+        result.put(decoration + "_stairs", register(decoration + "_stairs", p -> new StairBlock(block.defaultBlockState(), p), terracottaProps(color)));
+        result.put(decoration + "_wall", register(decoration + "_wall", WallBlock::new, terracottaProps(color)));
+    }
+
+    private static Map<String, Block> createCrackedBricks() {
+        Map<String, Block> blocks = new LinkedHashMap<>();
+        Block base = register("cracked_bricks", Block::new, terracottaProps(MapColor.COLOR_RED).strength(2F, 6F));
+        blocks.put("cracked_bricks", base);
+        blocks.put("cracked_brick_slab", register("cracked_brick_slab", SlabBlock::new, terracottaProps(MapColor.COLOR_RED).strength(2F, 6F)));
+        blocks.put("cracked_brick_stairs", register("cracked_brick_stairs", p -> new StairBlock(base.defaultBlockState(), p), terracottaProps(MapColor.COLOR_RED).strength(2F, 6F)));
+        blocks.put("cracked_brick_wall", register("cracked_brick_wall", WallBlock::new, terracottaProps(MapColor.COLOR_RED).strength(2F, 6F)));
+        return Map.copyOf(blocks);
+    }
+
+    private static BlockBehaviour.Properties terracottaProps(MapColor color) {
+        return BlockBehaviour.Properties.of().strength(2F).mapColor(color).instrument(NoteBlockInstrument.BASEDRUM)
+            .requiresCorrectToolForDrops().sound(SoundType.STONE);
+    }
+
+    private static TagKey<Block> blockTag(String path) {
+        return TagKey.create(Registries.BLOCK, BiomeMakeover.id(path));
+    }
+
     private static BlockBehaviour.Properties balsaLog(MapColor color) {
         return BlockBehaviour.Properties.of().mapColor(color).strength(2.0F, 2.0F).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).ignitedByLava();
     }
@@ -271,6 +347,11 @@ public final class BMBlocks {
             BLIGHTED_BALSA.values().forEach(entries::accept);
             entries.accept(PURPLE_GLOWSHROOM_BLOCK); entries.accept(GREEN_GLOWSHROOM_BLOCK);
             entries.accept(ORANGE_GLOWSHROOM_BLOCK); entries.accept(GLOWSHROOM_STEM);
+            TERRACOTTA_BRICKS.values().forEach(entries::accept);
+            CRACKED_BRICKS.values().forEach(entries::accept);
+        });
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(entries -> {
+            entries.accept(PAYDIRT); entries.accept(SAGUARO_CACTUS); entries.accept(BARREL_CACTUS); entries.accept(BARREL_CACTUS_FLOWERED);
         });
     }
 }

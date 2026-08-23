@@ -6,10 +6,12 @@ import party.lemons.biomemakeover.BiomeMakeover;
 
 public final class BMModelLayers {
     public static final ModelLayerLocation OWL = new ModelLayerLocation(BiomeMakeover.id("owl"), "main");
+    public static final ModelLayerLocation SCUTTLER = new ModelLayerLocation(BiomeMakeover.id("scuttler"), "main");
 
     private BMModelLayers() {}
 
     public static void register() {
         EntityModelLayerRegistry.registerModelLayer(OWL, OwlModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(SCUTTLER, ScuttlerModel::createBodyLayer);
     }
 }

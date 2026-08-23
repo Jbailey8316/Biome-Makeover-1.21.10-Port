@@ -44,7 +44,7 @@ historical families and eighteen current Mythas enhancement units.
 | Theme | Estimated parity | Summary |
 |---|---:|---|
 | Mushroom Fields | 6% | A wild-mushroom fragment exists, in the wrong theme/context |
-| Badlands | 0% | Released biome, archaeology, mob, and structure systems absent |
+| Badlands | 88% static | Stage 4 restored core blocks, cactus ecology, four worldgen chains, Scuttler, Tumbleweed and Cowboy patrol plumbing; Ghost Town remains Stage 10C, while horse hats and runtime verification remain open |
 | Swamp | 5% | A few shared plants exist; biome replacement and ecology absent |
 | Dark Forest | 48% | Useful blocks/Owl/worldgen slice, with major omissions and differences |
 | Beach ecology | 0% | Helmit Crab family absent |
@@ -77,15 +77,15 @@ rechecked at runtime before final exclusion.
 
 | Original released content | Current | Status | Restoration/dependencies |
 |---|---|---|---|
-| Barrel/saguaro vegetation, paydirt, surface fossils, tumbleweed | None | MISSING | Plants/blocks first, then configured/placed features and biome injection |
-| Terracotta bricks and related decoration | None | MISSING | Family registration, recipes, tags, loot |
-| Scuttler | None | MISSING | Blocks/tags used by behavior, entity AI, renderer, loot, sounds |
-| Cowboy/horse patrols and hats | None | MISSING | Items/equipment, entities, spawn rules, render layers |
+| Barrel/saguaro vegetation, paydirt, surface fossils, tumbleweed | Stage 4 registrations, mechanics, resources and four injected worldgen chains | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Runtime distribution, codec and visual checks remain |
+| Terracotta bricks and related decoration | All 17 verified families plus Cracked Bricks, recipes, loot, tags and resources | COMPATIBLE | Runtime geometry/connection/recipe checks remain |
+| Scuttler | Natural spawn, attributes, core AI/interactions, persistence, renderer/model, loot/sounds/resources | PARTIAL / NEEDS-RUNTIME-VERIFICATION | Exact flower-eating loot output and legacy animation timing require closure |
+| Cowboy/horse patrols and hats | Cowboy, equipment, mounted Badlands patrol injection and custom texture | PARTIAL | Historical horse hat layer and horse persistence fields remain open |
 | Ghost Town archaeology and structure loot | None | MISSING | Suspicious sand/pottery data, processors/templates, structures and loot |
 
-All seventeen Badlands capability units are missing. This theme should be
-restored independently from the mansion progression because its structure and
-archaeology risks differ.
+Stage 4 restores an estimated 88% static Badlands parity. Ghost Town remains
+the approved Stage 10C scope; client, dedicated-server, save/reload, multiplayer
+and existing-world validation have not been executed.
 
 ### Swamp
 

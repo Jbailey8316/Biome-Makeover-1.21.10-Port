@@ -15,11 +15,16 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.tags.TagKey;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.entity.OwlEntity;
 import party.lemons.biomemakeover.entity.GlowfishEntity;
+import party.lemons.biomemakeover.entity.ScuttlerEntity;
+import party.lemons.biomemakeover.entity.CowboyEntity;
+import party.lemons.biomemakeover.entity.TumbleweedEntity;
 
 public final class BMEntities {
+    public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
     public static final EntityType<OwlEntity> OWL = registerEntity(
         "owl",
         EntityType.Builder.<OwlEntity>of(OwlEntity::new, MobCategory.CREATURE)
@@ -32,6 +37,14 @@ public final class BMEntities {
         "glowfish", EntityType.Builder.<GlowfishEntity>of(GlowfishEntity::new, MobCategory.WATER_AMBIENT)
             .sized(0.7F, 0.4F).clientTrackingRange(4));
     public static final Item GLOWFISH_SPAWN_EGG = registerSpawnEgg("glowfish_spawn_egg", GLOWFISH);
+    public static final EntityType<ScuttlerEntity> SCUTTLER = registerEntity("scuttler",
+        EntityType.Builder.<ScuttlerEntity>of(ScuttlerEntity::new,MobCategory.CREATURE).sized(.8F,.6F).clientTrackingRange(12));
+    public static final Item SCUTTLER_SPAWN_EGG = registerSpawnEgg("scuttler_spawn_egg",SCUTTLER);
+    public static final EntityType<CowboyEntity> COWBOY = registerEntity("cowboy",
+        EntityType.Builder.<CowboyEntity>of(CowboyEntity::new,MobCategory.MONSTER).sized(.6F,1.95F).canSpawnFarFromPlayer().clientTrackingRange(12));
+    public static final Item COWBOY_SPAWN_EGG = registerSpawnEgg("cowboy_spawn_egg",COWBOY);
+    public static final EntityType<TumbleweedEntity> TUMBLEWEED = registerEntity("tumbleweed",
+        EntityType.Builder.<TumbleweedEntity>of(TumbleweedEntity::new,MobCategory.MISC).sized(.7F,.7F).clientTrackingRange(12));
 
     private BMEntities() {
     }
@@ -55,6 +68,8 @@ public final class BMEntities {
     public static void initialize() {
         FabricDefaultAttributeRegistry.register(OWL, OwlEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(GLOWFISH, GlowfishEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(SCUTTLER, ScuttlerEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(COWBOY, net.minecraft.world.entity.monster.Pillager.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,
@@ -65,5 +80,7 @@ public final class BMEntities {
             Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, net.minecraft.world.entity.animal.WaterAnimal::checkSurfaceWaterAnimalSpawnRules);
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS)
             .register(entries -> { entries.accept(OWL_SPAWN_EGG); entries.accept(GLOWFISH_SPAWN_EGG); });
+        SpawnPlacements.register(SCUTTLER,SpawnPlacementTypes.ON_GROUND,Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,ScuttlerEntity::checkSpawnRules);
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS).register(entries->{entries.accept(SCUTTLER_SPAWN_EGG);entries.accept(COWBOY_SPAWN_EGG);});
     }
 }
