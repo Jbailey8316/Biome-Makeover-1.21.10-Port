@@ -170,3 +170,22 @@ A static model submission is not an animation port.
 When a historical entity subclasses vanilla, inspect systems added to that vanilla class after the source release.
 New randomized variants, scales, dimensions, components, or renderer model selections must not silently alter the
 custom entity. Pin the historical default only when source evidence proves it never used the newer system.
+
+## 27. Treat render submission arguments as versioned API contracts
+
+Do not carry numeric sentinels into a changed render API by position. In 1.21.10 the final `submitBlock` argument is
+an outline color; `-1` is opaque white, not a neutral tint. Resolve every argument from current mappings/source and
+use the current no-effect value. Audit sibling renderers whenever two unrelated models show the same flat-white
+failure.
+
+## 28. Preserve RNG stream ownership, not only numeric ranges
+
+Matching inclusive/exclusive bounds is insufficient when historical code used a separate shared RNG. In recursive
+worldgen, moving shape-range draws onto the feature RNG changes the later recursion rolls and can materially alter a
+seed's total structure height. Trace which RNG instance owns every draw as well as its bounds and order.
+
+## 29. Natural-spawn contracts include density suppression
+
+Spawn weight and group bounds do not completely describe effective abundance. Preserve custom predicates, nearby-
+entity exclusion radii, brightness/height/substrate rules, and `getMaxSpawnClusterSize`; validate direct summons and
+natural/finalized spawns separately because setup paths can differ.

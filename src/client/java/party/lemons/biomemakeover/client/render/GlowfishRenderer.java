@@ -35,7 +35,7 @@ public final class GlowfishRenderer extends SalmonRenderer {
         pose.mulPose(Axis.XP.rotationDegrees(-90.0F));
         pose.scale(-0.75F, -0.75F, 0.75F);
         pose.translate(-0.5, 0.0, -0.5);
-        output.submitBlock(pose, BMBlocks.ORANGE_GLOWSHROOM.defaultBlockState(), state.lightCoords, OverlayTexture.NO_OVERLAY, -1);
+        output.submitBlock(pose, BMBlocks.ORANGE_GLOWSHROOM.defaultBlockState(), state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
         pose.popPose();
     }
 }

@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import party.lemons.biomemakeover.init.BMBlocks;
 
 public final class SaguaroCactusBlock extends Block implements BonemealableBlock {
+    private static final RandomSource SHAPE_RANDOM = RandomSource.create();
     public static final BooleanProperty HORIZONTAL = BooleanProperty.create("horizontal");
     public static final EnumProperty<Direction> HORIZONTAL_DIRECTION = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
@@ -80,7 +81,7 @@ public final class SaguaroCactusBlock extends Block implements BonemealableBlock
 
         boolean hasArms = random.nextInt(10) > 1;
         boolean hasTwoArms = random.nextInt(5) != 0;
-        int centerHeight = randomRange(random, 4, 8);
+        int centerHeight = randomRange(4, 8);
         BlockPos.MutableBlockPos cursor = origin.mutable();
 
         for (int y = 0; y < centerHeight; y++) {
@@ -94,12 +95,12 @@ public final class SaguaroCactusBlock extends Block implements BonemealableBlock
         if (!hasArms) return true;
 
         int centerEndY = cursor.getY();
-        int armStart = randomRange(random, 1, centerHeight - 2);
+        int armStart = randomRange(1, centerHeight - 2);
         Direction[] directions = northSouth ? NORTH_SOUTH : EAST_WEST;
         if (hasTwoArms) {
             for (Direction direction : directions) {
                 generateArm(block, level, direction, cursor.getX(), origin.getY() + armStart, cursor.getZ(), centerEndY, random);
-                armStart = randomRange(random, 1, centerHeight - 2);
+                armStart = randomRange(1, centerHeight - 2);
             }
         } else {
             generateArm(block, level, directions[random.nextInt(directions.length)], cursor.getX(), origin.getY() + armStart, cursor.getZ(), centerEndY, random);
@@ -128,7 +129,7 @@ public final class SaguaroCactusBlock extends Block implements BonemealableBlock
             .setValue(CONNECTIONS.get(direction.getOpposite()), true), 2);
 
         cursor.move(Direction.UP);
-        int amount = Math.max(1, centerHeight - cursor.getY() + randomRange(random, -3, -1));
+        int amount = Math.max(1, centerHeight - cursor.getY() + randomRange(-3, -1));
         for (int i = 0; i < amount; i++) {
             if (!level.getBlockState(cursor).isAir()) return;
             level.setBlock(cursor, block.defaultBlockState(), 2);
@@ -136,8 +137,10 @@ public final class SaguaroCactusBlock extends Block implements BonemealableBlock
         }
     }
 
-    private static int randomRange(RandomSource random, int minimum, int maximum) {
-        // Released RandomUtil.randomRange used an exclusive upper bound.
-        return minimum + random.nextInt(maximum - minimum);
+    private static int randomRange(int minimum, int maximum) {
+        // Released RandomUtil used its own shared RandomSource. Keeping shape
+        // ranges off the feature RNG also preserves the released recursion-roll
+        // call order instead of accidentally correlating height with recursion.
+        return minimum + SHAPE_RANDOM.nextInt(maximum - minimum);
     }
 }

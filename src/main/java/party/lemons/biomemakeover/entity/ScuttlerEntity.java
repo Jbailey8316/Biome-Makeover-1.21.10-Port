@@ -34,6 +34,8 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
@@ -52,8 +54,9 @@ public final class ScuttlerEntity extends Animal {
 
     public ScuttlerEntity(EntityType<? extends Animal> type, Level level) { super(type, level); }
     public static AttributeSupplier.Builder createAttributes() { return createAnimalAttributes().add(Attributes.MAX_HEALTH,10).add(Attributes.MOVEMENT_SPEED,.25); }
-    public static boolean checkSpawnRules(EntityType<ScuttlerEntity> type, LevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
-        return random.nextBoolean() && Animal.isBrightEnoughToSpawn(level,pos);
+    public static boolean checkSpawnRules(EntityType<ScuttlerEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
+        return random.nextBoolean() && level.getEntitiesOfClass(ScuttlerEntity.class,new AABB(pos).inflate(50),entity -> true).isEmpty()
+            && Animal.isBrightEnoughToSpawn(level,pos);
     }
     @Override protected void registerGoals() {
         goalSelector.addGoal(0,new FloatGoal(this));
@@ -72,6 +75,8 @@ public final class ScuttlerEntity extends Animal {
             if (direction != Math.signum(Math.sin(rattleTicks))) playSound(BMSounds.SCUTTLER_RATTLE,.25F,.75F+random.nextFloat());
         } else rattleTicks = 0;
     }
+    public float getRattleTime(float tickProgress) { return entityData.get(RATTLING) ? rattleTicks - 1F + tickProgress : 0F; }
+    @Override public int getMaxSpawnClusterSize(){ return 1; }
     @Override public boolean isFood(ItemStack stack) { return stack.is(BMEntities.SCUTTLER_FOOD); }
     @Override public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack=player.getItemInHand(hand);

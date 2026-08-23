@@ -24,7 +24,7 @@ public final class TumbleweedRenderer extends EntityRenderer<TumbleweedEntity,Tu
         pose.mulPose(Axis.YP.rotationDegrees(-90));
         pose.translate(-.5,-.5,.5);
         pose.mulPose(Axis.YP.rotationDegrees(90));
-        output.submitBlock(pose,BMBlocks.TUMBLEWEED.defaultBlockState(),state.lightCoords,OverlayTexture.NO_OVERLAY,-1);
+        output.submitBlock(pose,BMBlocks.TUMBLEWEED.defaultBlockState(),state.lightCoords,OverlayTexture.NO_OVERLAY,0);
         pose.popPose();
         super.submit(state,pose,output,camera);
     }

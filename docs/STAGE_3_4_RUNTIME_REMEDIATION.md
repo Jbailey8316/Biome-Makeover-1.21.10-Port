@@ -323,3 +323,89 @@ capture/release, persistence, and baby behavior require Prism verification.
 | Glowfish rendering/runtime | **FAIL OBSERVED; STATIC REMEDIATION; RETEST OPEN** |
 
 Stage 3 and Stage 4 do not yet have full runtime parity.
+
+## Fifth runtime checkpoint: remediation 2
+
+The input Prism JAR (`B177E9E7...A52793`) was stable in both restored biomes. Resource/registry loading, recipes,
+advancements, 33 biome modifications, Scuttler TEMPT_RANGE, basic Badlands/Mushroom Fields generation, Saguaro crash
+stability, and the reported Mushroom Fields vegetation observations are runtime PASS. Underwater Orange Glowshrooms
+and underground Purple Glowshrooms near Y=-8 remain source-confirmed released placements.
+
+### Tumbleweed and Glowfish white geometry
+
+**Historical behavior established:** both released renderers used the ordinary block renderer for an atlas-backed
+cutout block: the Tumbleweed cross model and the Glowfish's Orange Glowshroom attachment. The historical assets,
+model paths, transforms, full-bright Glowfish lighting, fin visibility, and tumble rotation are present.
+
+**Root cause/change:** the 1.21.10 render-state translations passed `-1` as the last `submitBlock` argument, treating
+it like an old tint sentinel. Current mappings establish that argument as `outlineColor`; `-1` requests opaque white.
+Both submissions now use `0` (no outline). A validator rejects this migration error in attached-block renderers.
+
+**Static status:** compiled/validator-gated after the final build. **Runtime:** Tumbleweed texture/orientation and
+Glowfish body/attachment/fin/full-bright rendering remain RETEST REQUIRED. Glowfish swimming plus bucket capture,
+release, and save/reload remain OPEN. The empty vanilla cod/salmon ambient-event messages are not emitted by BM code;
+Glowfish defines no ambient sound override, so no suppression or unrelated sound change was made.
+
+### Saguaro total height
+
+**Historical behavior established:** every segment is 4-7 blocks; initial recursion is 10%, each recursive segment is
+2%, and recursion starts at the actually placed trunk end. Crucially, released `RandomUtil.randomRange` used a separate
+shared `RandomSource`; only branch direction and recursion rolls consumed the feature RNG.
+
+**Root cause/change:** the first remediation put all range draws onto the feature RNG. Although the marginal segment
+ranges were correct, it changed the recursion-roll call sequence for each seed and could turn ordinary historical
+examples into recursively stacked examples. Shape ranges again use a separate shared RNG, preserving released RNG
+ownership, bounds, call order, and uncapped recursive distribution. No arbitrary height cap was introduced.
+
+**Static status:** source-matched. **Runtime:** crash and generation PASS; representative height/distribution RETEST.
+
+### Scuttler animation, food, and natural spawning
+
+**Historical behavior established:** RATTLING is synchronized, client `rattleTime` advances while true, and the model
+adds `sin(rattleTime)` to tail, tail3 and rattler rotations. The released articulated tail has tail/tail2/tail3/rattler
+segments. Natural spawn is CREATURE weight 4, group 1-2, 50% predicate, bright-enough, no other Scuttler in a 50-block
+inflated box, with maximum spawn cluster size 1. `scuttler_food` contains Pink Bud, driving temptation, breeding and
+the threat-state food-holder suppression observed in Prism.
+
+**Root cause/change:** the simplified modern model omitted tail2/tail3 and the renderer never transferred custom
+rattle time. The released hierarchy and rotations are restored through a dedicated render state. The missing 50-block
+density exclusion and single-cluster override are also restored; registered weight/group values already matched.
+
+**Runtime evidence retained:** TEMPT_RANGE, Pink Bud attraction/breeding hearts, fleeing, contextual rattle and food-
+holder suppression PASS. **Runtime open:** visible tail animation and statistically representative natural spawning.
+
+### Cowboy released contract
+
+Released direct summons are Cowboys with the custom texture but are not guaranteed to run natural-spawn finalization;
+the historical Hat render layer itself displayed the cap unconditionally. The actual system replaces Badlands patrol
+members with finalized Cowboys riding finalized horses. Ordinary members receive the Cowboy Hat through equipment
+finalization (historical head drop chance 25%); leaders replace it with the custom ominous banner (guaranteed drop),
+set a patrol target, and mark the horse for a visible hat. Horse `Hat` and `CowboySpawned` state are serialized and the
+latter controls patrol-horse despawning. The released death hook emulated pre-1.21 Bad Omen/Voluntary Exile because
+the custom banner was not vanilla's raid banner.
+
+The current patrol replacement/mount, Pillager AI, passenger yaw, entity texture, and ordinary equipment exist, but
+the historical unconditional Cowboy renderer hat, exact drop chances, leader banner, horse synchronized hat/layer,
+horse persistence/despawn marker, and a proven 1.21.10 raid-omen translation remain implementation gaps. They are not
+papered over in this focused render/animation remediation. Deterministic Prism coverage must temporarily force the
+patrol-spawner conditions in fresh Badlands (day >5, local player, patrol spawning enabled), observe ordinary and
+leader mounted members, then test equipment, combat, death/drops/reward, save/reload, restart and despawning. Direct
+`/summon biomemakeover:cowboy` tests only the direct entity path, not patrol finalization.
+
+### Runtime status after remediation 2
+
+| Contract | Status |
+|---|---|
+| Scuttler TEMPT_RANGE / Pink Bud attraction+breeding / flee / contextual rattle | **RUNTIME PASS** |
+| Scuttler tail animation / natural spawn parity | **STATIC REMEDIATION; RETEST OPEN** |
+| Saguaro crash / natural generation | **RUNTIME PASS** |
+| Saguaro historical height/distribution | **STATIC REMEDIATION; RETEST OPEN** |
+| Tumbleweed stability | **RUNTIME PASS** |
+| Tumbleweed movement | **RUNTIME PARTIAL/PASS; FINAL CONFIRMATION OPEN** |
+| Tumbleweed rendering | **STATIC REMEDIATION; RETEST OPEN** |
+| Glowfish stability | **RUNTIME PASS** |
+| Glowfish rendering / bucket persistence | **STATIC REMEDIATION / OPEN; RETEST REQUIRED** |
+| Cowboy summon/base behavior and Hat item/player rendering | **RUNTIME PASS** |
+| Cowboy patrol/mount/leader system | **OPEN** |
+
+Stage 3 and Stage 4 remain short of full runtime parity.

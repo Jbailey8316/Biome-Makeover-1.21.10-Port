@@ -300,6 +300,24 @@ $glowfishSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/le
 if ($glowfishSource -notmatch 'Salmon\.Variant\.DEFAULT') {
     Add-Failure 'Glowfish must opt out of post-1.20 random Salmon size variants'
 }
+$attachedBlockRenderers = @(
+    'src/client/java/party/lemons/biomemakeover/client/render/TumbleweedRenderer.java',
+    'src/client/java/party/lemons/biomemakeover/client/render/GlowfishRenderer.java'
+)
+foreach ($relative in $attachedBlockRenderers) {
+    $source = Get-Content (Join-Path $RepositoryRoot $relative) -Raw
+    if ($source -match 'submitBlock\([\s\S]*OverlayTexture\.NO_OVERLAY\s*,\s*-1\s*\)') {
+        Add-Failure "Entity-attached block uses -1 as a 1.21.10 outline color and will render white: $relative"
+    }
+}
+$scuttlerEntitySource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/ScuttlerEntity.java') -Raw
+$scuttlerRendererSource = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/ScuttlerRenderer.java') -Raw
+if ($scuttlerEntitySource -notmatch 'getMaxSpawnClusterSize\s*\(' -or $scuttlerEntitySource -notmatch 'inflate\(50\)') {
+    Add-Failure 'Scuttler released single-cluster and 50-block exclusion spawn contract is incomplete'
+}
+if ($scuttlerRendererSource -notmatch 'state\.rattleTime\s*=\s*entity\.getRattleTime') {
+    Add-Failure 'Scuttler renderer does not transfer released rattle animation state'
+}
 
 $registryByTagDirectory = @{
     'block' = $blocks; 'item' = $items; 'entity_type' = $entities
