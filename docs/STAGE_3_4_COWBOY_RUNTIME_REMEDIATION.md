@@ -42,9 +42,8 @@ render states, and the Bad Omen/Raid Omen progression split.
 - Restored ordinary 0.25 and leader 2.0 head equipment drop chances.
 - Restored ordinary hat equipment and leader finalization with the exact seven historical pattern/color layers using
   `BANNER_PATTERNS`, plus the historical gold ominous-banner name.
-- Restored the leader's historical Bad Omen duration/stacking. Modern vanilla converts that effect to Raid Omen on
-  village entry; the historical direct Voluntary Exile award remains necessary because BM's banner intentionally does
-  not match vanilla's current banner predicate. No vanilla Pillager or raid method is mixed into globally.
+- The first compatibility pass restored historical direct Bad Omen duration/stacking. The later 1.21.10 captain
+  checkpoint below supersedes that interim translation with the current vanilla Ominous Bottle mechanism.
 - Restored `Hat` as synchronized horse data and both `Hat`/`CowboySpawned` under their historical serialized names.
 - Restored patrol-horse removal rules using current SADDLE/BODY equipment and leash state.
 - Restored patrol marking for every horse and leader-hat marking only for leaders.
@@ -73,10 +72,10 @@ the same geometry through their own transforms.
 
 The 1.21.10 item had been created with `humanoidArmor(LEATHER, HELMET)`. Besides equipment behavior, that method
 assigns the leather equipment asset, so Minecraft correctly—but historically incorrectly—rendered leather helmet
-geometry. The modern translation now supplies the historical durability, armor, repair and equip contracts plus a
-head-slot `Equippable` without a vanilla render asset. An equipped-item-aware player feature layer renders the already
-restored historical model and follows the animated player head. Inventory and dropped rendering remain the existing
-item-model path; Cowboy and horse layers are unchanged.
+geometry. The first translation supplied the historical durability, armor, repair and equip contracts plus a
+head-slot `Equippable` without a vanilla render asset, but its generic player feature layer failed visual runtime
+acceptance. The dedicated armor-renderer correction is recorded below. Inventory and dropped rendering remain the
+existing item-model path; Cowboy and horse layers are unchanged.
 
 The released 1.20.1 source itself exposed a command that invoked private `PatrolSpawner.spawnPatrolMember` through a
 mixin invoker. The temporary 1.21.10 command `/bmtest cowboy_patrol` retains that evidence-backed design: while an
@@ -88,3 +87,31 @@ The hook is permission-level 2, never runs automatically, adds no registry entry
 It is packaged only so Prism can exercise the production path and should be removed after Cowboy patrol acceptance.
 Flat, open Badlands terrain gives the spawn predicate the best chance of creating all four members; the command reports
 the actual successful count rather than fabricating failures.
+
+## Player render-path correction and modern captain semantics
+
+Prism showed that registering a player layer and removing the leather asset was necessary but insufficient. The first
+layer reused `CowboyHatLayer`, including the Cowboy entity's historical `-0.2` translation, and operated as an extra
+living-entity feature instead of replacing the equipment render submission. Released Fabric player rendering used
+`HatArmorRenderer`: it copied the animated humanoid head pose into the hat model and replaced the default armor render.
+Fabric 1.21.10 retains that extension point. `CowboyHatArmorRenderer` is now registered for the item, follows the
+provided animated armor head, cancels exactly the model's baked two-pixel pivot (`-0.125` block units), and causes
+`HumanoidArmorLayer` to cancel its default submission. This applies to wide and slim players without relying on avatar
+renderer registration. The item also remains asset-free, so no vanilla leather geometry exists underneath it.
+
+Vanilla 1.21.10 does not apply Bad Omen when a patrol captain dies. Its Pillager entity loot table has a captain-only
+pool using the raider `is_captain` type-specific predicate. The pool drops exactly one Ominous Bottle and assigns its
+amplifier uniformly from 0 through 4. It contains no killed-by-player condition; ordinary entity-loot/game-rule rules
+govern whether loot is produced. Drinking the bottle is the later action that grants Bad Omen, which vanilla converts
+to Raid Omen at the appropriate current gameplay boundary.
+
+Inherited `Raider.isCaptain()` compares the head stack to vanilla's exact ominous banner, so BM's intentionally custom
+banner made its leader fail the vanilla loot predicate. Cowboy now overrides that identity narrowly: it is a captain
+only when patrol-leader state and BM's exact custom banner both match. Its loot table mirrors vanilla Pillager's exact
+captain pool, including `minecraft:entities/pillager` random-sequence behavior, under BM's existing loot-table ID. The interim direct Bad Omen application
+was removed, so the two progression paths cannot fire together.
+
+The 1.21.10 Voluntary Exile advancement independently requires vanilla's exact banner component list. BM's custom
+seven-pattern banner cannot satisfy it, so focused manual awarding remains for a responsible player or tame-wolf owner
+who kills a matching BM captain. That award does not create Bad Omen or a bottle. Mounted patrol behavior, the custom
+leader banner, and the deliberately hatted leader horse are unchanged.

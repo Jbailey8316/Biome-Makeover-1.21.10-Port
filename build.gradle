@@ -316,7 +316,6 @@ processResources {
         include 'data/biomemakeover/loot_tables/blocks/paydir*.json'
         include 'data/biomemakeover/loot_tables/blocks/*cactus*.json'
         include 'data/biomemakeover/loot_tables/entities/scuttler.json'
-        include 'data/biomemakeover/loot_tables/entities/cowboy.json'
         include 'data/biomemakeover/loot_tables/gameplay/scuttler_eating.json'
         include 'data/biomemakeover/recipes/decoration/terracotta_bricks/**/*.json'
         include 'data/biomemakeover/recipes/decoration/cracked_bricks/**/*.json'

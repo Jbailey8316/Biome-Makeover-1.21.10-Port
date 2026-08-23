@@ -233,3 +233,10 @@ the unwanted vanilla asset, and render the historical model from an equipped-ite
 A deterministic test command must invoke the same production method or service used by normal gameplay. It must not
 reconstruct look-alike state in parallel. Keep such hooks operator-only, inert unless invoked, clearly documented and
 scheduled for removal after their runtime gate is accepted.
+
+## 37. Port modern vanilla progression at its data-driven trigger
+
+Do not assume a changed vanilla reward remains entity death code. Trace predicates, loot tables, functions, item
+components, advancement criteria and later effect transitions. When a custom visual identity prevents a vanilla
+predicate from recognizing the entity, restore that identity narrowly and mirror the authoritative vanilla data path;
+do not combine the modern reward with the superseded legacy effect.

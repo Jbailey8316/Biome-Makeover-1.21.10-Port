@@ -341,13 +341,15 @@ $cowboyRenderer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/
 $horseRendererMixin = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/mixin/client/HorseRendererMixin.java') -Raw
 $itemsSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw
 $clientInitializer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/BiomeMakeoverClient.java') -Raw
-$hatLayer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/CowboyHatLayer.java') -Raw
+$playerHatLayer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/CowboyHatArmorRenderer.java') -Raw
 $debugCommands = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/command/BMDebugCommands.java') -Raw
 $patrolInvoker = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/PatrolSpawnerInvoker.java') -Raw
 if ($cowboySource -notmatch 'setDropChance\(EquipmentSlot\.HEAD\s*,\s*\.25F\)' -or
     $cowboySource -notmatch 'setDropChance\(EquipmentSlot\.HEAD\s*,\s*2\.0F\)' -or
-    $cowboySource -notmatch 'DataComponents\.BANNER_PATTERNS' -or $cowboySource -notmatch 'MobEffects\.BAD_OMEN') {
-    Add-Failure 'Cowboy ordinary/leader equipment, custom banner, drop, or modern Bad Omen contract is incomplete'
+    $cowboySource -notmatch 'DataComponents\.BANNER_PATTERNS' -or
+    $cowboySource -notmatch '@Override public boolean isCaptain\(\)' -or
+    $cowboySource -match 'MobEffects\.BAD_OMEN') {
+    Add-Failure 'Cowboy equipment/banner or modern captain identity is incomplete, or legacy direct Bad Omen remains'
 }
 if ($patrolSource -notmatch 'biomemakeover\$setCowboySpawned' -or $patrolSource -notmatch 'if\(leader\).*biomemakeover\$setHat') {
     Add-Failure 'Badlands patrol replacement does not mark every horse persistent and the leader horse hatted'
@@ -364,9 +366,19 @@ if ($itemsSource -match 'COWBOY_HAT[^\r\n]+humanoidArmor' -or
     $itemsSource -notmatch 'COWBOY_HAT[\s\S]{0,500}\.durability\(500\)') {
     Add-Failure 'Cowboy Hat must retain historical wearable durability without a vanilla armor render asset'
 }
-if ($clientInitializer -notmatch 'type==EntityType\.PLAYER' -or
-    $hatLayer -notmatch 'headEquipment\.is\(BMItems\.COWBOY_HAT\)') {
-    Add-Failure 'Player Cowboy Hat must use the historical custom model through an equipped-item-aware client layer'
+if ($clientInitializer -notmatch 'ArmorRenderer\.register' -or
+    $clientInitializer -notmatch 'CowboyHatArmorRenderer' -or
+    $playerHatLayer -notmatch 'implements ArmorRenderer' -or
+    $playerHatLayer -notmatch 'translate\(0,-0\.125F,0\)') {
+    Add-Failure 'Player Cowboy Hat must use the historical custom model through Fabric custom armor rendering'
+}
+$cowboyLootPath = Join-Path $builtData 'biomemakeover/loot_table/entities/cowboy.json'
+$cowboyLootRaw = if (Test-Path $cowboyLootPath) { Get-Content $cowboyLootPath -Raw } else { '' }
+if ($cowboyLootRaw -notmatch '"is_captain"\s*:\s*true' -or
+    $cowboyLootRaw -notmatch 'minecraft:set_ominous_bottle_amplifier' -or
+    $cowboyLootRaw -notmatch 'minecraft:entities/pillager' -or
+    $cowboyLootRaw -notmatch '"max"\s*:\s*4\.0' -or $cowboyLootRaw -notmatch '"min"\s*:\s*0\.0') {
+    Add-Failure 'Cowboy captain loot must mirror the 1.21.10 Pillager Ominous Bottle pool and 0-4 amplifier range'
 }
 if ($debugCommands -notmatch 'requires\(source -> source\.hasPermission\(2\)\)' -or
     $debugCommands -notmatch 'biomemakeover\$spawnPatrolMember' -or

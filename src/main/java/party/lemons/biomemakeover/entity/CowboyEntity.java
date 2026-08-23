@@ -16,10 +16,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.util.Mth;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -66,19 +62,15 @@ public final class CowboyEntity extends Pillager {
         return banner;
     }
 
+    @Override public boolean isCaptain() {
+        return isPatrolLeader() && ItemStack.matches(getItemBySlot(EquipmentSlot.HEAD),getOminousBanner());
+    }
+
     @Override public void die(DamageSource source) {
-        if(level() instanceof ServerLevel server && isPatrolLeader() && getCurrentRaid()==null
-            && server.getRaidAt(blockPosition())==null) {
+        if(level() instanceof ServerLevel && isCaptain()) {
             ServerPlayer player=source.getEntity() instanceof ServerPlayer direct ? direct : null;
             if(source.getEntity() instanceof Wolf wolf && wolf.isTame() && wolf.getOwner() instanceof ServerPlayer owner) player=owner;
-            if(player!=null && ItemStack.matches(getItemBySlot(EquipmentSlot.HEAD),getOminousBanner())) {
-                MobEffectInstance existing=player.getEffect(MobEffects.BAD_OMEN);
-                int amplifier=existing==null ? 0 : Mth.clamp(existing.getAmplifier()+1,0,4);
-                if(existing!=null) player.removeEffectNoUpdate(MobEffects.BAD_OMEN);
-                if(!server.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS))
-                    player.addEffect(new MobEffectInstance(MobEffects.BAD_OMEN,120000,amplifier,false,false,true));
-                grantVoluntaryExile(player);
-            }
+            if(player!=null) grantVoluntaryExile(player);
         }
         super.die(source);
     }
