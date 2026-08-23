@@ -220,3 +220,16 @@ test each reachable creation path; do not force patrol-only mounts, leaders, or 
 When vanilla progression changes (for example Bad Omen becoming the precursor to Raid Omen), preserve the historical
 player-visible result through current effects and criteria rather than globally reverting vanilla raid code. Confine
 the adaptation to the custom feature's trigger and retain current vanilla behavior outside that scope.
+
+## 35. Wearability and armor geometry are separate modern contracts
+
+Historical custom armor renderers could replace vanilla armor geometry while an item still supplied equipment stats.
+In the component-based equipment pipeline, assigning a vanilla equipment asset silently restores that vanilla model.
+For custom wearable geometry, preserve equip slot, attributes, durability, repair, and equip sound independently, omit
+the unwanted vanilla asset, and render the historical model from an equipped-item-aware client layer.
+
+## 36. Runtime hooks must enter production paths
+
+A deterministic test command must invoke the same production method or service used by normal gameplay. It must not
+reconstruct look-alike state in parallel. Keep such hooks operator-only, inert unless invoked, clearly documented and
+scheduled for removal after their runtime gate is accepted.

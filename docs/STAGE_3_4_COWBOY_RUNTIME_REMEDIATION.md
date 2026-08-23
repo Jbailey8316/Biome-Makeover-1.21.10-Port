@@ -62,3 +62,29 @@ equipment and state. Static/package validation cannot prove mixin application, v
 despawn timing, drops, save/reload, or Raid Omen behavior; all remain targeted Prism tests.
 
 Stage 3/4 is not declared closed until this Cowboy system passes runtime verification. Stage 5 was not started.
+
+## Player-hat and deterministic patrol-test checkpoint
+
+Historical Fabric registered `HatArmorRenderer` for `cowboy_hat`. That renderer selected the same dedicated 64x64
+Cowboy Hat geometry and `textures/misc/cowboy_hat.png`, copied the humanoid model's head pose into it, and rendered it
+instead of vanilla helmet geometry. The item remained a head-slot wearable with 500 durability, two armor points,
+zero enchantability, leather repair, and the leather equip sound. Cowboy and leader-horse layers deliberately used
+the same geometry through their own transforms.
+
+The 1.21.10 item had been created with `humanoidArmor(LEATHER, HELMET)`. Besides equipment behavior, that method
+assigns the leather equipment asset, so Minecraft correctly—but historically incorrectly—rendered leather helmet
+geometry. The modern translation now supplies the historical durability, armor, repair and equip contracts plus a
+head-slot `Equippable` without a vanilla render asset. An equipped-item-aware player feature layer renders the already
+restored historical model and follows the animated player head. Inventory and dropped rendering remain the existing
+item-model path; Cowboy and horse layers are unchanged.
+
+The released 1.20.1 source itself exposed a command that invoked private `PatrolSpawner.spawnPatrolMember` through a
+mixin invoker. The temporary 1.21.10 command `/bmtest cowboy_patrol` retains that evidence-backed design: while an
+operator stands in Badlands, it asks the real spawner method for one leader and three ordinary nearby members. The
+existing production `PatrolSpawnerMixin` consequently performs all Cowboy replacement, finalization, horse creation,
+mounting, banner, leader target and persistence-marker work. The command contains none of that logic.
+
+The hook is permission-level 2, never runs automatically, adds no registry entry, and rejects non-Badlands context.
+It is packaged only so Prism can exercise the production path and should be removed after Cowboy patrol acceptance.
+Flat, open Badlands terrain gives the spawn predicate the best chance of creating all four members; the command reports
+the actual successful count rather than fabricating failures.

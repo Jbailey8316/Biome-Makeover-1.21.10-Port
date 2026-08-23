@@ -339,6 +339,11 @@ $patrolSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemo
 $horseSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/HorseMixin.java') -Raw
 $cowboyRenderer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/CowboyRenderer.java') -Raw
 $horseRendererMixin = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/mixin/client/HorseRendererMixin.java') -Raw
+$itemsSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw
+$clientInitializer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/BiomeMakeoverClient.java') -Raw
+$hatLayer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/CowboyHatLayer.java') -Raw
+$debugCommands = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/command/BMDebugCommands.java') -Raw
+$patrolInvoker = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/PatrolSpawnerInvoker.java') -Raw
 if ($cowboySource -notmatch 'setDropChance\(EquipmentSlot\.HEAD\s*,\s*\.25F\)' -or
     $cowboySource -notmatch 'setDropChance\(EquipmentSlot\.HEAD\s*,\s*2\.0F\)' -or
     $cowboySource -notmatch 'DataComponents\.BANNER_PATTERNS' -or $cowboySource -notmatch 'MobEffects\.BAD_OMEN') {
@@ -353,6 +358,20 @@ if ($horseSource -notmatch 'putBoolean\("Hat"' -or $horseSource -notmatch 'putBo
 }
 if ($cowboyRenderer -notmatch 'CowboyHatLayer' -or $horseRendererMixin -notmatch 'biomemakeover\$setHasHat') {
     Add-Failure 'Cowboy or leader-horse hat render-state chain is incomplete'
+}
+if ($itemsSource -match 'COWBOY_HAT[^\r\n]+humanoidArmor' -or
+    $itemsSource -notmatch 'COWBOY_HAT[\s\S]{0,500}Equippable\.builder\(EquipmentSlot\.HEAD\)' -or
+    $itemsSource -notmatch 'COWBOY_HAT[\s\S]{0,500}\.durability\(500\)') {
+    Add-Failure 'Cowboy Hat must retain historical wearable durability without a vanilla armor render asset'
+}
+if ($clientInitializer -notmatch 'type==EntityType\.PLAYER' -or
+    $hatLayer -notmatch 'headEquipment\.is\(BMItems\.COWBOY_HAT\)') {
+    Add-Failure 'Player Cowboy Hat must use the historical custom model through an equipped-item-aware client layer'
+}
+if ($debugCommands -notmatch 'requires\(source -> source\.hasPermission\(2\)\)' -or
+    $debugCommands -notmatch 'biomemakeover\$spawnPatrolMember' -or
+    $patrolInvoker -notmatch '@Invoker\("spawnPatrolMember"\)') {
+    Add-Failure 'Temporary Cowboy patrol test hook must remain operator-only and invoke the production PatrolSpawner path'
 }
 $clientMixinConfig = Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.client.mixins.json') -Raw | ConvertFrom-Json
 if ('HorseRenderStateMixin' -notin @($clientMixinConfig.client) -or 'HorseRendererMixin' -notin @($clientMixinConfig.client)) {

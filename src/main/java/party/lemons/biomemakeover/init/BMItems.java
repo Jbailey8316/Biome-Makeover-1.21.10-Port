@@ -2,10 +2,15 @@ package party.lemons.biomemakeover.init;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -15,9 +20,9 @@ import net.minecraft.world.item.HangingSignItem;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.Consumables;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
-import net.minecraft.world.item.equipment.ArmorMaterials;
-import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.material.Fluids;
@@ -44,7 +49,14 @@ public final class BMItems {
         BMBlocks.BLIGHTED_BALSA_HANGING_SIGN, BMBlocks.BLIGHTED_BALSA_WALL_HANGING_SIGN, p.stacksTo(16)));
     public static final Item SCUTTLER_TAIL = register("scuttler_tail");
     public static final Item PINK_BUD = register("pink_bud");
-    public static final Item COWBOY_HAT = register("cowboy_hat", p -> new Item(p.humanoidArmor(ArmorMaterials.LEATHER, ArmorType.HELMET)));
+    public static final Item COWBOY_HAT = register("cowboy_hat", p -> new Item(p
+        .durability(500)
+        .attributes(ItemAttributeModifiers.builder().add(Attributes.ARMOR,
+            new AttributeModifier(ResourceLocation.withDefaultNamespace("armor.helmet"),2,
+                AttributeModifier.Operation.ADD_VALUE),EquipmentSlotGroup.HEAD).build())
+        .repairable(Items.LEATHER)
+        .component(DataComponents.EQUIPPABLE,Equippable.builder(EquipmentSlot.HEAD)
+            .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER).build())));
     public static final Item CRACKED_BRICK = register("cracked_brick");
 
     private BMItems() {}

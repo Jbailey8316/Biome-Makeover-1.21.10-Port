@@ -16,6 +16,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HorseRenderState;
 import net.minecraft.client.model.HorseModel;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import party.lemons.biomemakeover.client.render.CowboyHatLayer;
 import party.lemons.biomemakeover.client.render.CowboyRenderer;
 import party.lemons.biomemakeover.init.BMBlocks;
@@ -46,6 +48,13 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
                 RenderLayerParent<HorseRenderState,HorseModel> parent=(RenderLayerParent<HorseRenderState,HorseModel>)(Object)renderer;
                 @SuppressWarnings({"rawtypes","unchecked"})
                 net.minecraft.client.renderer.entity.layers.RenderLayer layer=new CowboyHatLayer<>(parent,context.getModelSet(),true);
+                helper.register(layer);
+            }
+            if(type==EntityType.PLAYER) {
+                @SuppressWarnings("unchecked")
+                RenderLayerParent<AvatarRenderState,PlayerModel> parent=(RenderLayerParent<AvatarRenderState,PlayerModel>)(Object)renderer;
+                @SuppressWarnings({"rawtypes","unchecked"})
+                net.minecraft.client.renderer.entity.layers.RenderLayer layer=new CowboyHatLayer<>(parent,context.getModelSet(),false,true);
                 helper.register(layer);
             }
         });
