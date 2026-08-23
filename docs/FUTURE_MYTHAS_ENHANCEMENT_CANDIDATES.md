@@ -24,3 +24,19 @@ from restoring the released Witch progression and must receive its own approval.
 
 Future Mythas design may allow Scuttlers to wear Witch Hats. This is custom content, not a released Swamp or Badlands
 parity requirement.
+
+## Hermit Crab Witch Hats
+
+Future Mythas design may also allow Hermit Crabs to wear Witch Hats. This must remain separate from released Swamp
+parity and from the deferred historical Witch progression.
+
+## Lightning Bug visual modernization
+
+The released Lightning Bug's layered cubes, pulse/color behavior, full-bright rendering, and sparks are now accepted
+from source and showcase evidence. Any later visual modernization is an intentional Mythas redesign and must not be
+used to revise the parity baseline.
+
+## Willow bee-nest minimum height
+
+The released 2% vanilla-style decorator can select very low Willow trunk positions. A future optional aesthetic rule
+could impose a minimum attachment height, but it would intentionally differ from released behavior.

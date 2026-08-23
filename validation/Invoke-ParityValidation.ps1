@@ -443,7 +443,18 @@ foreach($tagPath in @('block/logs.json','block/logs_that_burn.json','item/logs.j
     foreach($logId in $swampLogIds){if($logId -notin $tagValues){Add-Failure "$tagPath omits Stage 5 trunk $logId required by leaf distance propagation"}}
 }
 $willowItemDefinition=Join-Path $builtAssets 'items/willow_leaves.json'
-if(-not(Test-Path $willowItemDefinition) -or (Get-Content $willowItemDefinition -Raw) -notmatch 'minecraft:constant' -or (Get-Content $willowItemDefinition -Raw) -notmatch '-12012264') { Add-Failure 'Willow Leaves item definition must retain historical no-world foliage tint' }
+$cypressItemDefinition=Join-Path $builtAssets 'items/swamp_cypress_leaves.json'
+if(-not(Test-Path $willowItemDefinition) -or (Get-Content $willowItemDefinition -Raw) -notmatch 'biomemakeover:block/willow_leaves' -or (Get-Content $willowItemDefinition -Raw) -notmatch 'minecraft:constant' -or (Get-Content $willowItemDefinition -Raw) -notmatch '-12012264') { Add-Failure 'Willow Leaves item definition must tint the block model with its historical no-world foliage color' }
+if(-not(Test-Path $cypressItemDefinition) -or (Get-Content $cypressItemDefinition -Raw) -notmatch 'biomemakeover:block/swamp_cypress_leaves' -or (Get-Content $cypressItemDefinition -Raw) -notmatch 'minecraft:constant' -or (Get-Content $cypressItemDefinition -Raw) -notmatch '-8082577') { Add-Failure 'Swamp Cypress Leaves item definition must tint the block model with its historical no-world foliage color' }
+$blocksSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java') -Raw
+if($blocksSource -notmatch 'registerOnWater\("small_lily_pad"' -or $blocksSource -notmatch 'registerOnWater\("water_lily"' -or $blocksSource -notmatch 'new PlaceOnWaterBlockItem') { Add-Failure 'Released Small Lily Pad and Water Lily items must retain their source-water placement item contract' }
+foreach($leafId in @('willow_leaves','swamp_cypress_leaves')){
+    $leafLootPath=Join-Path $builtData "biomemakeover/loot_table/blocks/$leafId.json"
+    if(-not(Test-Path $leafLootPath)){Add-Failure "Missing Stage 5 leaf loot table $leafId";continue}
+    $leafLootRaw=Get-Content $leafLootPath -Raw
+    if($leafLootRaw -match '"item"\s*:\s*"minecraft:shears"' -or $leafLootRaw -match '"items"\s*:\s*\[' -or $leafLootRaw -match '"enchantments"\s*:\s*\[\s*\{\s*"enchantment"') { Add-Failure "$leafId retains obsolete pre-1.21.10 tool-predicate syntax" }
+    if($leafLootRaw -notmatch '"items"\s*:\s*"minecraft:shears"' -or $leafLootRaw -notmatch '"minecraft:enchantments"' -or $leafLootRaw -notmatch '"enchantments"\s*:\s*"minecraft:silk_touch"') { Add-Failure "$leafId does not retain the modern shears/Silk Touch leaf-acquisition contract" }
+}
 $lightningSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/LightningBugEntity.java') -Raw
 if($lightningSource -notmatch 'visualPhase' -or $lightningSource -notmatch 'advanceVisualColor' -or $lightningRendererSource.IndexOf('LIGHTNING_BUG_INNER') -gt $lightningRendererSource.IndexOf('LIGHTNING_BUG_OUTER')) { Add-Failure 'Lightning Bug must retain historical randomized pulse, interpolated position color, and inner/outer layer order' }
 $clientMixinConfig = Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.client.mixins.json') -Raw | ConvertFrom-Json

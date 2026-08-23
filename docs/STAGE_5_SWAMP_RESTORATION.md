@@ -130,3 +130,12 @@ and exact released Lightning Bug pulse/color/layer semantics. Willow decay, asso
 inventory tint, and Lightning Bug visual behavior require a fresh Prism retest. Low Willow bee nests and cube-shaped
 Lightning Bugs are source-confirmed released outcomes and were not redesigned. See
 `STAGE_5_RUNTIME_REMEDIATION_2.md`.
+
+## K. Runtime remediation 3 status
+
+Runtime Remediation 3 translates the released Willow/Cypress leaf acquisition tables to the canonical 1.21.10 tool
+predicate schema, restores the released water-targeting item class for Small Lily Pad and Water Lily, and routes both
+custom leaf item tints directly through their block models. The accepted Lightning Bug and low Willow bee-nest
+behavior remain unchanged. Terrain discontinuities are not attributed to BM without a controlled same-seed result;
+Stage 5 adds no terrain-shaping registry or code. See `STAGE_5_RUNTIME_REMEDIATION_3.md` for evidence and the final
+comprehensive Prism checklist. Stage 5 remains runtime-open.

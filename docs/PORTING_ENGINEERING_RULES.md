@@ -295,3 +295,17 @@ Item log tags remain a separate crafting/fuel contract and must also be audited.
 In 1.21.10 a block color provider does not tint the inventory model. Historical helpers that registered a single
 provider for block and item must be translated into a block provider plus item-definition tint source. Preserve the
 historical world/biome condition for placed blocks and the historical no-world/default color for inventory rendering.
+
+## 46. Water-surface blocks may require a specialized item contract
+
+A block inheriting vanilla lily-pad survival rules can generate correctly yet remain impossible for players to place.
+Historical `PlaceOnWaterBlockItem` registration performs a fluid-aware raycast that a generic `BlockItem` does not.
+Audit block construction and item construction separately when porting water-surface flora; preserve valid-fluid and
+survival rules rather than broadening placement.
+
+## 47. Convert nested item predicates, not only loot function names
+
+Loot JSON may parse while retaining obsolete item and enchantment predicate shapes that alter tool-gated behavior.
+Compare migrated Shears, Silk Touch, and Fortune tables with the current vanilla canonical table. In 1.21.10 this
+includes scalar `items` and component-based `minecraft:enchantments` predicates. Validate the packaged result because
+source-copy tasks may perform the translation after the source tree is inspected.

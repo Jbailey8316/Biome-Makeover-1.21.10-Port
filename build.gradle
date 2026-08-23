@@ -134,9 +134,16 @@ tasks.register('generateStage5ItemDefinitions') {
         ids.unique().sort().each { id ->
             def model = [type: 'minecraft:model', model: "biomemakeover:item/${id}"]
             // Historical simple block-with-item color providers tinted both render paths.
-            // Item colors are data-driven in 1.21.10, so retain the historical inventory defaults here.
-            if (id == 'willow_leaves') model.tints = [[type:'minecraft:constant', value:-12012264]]
-            if (id == 'swamp_cypress_leaves') model.tints = [[type:'minecraft:constant', value:-8082577]]
+            // Vanilla 1.21.10 foliage definitions apply the tint directly to the block model;
+            // routing through the legacy item-model parent leaves item render paths untinted.
+            if (id == 'willow_leaves') {
+                model.model = 'biomemakeover:block/willow_leaves'
+                model.tints = [[type:'minecraft:constant', value:-12012264]]
+            }
+            if (id == 'swamp_cypress_leaves') {
+                model.model = 'biomemakeover:block/swamp_cypress_leaves'
+                model.tints = [[type:'minecraft:constant', value:-8082577]]
+            }
             new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson([model:model])) + System.lineSeparator()
         }
         def clientJar = fileTree("${projectDir}/.gradle/loom-cache/minecraftMaven").matching { include '**/minecraft-clientOnly-*.jar' }.files.sort { it.absolutePath }.last()
@@ -551,6 +558,37 @@ processResources {
                     old.clear();old.putAll([condition:'minecraft:random_chance_with_enchanted_bonus',enchantment:'minecraft:looting',unenchanted_chance:0.05,enchanted_chance:[type:'minecraft:linear',base:0.06,per_level_above_first:0.01]])
                 }
                 decayedLoot.text=JsonOutput.prettyPrint(JsonOutput.toJson(loot))+System.lineSeparator()
+            }
+            // Released Willow/Cypress tables match vanilla leaf behavior, but their 1.20
+            // tool predicates must use the 1.21.10 item/component predicate schema.
+            ['willow_leaves.json', 'swamp_cypress_leaves.json'].each { leafName ->
+                def leafLoot = new File(lootRoot, "blocks/${leafName}")
+                if (leafLoot.exists()) {
+                    def loot = new JsonSlurper().parse(leafLoot)
+                    def modernizePredicate
+                    modernizePredicate = { node ->
+                        if (node instanceof Map) {
+                            if (node.predicate instanceof Map) {
+                                def predicate = node.predicate
+                                if (predicate.items instanceof List && predicate.items.size() == 1) predicate.items = predicate.items[0]
+                                if (predicate.item != null) {
+                                    predicate.items = predicate.remove('item')
+                                }
+                                if (predicate.enchantments instanceof List) {
+                                    def enchantments = predicate.remove('enchantments').collect { enchantment ->
+                                        def converted = new LinkedHashMap(enchantment)
+                                        converted.enchantments = converted.remove('enchantment')
+                                        converted
+                                    }
+                                    predicate.predicates = ['minecraft:enchantments': enchantments]
+                                }
+                            }
+                            node.values().each { modernizePredicate(it) }
+                        } else if (node instanceof List) node.each { modernizePredicate(it) }
+                    }
+                    modernizePredicate(loot)
+                    leafLoot.text = JsonOutput.prettyPrint(JsonOutput.toJson(loot)) + System.lineSeparator()
+                }
             }
         }
         def advancementRoot = destinationDir.toPath().resolve('data/biomemakeover/advancement').toFile()

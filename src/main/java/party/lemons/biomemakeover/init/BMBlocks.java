@@ -19,6 +19,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.PlaceOnWaterBlockItem;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -189,9 +190,9 @@ public final class BMBlocks {
     public static final Block REED_THATCH = register("reed_thatch", Block::new, thatchProps());
     public static final Block REED_THATCH_SLAB = register("reed_thatch_slab", SlabBlock::new, thatchProps());
     public static final Block REED_THATCH_STAIRS = register("reed_thatch_stairs", p -> new StairBlock(REED_THATCH.defaultBlockState(), p), thatchProps());
-    public static final Block SMALL_LILY_PAD = register("small_lily_pad", SmallLilyPadBlock::new,
+    public static final Block SMALL_LILY_PAD = registerOnWater("small_lily_pad", SmallLilyPadBlock::new,
         BlockBehaviour.Properties.of().instabreak().noCollision().sound(SoundType.LILY_PAD).mapColor(MapColor.PLANT).pushReaction(PushReaction.DESTROY));
-    public static final Block WATER_LILY = register("water_lily", WaterLilyBlock::new,
+    public static final Block WATER_LILY = registerOnWater("water_lily", WaterLilyBlock::new,
         BlockBehaviour.Properties.of().instabreak().noCollision().sound(SoundType.LILY_PAD).mapColor(MapColor.COLOR_PINK).pushReaction(PushReaction.DESTROY));
 
     public static final Block ANCIENT_OAK_LOG = register("ancient_oak_log", RotatedPillarBlock::new, woodProps());
@@ -391,6 +392,18 @@ public final class BMBlocks {
         Registry.register(BuiltInRegistries.BLOCK, blockKey, block);
         Registry.register(BuiltInRegistries.ITEM, itemKey,
             new BlockItem(block, new Item.Properties().setId(itemKey).useBlockDescriptionPrefix()));
+        return block;
+    }
+
+    /** Preserves the released lily-pad item contract: target source water, then place above it. */
+    private static Block registerOnWater(String name, Function<BlockBehaviour.Properties, Block> factory, BlockBehaviour.Properties properties) {
+        ResourceLocation id = BiomeMakeover.id(name);
+        ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, id);
+        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);
+        Block block = factory.apply(properties.setId(blockKey));
+        Registry.register(BuiltInRegistries.BLOCK, blockKey, block);
+        Registry.register(BuiltInRegistries.ITEM, itemKey,
+            new PlaceOnWaterBlockItem(block, new Item.Properties().setId(itemKey).useBlockDescriptionPrefix()));
         return block;
     }
 
