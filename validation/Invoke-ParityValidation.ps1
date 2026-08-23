@@ -346,6 +346,12 @@ $cowboyHatLayer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/
 if ($cowboyHatLayer -notmatch '(?s)getChild\("head_parts"\)\.translateAndRotate\(pose\).*?translate\(0,-\.4F-2F/16F,3F/32F\).*?rotationDegrees\(-25\)') {
     Add-Failure 'Leader-horse Cowboy Hat must retain its skull-centered Z anchor and accepted two-pixel upward seating correction'
 }
+$horseModelMixin = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/mixin/client/HorseModelMixin.java') -Raw
+if ($horseModelMixin -notmatch 'biomemakeover\$hasHat\(\)' -or
+    $horseModelMixin -notmatch 'getChild\("left_ear"\)\.y-=1\.0F' -or
+    $horseModelMixin -notmatch 'getChild\("right_ear"\)\.y-=1\.0F') {
+    Add-Failure 'Mythas horse-ear refinement must be hat-state-only and limited to a one-pixel render-model lift'
+}
 $horseRendererMixin = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/mixin/client/HorseRendererMixin.java') -Raw
 $itemsSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw
 $clientInitializer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/BiomeMakeoverClient.java') -Raw

@@ -174,3 +174,13 @@ The next Prism check confirmed that geometry, Z centering, orientation, tracking
 but the forward brim still obscured the upper face slightly. The final horse-only checkpoint raises the same seating
 translation by one additional model pixel, for a total `2/16` above released `-0.4`. No other transform or Cowboy
 system changed.
+
+## Optional Mythas layer: leader-horse ear tips
+
+**MYTHAS ENHANCEMENT — NOT RELEASED HISTORICAL PARITY.** After the final hat seating received runtime approval, the
+ear tips were intentionally made slightly more visible without moving the hat. Minecraft 1.21.10 models each horse ear
+as a separate three-pixel-tall child of the animated `head` part. A client-only model hook raises `left_ear` and
+`right_ear` by exactly one model pixel only when the extracted Horse render state has BM's synchronized Hat flag.
+The ears continue inheriting every vanilla head transform and animation. Normal horses are reset by vanilla model
+setup and receive no adjustment; entity dimensions, AI, gameplay, server state, shared hat geometry/texture and the
+frozen horse transform (`Y=-.4-2/16`, `Z=3/32`, `-25` degrees, unchanged scales/order) are untouched.
