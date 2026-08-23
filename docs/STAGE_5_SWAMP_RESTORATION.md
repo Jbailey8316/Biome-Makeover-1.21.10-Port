@@ -122,3 +122,11 @@ The first Prism run runtime-confirmed fresh Swamp/Mangrove generation, Willow/Cy
 peat tilling, branch maturity/shearing, and natural entity reachability without a worldgen crash. The focused fixes and
 source-confirmed no-change decisions are recorded in `STAGE_5_RUNTIME_REMEDIATION_1.md`. Stage 5 remains runtime-open
 pending the targeted entity, loot/advancement, tint, save/reload, and server retests.
+
+## J. Runtime remediation 2 status
+
+Runtime Remediation 2 establishes the missing Willow/Cypress log-tag contract, correct Willow block/item tint paths,
+and exact released Lightning Bug pulse/color/layer semantics. Willow decay, associated performance collapse,
+inventory tint, and Lightning Bug visual behavior require a fresh Prism retest. Low Willow bee nests and cube-shaped
+Lightning Bugs are source-confirmed released outcomes and were not redesigned. See
+`STAGE_5_RUNTIME_REMEDIATION_2.md`.

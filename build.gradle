@@ -132,8 +132,12 @@ tasks.register('generateStage5ItemDefinitions') {
         def output = stage5GeneratedResources.get().dir('assets/biomemakeover/items').asFile
         output.mkdirs()
         ids.unique().sort().each { id ->
-            new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson(
-                [model: [type: 'minecraft:model', model: "biomemakeover:item/${id}"]])) + System.lineSeparator()
+            def model = [type: 'minecraft:model', model: "biomemakeover:item/${id}"]
+            // Historical simple block-with-item color providers tinted both render paths.
+            // Item colors are data-driven in 1.21.10, so retain the historical inventory defaults here.
+            if (id == 'willow_leaves') model.tints = [[type:'minecraft:constant', value:-12012264]]
+            if (id == 'swamp_cypress_leaves') model.tints = [[type:'minecraft:constant', value:-8082577]]
+            new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson([model:model])) + System.lineSeparator()
         }
         def clientJar = fileTree("${projectDir}/.gradle/loom-cache/minecraftMaven").matching { include '**/minecraft-clientOnly-*.jar' }.files.sort { it.absolutePath }.last()
         def eggColors = [decayed_spawn_egg:[0x2e7068,0x4a4034],dragonfly_spawn_egg:[0xc7b634,0xf2ebb6],lightning_bug_spawn_egg:[0x62c961,0x96ebe1]]
@@ -447,6 +451,15 @@ processResources {
         def swampBonemealTag = new File(destinationDir, 'data/biomemakeover/tags/worldgen/biome/swamp_bonemeal.json')
         swampBonemealTag.parentFile.mkdirs()
         swampBonemealTag.text = JsonOutput.prettyPrint(JsonOutput.toJson([replace:false, values:['#biomemakeover:swamps']])) + System.lineSeparator()
+        def swampLogs = ['biomemakeover:willow_log','biomemakeover:stripped_willow_log','biomemakeover:willow_wood','biomemakeover:stripped_willow_wood',
+                         'biomemakeover:swamp_cypress_log','biomemakeover:stripped_swamp_cypress_log','biomemakeover:swamp_cypress_wood','biomemakeover:stripped_swamp_cypress_wood']
+        ['block/logs.json','block/logs_that_burn.json','item/logs.json','item/logs_that_burn.json'].each { path ->
+            def tagFile = new File(destinationDir, "data/minecraft/tags/${path}")
+            tagFile.parentFile.mkdirs()
+            def tag = tagFile.exists() ? new JsonSlurper().parse(tagFile) : [replace:false,values:[]]
+            tag.values = ((tag.values ?: []) + swampLogs).unique()
+            tagFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(tag)) + System.lineSeparator()
+        }
         def historicalRoot = file('reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover')
         def soundOut = new File(destinationDir, 'assets/biomemakeover/sounds.json')
         def currentSounds = soundOut.exists() ? new JsonSlurper().parse(soundOut) : [:]

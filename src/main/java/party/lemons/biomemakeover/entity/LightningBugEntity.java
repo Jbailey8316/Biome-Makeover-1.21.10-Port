@@ -14,9 +14,12 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.util.Mth;
 
 public final class LightningBugEntity extends DragonflyEntity {
     private boolean alternate;
+    private float visualPhase = random.nextFloat();
+    private float previousRed = -1F, previousGreen = -1F, previousBlue = -1F;
     public LightningBugEntity(EntityType<? extends LightningBugEntity> type, Level level) { super(type, level); }
     public LightningBugEntity(EntityType<? extends LightningBugEntity> type, Level level, boolean alternate) { this(type, level); this.alternate = alternate; }
     public static boolean checkLightningBugSpawn(EntityType<LightningBugEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
@@ -24,6 +27,20 @@ public final class LightningBugEntity extends DragonflyEntity {
     }
     public static AttributeSupplier.Builder createAttributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,3).add(Attributes.MOVEMENT_SPEED,.25).add(Attributes.FLYING_SPEED,.6);}
     public boolean isAlternate() { return alternate; }
+    public float advanceVisualScale(float partialTick){
+        visualPhase += partialTick / 10F;
+        if(visualPhase > 99999F) visualPhase = 0F;
+        return .9F + Mth.sin(visualPhase) / 5F;
+    }
+    public int advanceVisualColor(float partialTick){
+        BlockPos pos=getOnPos();
+        int redHash=pos.hashCode(),greenHash=(pos.getX()+pos.getY()*31)*31+pos.getZ(),blueHash=(pos.getZ()+pos.getX()*31)*31+pos.getY();
+        float redTarget=(redHash%255)/255F,blueTarget=(greenHash%255)/255F,greenTarget=(blueHash%255)/255F;
+        if(previousRed==-1F){previousRed=redTarget;previousGreen=greenTarget;previousBlue=blueTarget;}
+        else {float step=.025F*partialTick;previousRed=Mth.approach(previousRed,redTarget,step);previousGreen=Mth.approach(previousGreen,greenTarget,step);previousBlue=Mth.approach(previousBlue,blueTarget,step);}
+        int red=Math.clamp(Math.round(previousRed*255F),0,255),green=Math.clamp(Math.round(Mth.abs(previousGreen)*255F),0,255),blue=Math.clamp(Math.round(previousBlue*255F),0,255);
+        return 0xFF000000|(red<<16)|(green<<8)|blue;
+    }
     @Override public void baseTick(){
         if(firstTick&&!alternate&&!level().isClientSide()){
             int count=random.nextInt(5);

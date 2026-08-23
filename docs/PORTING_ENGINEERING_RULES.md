@@ -281,3 +281,17 @@ temperature color contract rather than recoloring artwork.
 Schema-valid JSON can still reference an absent item or custom trigger. Validators must resolve BM recipe item IDs,
 advancement parents/triggers, and versioned loot functions/conditions against the packaged registry/runtime contract.
 When a functional system is deferred, defer its dependent data instead of creating a placeholder trigger or item.
+
+## 44. Leaf support is a registry-tag contract
+
+Modern leaf distance does not infer support from a log-shaped block or wood family. It assigns distance zero through
+the block's membership in `minecraft:logs`. Every restored tree family must validate its log, stripped log, wood, and
+stripped wood in the current block log tags before runtime generation. Missing membership can trigger canopy-wide
+scheduled updates, decay loot, ItemEntities, and severe tick lag while the tree feature itself appears to generate.
+Item log tags remain a separate crafting/fuel contract and must also be audited.
+
+## 45. Block and item tint paths are independent data contracts
+
+In 1.21.10 a block color provider does not tint the inventory model. Historical helpers that registered a single
+provider for block and item must be translated into a block provider plus item-definition tint source. Preserve the
+historical world/biome condition for placed blocks and the historical no-world/default color for inventory rendering.

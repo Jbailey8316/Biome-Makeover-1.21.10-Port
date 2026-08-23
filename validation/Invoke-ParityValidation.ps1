@@ -435,6 +435,17 @@ $lightningRendererSource=Get-Content (Join-Path $RepositoryRoot 'src/client/java
 if($lightningRendererSource -notmatch 'LIGHTNING_BUG_INNER' -or $lightningRendererSource -notmatch 'LIGHTNING_BUG_OUTER' -or $lightningRendererSource -notmatch 'entityTranslucent' -or $lightningRendererSource -notmatch '0x00F000F0'){Add-Failure 'Lightning Bug must retain separate translucent inner/outer full-bright render layers'}
 $lightningParticle=Join-Path $builtAssets 'particles/lightning_spark.json'
 if(-not(Test-Path $lightningParticle)){Add-Failure 'Released Lightning Bug spark particle definition is not packaged'}
+$swampLogIds=@('biomemakeover:willow_log','biomemakeover:stripped_willow_log','biomemakeover:willow_wood','biomemakeover:stripped_willow_wood','biomemakeover:swamp_cypress_log','biomemakeover:stripped_swamp_cypress_log','biomemakeover:swamp_cypress_wood','biomemakeover:stripped_swamp_cypress_wood')
+foreach($tagPath in @('block/logs.json','block/logs_that_burn.json','item/logs.json','item/logs_that_burn.json')){
+    $tagFile=Join-Path $builtData "minecraft/tags/$tagPath"
+    if(-not(Test-Path $tagFile)){Add-Failure "Missing leaf-support tag $tagPath";continue}
+    $tagValues=@((Get-Content $tagFile -Raw|ConvertFrom-Json).values)
+    foreach($logId in $swampLogIds){if($logId -notin $tagValues){Add-Failure "$tagPath omits Stage 5 trunk $logId required by leaf distance propagation"}}
+}
+$willowItemDefinition=Join-Path $builtAssets 'items/willow_leaves.json'
+if(-not(Test-Path $willowItemDefinition) -or (Get-Content $willowItemDefinition -Raw) -notmatch 'minecraft:constant' -or (Get-Content $willowItemDefinition -Raw) -notmatch '-12012264') { Add-Failure 'Willow Leaves item definition must retain historical no-world foliage tint' }
+$lightningSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/LightningBugEntity.java') -Raw
+if($lightningSource -notmatch 'visualPhase' -or $lightningSource -notmatch 'advanceVisualColor' -or $lightningRendererSource.IndexOf('LIGHTNING_BUG_INNER') -gt $lightningRendererSource.IndexOf('LIGHTNING_BUG_OUTER')) { Add-Failure 'Lightning Bug must retain historical randomized pulse, interpolated position color, and inner/outer layer order' }
 $clientMixinConfig = Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.client.mixins.json') -Raw | ConvertFrom-Json
 if ('HorseRenderStateMixin' -notin @($clientMixinConfig.client) -or 'HorseRendererMixin' -notin @($clientMixinConfig.client)) {
     Add-Failure 'Cowboy horse rendering mixins are not isolated and registered in the client-only mixin list'

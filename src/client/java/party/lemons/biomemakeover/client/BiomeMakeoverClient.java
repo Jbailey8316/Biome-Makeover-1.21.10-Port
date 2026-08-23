@@ -16,6 +16,10 @@ import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HorseRenderState;
@@ -34,6 +38,7 @@ import party.lemons.biomemakeover.client.particle.LightningSparkParticle;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 
 public final class BiomeMakeoverClient implements ClientModInitializer {
+    private static final TagKey<Biome> SWAMPS = TagKey.create(Registries.BIOME, BiomeMakeover.id("swamps"));
     @Override
     public void onInitializeClient() {
         BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT,
@@ -79,7 +84,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         },BMBlocks.SMALL_LILY_PAD,BMBlocks.WATER_LILY);
         ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->{
             int color=world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):FoliageColor.FOLIAGE_DEFAULT;
-            return shiftColor(color,-10,15,-10);
+            return world instanceof ClientLevel level&&pos!=null&&level.getBiome(pos).is(SWAMPS)?shiftColor(color,-10,15,-10):color;
         },BMBlocks.WILLOW_LEAVES,BMBlocks.WILLOWING_BRANCHES);
         ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):0x84AB6F,BMBlocks.SWAMP_CYPRESS_LEAVES);
         BiomeMakeover.LOGGER.info("Biome Makeover client initialized.");

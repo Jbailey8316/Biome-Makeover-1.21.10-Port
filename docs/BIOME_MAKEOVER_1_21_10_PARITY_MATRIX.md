@@ -45,7 +45,7 @@ historical families and eighteen current Mythas enhancement units.
 |---|---:|---|
 | Mushroom Fields | 6% | A wild-mushroom fragment exists, in the wrong theme/context |
 | Badlands | 88% static | Stage 4 restored core blocks, cactus ecology, four worldgen chains, Scuttler, Tumbleweed and Cowboy patrol plumbing; Ghost Town remains Stage 10C, while horse hats and runtime verification remain open |
-| Swamp | 92% static / runtime partial | Fresh Swamp and Mangrove generation, flora, peat interaction and entity reachability are runtime-confirmed; focused Dragonfly, Decayed, Lightning Bug and tint remediations await Prism retest, while Stage 9/10B dependencies remain |
+| Swamp | 94% static / runtime partial | Fresh Swamp and Mangrove generation, flora, Decayed water/baby behavior, peat advancement/interaction and lily tint are runtime-confirmed; Willow leaf support/performance, Willow inventory tint, Lightning Bug render semantics and Dragonfly survival await focused Prism retest, while Stage 9/10B dependencies remain |
 | Dark Forest | 48% | Useful blocks/Owl/worldgen slice, with major omissions and differences |
 | Beach ecology | 0% | Helmit Crab family absent |
 | Mansion / illager progression | 0% | Structure, boss, curses, quests, and functional systems absent |
@@ -91,11 +91,11 @@ and existing-world validation have not been executed.
 
 | Original released content | Current | Status | Restoration/dependencies |
 |---|---|---|---|
-| Replace vanilla swamp trees with Willow/Cypress | Exact wood-family registrations, custom placers/decorators, checked/tree placements, vanilla-tree removal and Swamp/Mangrove injection | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Static chain complete; fresh-chunk shape/density and codecs require Prism |
+| Replace vanilla swamp trees with Willow/Cypress | Exact wood-family registrations, custom placers/decorators, current log-tag leaf support, checked/tree placements, vanilla-tree removal and Swamp/Mangrove injection | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Fresh generation is runtime-confirmed; corrected Willow foliage retention, item-entity/performance behavior and save/reload require Prism |
 | Peat, reeds, lily/flower/mushroom ecology and bonemeal behavior | Peat chain, Reed/Cattail, pads/flowers and swamp-water bonemeal behavior restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Validate water placement, spread, tilling, crop ticking and density in Prism |
 | Itching Ivy environmental interaction | Existing implementation preserved; Stage 5 adds the released surrounding ecology without rewriting it | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Collision/effect and integration remain in the focused runtime checklist |
 | Thatch and swamp building families | Reed Thatch and all three exact peat masonry base/slab/stairs/wall families, recipes, loot, tags and assets restored | COMPATIBLE | Runtime geometry/recipe confirmation remains |
-| Decayed, Dragonfly, Lightning Bug | Natural reachability runtime-confirmed; no-fall/pathing, modern Decayed breathing tag, baby outer model, loot conversion, and layered full-bright Lightning Bug/sparks restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Retest survival, water behavior, baby visuals, layered glow/pulse/particles, loot and save/reload; capture bottle stays Stage 9 |
+| Decayed, Dragonfly, Lightning Bug | Natural reachability, Decayed water/baby behavior and progression are runtime-confirmed; no-fall/pathing and exact layered full-bright Lightning Bug cube/pulse/color/sparks are restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Decayed remediation is runtime PASS; retest Dragonfly survival and Lightning Bug pulse/color/particles/save-reload; capture bottle stays Stage 9 |
 | Sunken Ruins structure | Deliberately absent | MISSING (STAGE 10B) | Structure/templates/processors/loot retain Stage 10B ownership |
 
 The original Toad entity exists historically but its natural-spawn hook was
