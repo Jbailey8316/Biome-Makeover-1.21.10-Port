@@ -309,3 +309,16 @@ Loot JSON may parse while retaining obsolete item and enchantment predicate shap
 Compare migrated Shears, Silk Touch, and Fortune tables with the current vanilla canonical table. In 1.21.10 this
 includes scalar `items` and component-based `minecraft:enchantments` predicates. Validate the packaged result because
 source-copy tasks may perform the translation after the source tree is inspected.
+
+## 48. Showcase evidence must be version-resolved against final reachability
+
+Showcase footage can reveal relationships missed by static categorization, but may represent an older release. Trace
+the final branch's spawn calls, hidden/disabled acquisition items, loot, recipes and direct interactions before
+activating it. Preserve older designed behavior as version-evolution evidence when final released gameplay explicitly
+disconnects every survival entry path.
+
+## 49. Separate entity full-bright, placed light, and dynamic world light
+
+Full-bright models and particles do not update the world's light engine. A capturable entity may instead produce a
+placed light-emitting block. Trace light-level properties, world mutations, cleanup and integrations before adding
+temporary lighting; footage alone does not authorize a per-tick light-block system.

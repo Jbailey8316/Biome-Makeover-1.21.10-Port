@@ -144,6 +144,9 @@ tasks.register('generateStage5ItemDefinitions') {
                 model.model = 'biomemakeover:block/swamp_cypress_leaves'
                 model.tints = [[type:'minecraft:constant', value:-8082577]]
             }
+            if (id == 'small_lily_pad' || id == 'water_lily') {
+                model.tints = [[type:'minecraft:constant', value:-13312764]]
+            }
             new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson([model:model])) + System.lineSeparator()
         }
         def clientJar = fileTree("${projectDir}/.gradle/loom-cache/minecraftMaven").matching { include '**/minecraft-clientOnly-*.jar' }.files.sort { it.absolutePath }.last()
@@ -337,9 +340,11 @@ processResources {
         include 'assets/biomemakeover/blockstates/*willow*.json', 'assets/biomemakeover/blockstates/*swamp_cypress*.json'
         include 'assets/biomemakeover/blockstates/*peat*.json'
         include 'assets/biomemakeover/blockstates/buttonbush.json', 'assets/biomemakeover/blockstates/marigold.json', 'assets/biomemakeover/blockstates/cattail.json', 'assets/biomemakeover/blockstates/reed*.json', 'assets/biomemakeover/blockstates/small_lily_pad.json', 'assets/biomemakeover/blockstates/water_lily.json'
+        include 'assets/biomemakeover/blockstates/lightning_bug_bottle.json'
         include 'assets/biomemakeover/models/block/*willow*.json', 'assets/biomemakeover/models/block/*swamp_cypress*.json'
         include 'assets/biomemakeover/models/block/*peat*.json'
         include 'assets/biomemakeover/models/block/buttonbush*.json', 'assets/biomemakeover/models/block/marigold*.json', 'assets/biomemakeover/models/block/cattail*.json', 'assets/biomemakeover/models/block/reed*.json', 'assets/biomemakeover/models/block/small_lily_pad*.json', 'assets/biomemakeover/models/block/water_lily*.json'
+        include 'assets/biomemakeover/models/block/lightning_bug_bottle*.json'
         include 'assets/biomemakeover/models/block/tinted_crop.json'
         include 'assets/biomemakeover/models/block/decoration/reed_thatch/**/*.json', 'assets/biomemakeover/models/block/decoration/dried_peat_bricks/**/*.json', 'assets/biomemakeover/models/block/decoration/mossy_dried_peat_bricks/**/*.json', 'assets/biomemakeover/models/block/decoration/cracked_dried_peat_bricks/**/*.json'
         include 'assets/biomemakeover/models/item/*willow*.json', 'assets/biomemakeover/models/item/*swamp_cypress*.json'
@@ -347,10 +352,12 @@ processResources {
         exclude 'assets/biomemakeover/models/item/*_chest_boat.json'
         include 'assets/biomemakeover/models/item/*peat*.json'
         include 'assets/biomemakeover/models/item/buttonbush.json', 'assets/biomemakeover/models/item/marigold.json', 'assets/biomemakeover/models/item/cattail.json', 'assets/biomemakeover/models/item/reed*.json', 'assets/biomemakeover/models/item/small_lily_pad.json', 'assets/biomemakeover/models/item/water_lily.json'
+        include 'assets/biomemakeover/models/item/lightning_bug_bottle.json'
         include 'assets/biomemakeover/models/item/magenta_bud.json'
         include 'assets/biomemakeover/textures/block/*willow*.png', 'assets/biomemakeover/textures/block/*swamp_cypress*.png'
         include 'assets/biomemakeover/textures/block/*peat*.png'
         include 'assets/biomemakeover/textures/block/buttonbush*.png', 'assets/biomemakeover/textures/block/marigold*.png', 'assets/biomemakeover/textures/block/cattail*.png', 'assets/biomemakeover/textures/block/reed*.png', 'assets/biomemakeover/textures/block/small_lily_pad*.png', 'assets/biomemakeover/textures/block/water_lily*.png'
+        include 'assets/biomemakeover/textures/block/lightning_bug_bottle.png', 'assets/biomemakeover/textures/item/lightning_bug_in_a_bottle.png*'
         include 'assets/biomemakeover/textures/item/*willow*.png', 'assets/biomemakeover/textures/item/*swamp_cypress*.png'
         include 'assets/biomemakeover/textures/item/water_lily.png', 'assets/biomemakeover/textures/item/small_lily_pad.png', 'assets/biomemakeover/textures/item/buttonbush.png', 'assets/biomemakeover/textures/item/marigold.png', 'assets/biomemakeover/textures/item/cattail.png', 'assets/biomemakeover/textures/item/reed.png'
         include 'assets/biomemakeover/textures/entity/decayed*.png', 'assets/biomemakeover/textures/entity/dragonfly/*.png', 'assets/biomemakeover/textures/entity/lightning_bug*.png'
@@ -364,6 +371,7 @@ processResources {
         include 'data/biomemakeover/loot_tables/blocks/*willow*.json', 'data/biomemakeover/loot_tables/blocks/*swamp_cypress*.json'
         include 'data/biomemakeover/loot_tables/blocks/*peat*.json'
         include 'data/biomemakeover/loot_tables/blocks/buttonbush.json', 'data/biomemakeover/loot_tables/blocks/marigold.json', 'data/biomemakeover/loot_tables/blocks/cattail.json', 'data/biomemakeover/loot_tables/blocks/reed*.json', 'data/biomemakeover/loot_tables/blocks/small_lily_pad.json', 'data/biomemakeover/loot_tables/blocks/water_lily.json'
+        include 'data/biomemakeover/loot_tables/blocks/lightning_bug_bottle.json'
         include 'data/biomemakeover/loot_tables/entities/decayed.json', 'data/biomemakeover/loot_tables/entities/dragonfly.json', 'data/biomemakeover/loot_tables/entities/lightning_bug*.json'
         include 'data/biomemakeover/recipes/wood/willow/**/*.json', 'data/biomemakeover/recipes/wood/swamp_cypress/**/*.json'
         exclude 'data/biomemakeover/recipes/wood/**/*_boat.json'
@@ -372,6 +380,7 @@ processResources {
         include 'data/biomemakeover/recipes/dried_peat.json', 'data/biomemakeover/recipes/dried_peat_from_mossy.json', 'data/biomemakeover/recipes/mossy_peat.json'
         include 'data/biomemakeover/recipes/dye/magenta_buds_from_water_lily.json', 'data/biomemakeover/recipes/dye/magenta_dye_from_magenta_bud.json', 'data/biomemakeover/recipes/dye/orange_dye_from_marigold.json'
         include 'data/biomemakeover/advancements/biomemakeover/enter_swamp.json', 'data/biomemakeover/advancements/biomemakeover/create_peat_farmland.json', 'data/biomemakeover/advancements/biomemakeover/obtain_peat.json', 'data/biomemakeover/advancements/biomemakeover/obtain_dried_peat.json'
+        include 'data/biomemakeover/advancements/biomemakeover/lightning_bug_bottle.json'
         include 'data/biomemakeover/tags/blocks/lily_pads.json', 'data/biomemakeover/tags/blocks/peat.json', 'data/biomemakeover/tags/blocks/reeds.json'
         include 'data/biomemakeover/tags/items/peat.json', 'data/biomemakeover/tags/items/reeds.json'
         include 'data/biomemakeover/tags/entity_types/lightning_bugs.json'

@@ -139,3 +139,12 @@ custom leaf item tints directly through their block models. The accepted Lightni
 behavior remain unchanged. Terrain discontinuities are not attributed to BM without a controlled same-seed result;
 Stage 5 adds no terrain-shaping registry or code. See `STAGE_5_RUNTIME_REMEDIATION_3.md` for evidence and the final
 comprehensive Prism checklist. Stage 5 remains runtime-open.
+
+## L. Runtime remediation 4 and final released-gameplay audit
+
+The final-release audit moves the directly reachable Glass Bottle capture and Lightning Bug Bottle from Stage 9 into
+Stage 5, restores waterlogged Willow/Cypress saplings, and completes Lily/Small Lily Pad item tint. Final source has
+no moving-entity world-light implementation; the placed bottle emits level 15. Toad/Tadpole and Dragonfly Wings stay
+excluded because 1.20.1 comments out natural acquisition, hides/disables entry items, and gives Dragonflies empty
+loot. Older showcase behavior is version-evolution evidence, not merged parity. See
+`STAGE_5_RUNTIME_REMEDIATION_4.md`. Stage 5 remains runtime-open.

@@ -12,6 +12,7 @@ import party.lemons.biomemakeover.init.BMSounds;
 import party.lemons.biomemakeover.init.BMFeatures;
 import party.lemons.biomemakeover.init.BMAdvancements;
 import party.lemons.biomemakeover.init.BMParticles;
+import party.lemons.biomemakeover.init.BMBlockEntities;
 import party.lemons.biomemakeover.level.BMWorldEvents;
 
 public final class BiomeMakeover implements ModInitializer {
@@ -25,6 +26,7 @@ public final class BiomeMakeover implements ModInitializer {
     @Override
     public void onInitialize() {
         BMBlocks.initialize();
+        BMBlockEntities.initialize();
         BMItems.initialize();
         BMSounds.initialize();
         BMParticles.initialize();

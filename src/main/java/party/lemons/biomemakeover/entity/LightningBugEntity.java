@@ -12,6 +12,14 @@ import party.lemons.biomemakeover.init.BMEntities;
 import party.lemons.biomemakeover.init.BMParticles;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUtils;
+import net.minecraft.world.item.Items;
+import net.minecraft.sounds.SoundEvents;
+import party.lemons.biomemakeover.init.BMBlocks;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.Mth;
@@ -26,6 +34,18 @@ public final class LightningBugEntity extends DragonflyEntity {
         return checkFlySpawn(level, pos);
     }
     public static AttributeSupplier.Builder createAttributes(){return createMobAttributes().add(Attributes.MAX_HEALTH,3).add(Attributes.MOVEMENT_SPEED,.25).add(Attributes.FLYING_SPEED,.6);}
+    @Override protected InteractionResult mobInteract(Player player, InteractionHand hand) {
+        ItemStack held=player.getItemInHand(hand);
+        if(held.is(Items.GLASS_BOTTLE)) {
+            if(!level().isClientSide()) {
+                player.setItemInHand(hand,ItemUtils.createFilledResult(held,player,new ItemStack(BMBlocks.LIGHTNING_BUG_BOTTLE)));
+                discard();
+                player.playSound(SoundEvents.BOTTLE_FILL,1F,1F);
+            }
+            return InteractionResult.SUCCESS;
+        }
+        return super.mobInteract(player,hand);
+    }
     public boolean isAlternate() { return alternate; }
     public float advanceVisualScale(float partialTick){
         visualPhase += partialTick / 10F;

@@ -16,7 +16,7 @@
   "blocks_with_items": [
     "buttonbush", "cattail", "cracked_dried_peat_brick_slab", "cracked_dried_peat_brick_stairs",
     "cracked_dried_peat_brick_wall", "cracked_dried_peat_bricks", "dried_peat", "dried_peat_bricks",
-    "dried_peat_bricks_slab", "dried_peat_bricks_stairs", "dried_peat_bricks_wall", "marigold",
+    "dried_peat_bricks_slab", "dried_peat_bricks_stairs", "dried_peat_bricks_wall", "lightning_bug_bottle", "marigold",
     "mossy_dried_peat_brick_slab", "mossy_dried_peat_brick_stairs", "mossy_dried_peat_brick_wall",
     "mossy_dried_peat_bricks", "mossy_peat", "peat", "peat_farmland", "reed", "reed_thatch",
     "reed_thatch_slab", "reed_thatch_stairs", "small_lily_pad", "stripped_swamp_cypress_log",
@@ -42,6 +42,7 @@
     "entity.dragonfly.death", "entity.dragonfly.hurt", "entity.dragonfly.loop"
   ],
   "particles": ["lightning_spark"],
+  "block_entities": ["lightning_bug_bottle"],
   "configured_features": [
     "swamp/flowers", "swamp/pads", "swamp/peat", "swamp/reeds", "swamp/swamp_cypress",
     "swamp/swamp_cypress_trees", "swamp/willow", "swamp/willow_trees"
@@ -51,7 +52,7 @@
     "swamp/swamp_cypress_checked", "swamp/swamp_cypress_trees", "swamp/willow_checked", "swamp/willow_trees"
   ],
   "deferred": {
-    "stage_9": ["lightning_bug_bottle", "peat_composter"],
+    "stage_9": ["peat_composter"],
     "stage_10b": ["sunken_ruin", "music_disc_swamp_jives"],
     "later_progression": ["witch_hat", "witch_quest"],
     "shared_boat_infrastructure": ["swamp_cypress_boat", "swamp_cypress_chest_boat", "willow_boat", "willow_chest_boat"]

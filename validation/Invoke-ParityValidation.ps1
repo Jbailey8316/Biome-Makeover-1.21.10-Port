@@ -56,7 +56,7 @@ foreach ($setName in @('blocks_with_items','no_item_blocks','items','spawn_eggs'
     $values = @($stage4.registry.$setName)
     if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in Stage 4 contract set $setName" }
 }
-foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','spawn_eggs','entities','sounds','particles','configured_features','placed_features')) {
+foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','spawn_eggs','entities','sounds','particles','block_entities','configured_features','placed_features')) {
     $values = @($stage5.$setName)
     if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in Stage 5 contract set $setName" }
 }
@@ -77,6 +77,8 @@ $items = Sorted (@($blocks | Where-Object { $_ -notin $allNoItemBlocks }) + @($s
 $sounds = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMSounds.java'
 $particleText=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMParticles.java') -Raw
 $particles=Sorted ([regex]::Matches($particleText,'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)')|ForEach-Object{$_.Groups[1].Value})
+$blockEntityText=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlockEntities.java') -Raw
+$blockEntities=Sorted ([regex]::Matches($blockEntityText,'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)')|ForEach-Object{$_.Groups[1].Value})
 $stage3Java = (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java') -Raw) +
     (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw) +
     (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java') -Raw)
@@ -91,6 +93,7 @@ Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($s
 Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities))) $entities
 Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds))) $sounds
 Assert-EqualSet 'particle registry IDs' (Sorted (@($baseline.registries.particle_type) + @($stage5.particles))) $particles
+Assert-EqualSet 'Stage 5 block-entity registry IDs' @($stage5.block_entities) $blockEntities
 
 $configured = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/configured_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/configured_feature'))
 $placed = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/placed_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/placed_feature'))
@@ -448,6 +451,20 @@ if(-not(Test-Path $willowItemDefinition) -or (Get-Content $willowItemDefinition 
 if(-not(Test-Path $cypressItemDefinition) -or (Get-Content $cypressItemDefinition -Raw) -notmatch 'biomemakeover:block/swamp_cypress_leaves' -or (Get-Content $cypressItemDefinition -Raw) -notmatch 'minecraft:constant' -or (Get-Content $cypressItemDefinition -Raw) -notmatch '-8082577') { Add-Failure 'Swamp Cypress Leaves item definition must tint the block model with its historical no-world foliage color' }
 $blocksSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java') -Raw
 if($blocksSource -notmatch 'registerOnWater\("small_lily_pad"' -or $blocksSource -notmatch 'registerOnWater\("water_lily"' -or $blocksSource -notmatch 'new PlaceOnWaterBlockItem') { Add-Failure 'Released Small Lily Pad and Water Lily items must retain their source-water placement item contract' }
+foreach($padId in @('small_lily_pad','water_lily')){
+    $padDefinition=Join-Path $builtAssets "items/$padId.json"
+    if(-not(Test-Path $padDefinition) -or (Get-Content $padDefinition -Raw) -notmatch '-13312764'){Add-Failure "$padId item definition omits the released green no-world tint"}
+}
+$waterSaplingSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/WaterSaplingBlock.java') -Raw
+if($blocksSource -notmatch 'WaterSaplingBlock\(WILLOW_GROWER, 1' -or $blocksSource -notmatch 'WaterSaplingBlock\(SWAMP_CYPRESS_GROWER, 3' -or $waterSaplingSource -notmatch 'WATERLOGGED' -or $waterSaplingSource -notmatch 'pos\.above\(maxDepth\)'){Add-Failure 'Willow/Cypress must retain released waterlogged sapling depth contracts (1/3)'}
+$bottleBlockstate=Join-Path $builtAssets 'blockstates/lightning_bug_bottle.json'
+$bottleLoot=Join-Path $builtData 'biomemakeover/loot_table/blocks/lightning_bug_bottle.json'
+$bottleAdvancement=Join-Path $builtData 'biomemakeover/advancement/biomemakeover/lightning_bug_bottle.json'
+$bottleRenderer=Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/LightningBugBottleRenderer.java') -Raw
+$lightningInteractionSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/LightningBugEntity.java') -Raw
+if(-not(Test-Path $bottleBlockstate) -or -not(Test-Path $bottleLoot) -or -not(Test-Path $bottleAdvancement) -or $blocksSource -notmatch 'lightLevel\(state -> 15\)' -or $lightningInteractionSource -notmatch 'Items\.GLASS_BOTTLE' -or $bottleRenderer -notmatch 'LIGHTNING_BUG_INNER' -or $bottleRenderer -notmatch 'LIGHTNING_BUG_OUTER'){Add-Failure 'Released Lightning Bug glass-bottle capture, level-15 block, data, and contained-bug renderer chain is incomplete'}
+$entitySource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java') -Raw
+if($entitySource -match 'registerEntity\("toad"' -or $entitySource -match 'registerEntity\("tadpole"' -or $entitySource -match 'registerSpawnEgg\("toad_spawn_egg"'){Add-Failure 'Final 1.20.1-disabled Toad/Tadpole content was activated despite released reachability evidence'}
 foreach($leafId in @('willow_leaves','swamp_cypress_leaves')){
     $leafLootPath=Join-Path $builtData "biomemakeover/loot_table/blocks/$leafId.json"
     if(-not(Test-Path $leafLootPath)){Add-Failure "Missing Stage 5 leaf loot table $leafId";continue}
@@ -498,7 +515,7 @@ if ($failures.Count) {
 }
 
 Write-Host 'PARITY VALIDATION PASSED'
-Write-Host " registries: blocks=$($blocks.Count), items=$($items.Count), entities=$($entities.Count), sounds=$($sounds.Count), particles=$($particles.Count)"
+Write-Host " registries: blocks=$($blocks.Count), items=$($items.Count), entities=$($entities.Count), block_entities=$($blockEntities.Count), sounds=$($sounds.Count), particles=$($particles.Count)"
 Write-Host " worldgen resources: configured=$($configured.Count), placed=$($placed.Count), injected=$($injected.Count)"
 Write-Host " foundations: current_families=$(@($familyContract.families).Count), historical_owned_families=$($owners.Count), runtime_dependencies=$(@($fabricMetadata.depends.PSObject.Properties).Count)"
 Write-Host ' JSON syntax, dependencies, family membership, and current block/item/feature resource contracts passed'

@@ -45,7 +45,7 @@ historical families and eighteen current Mythas enhancement units.
 |---|---:|---|
 | Mushroom Fields | 6% | A wild-mushroom fragment exists, in the wrong theme/context |
 | Badlands | 88% static | Stage 4 restored core blocks, cactus ecology, four worldgen chains, Scuttler, Tumbleweed and Cowboy patrol plumbing; Ghost Town remains Stage 10C, while horse hats and runtime verification remain open |
-| Swamp | 96% static / runtime partial | Fresh Swamp/Mangrove generation, flora, Decayed water/baby behavior, peat advancement/interaction, world foliage tint, canopy support/performance, and source/showcase-verified Lightning Bug visuals are established. Leaf decay loot, lily player placement, leaf item tint, Dragonfly survival, and the final soak/save/server checks await comprehensive Prism validation; Stage 9/10B dependencies remain. |
+| Swamp | 98% static / runtime partial | Fresh Swamp/Mangrove generation, flora, Decayed behavior, peat, canopy/leaf contracts, pads/lilies, accepted Lightning Bug visuals, waterlogged saplings, and the reachable glass-bottle capture/light block are restored. Final Prism, soak/save/server and existing-world checks remain; Peat Composter and Sunken Ruins stay Stage 9/10B. Final-release-disabled Toad/Tadpole/Wings are excluded. |
 | Dark Forest | 48% | Useful blocks/Owl/worldgen slice, with major omissions and differences |
 | Beach ecology | 0% | Helmit Crab family absent |
 | Mansion / illager progression | 0% | Structure, boss, curses, quests, and functional systems absent |

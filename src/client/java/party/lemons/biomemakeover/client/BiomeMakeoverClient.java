@@ -36,6 +36,9 @@ import party.lemons.biomemakeover.init.BMItems;
 import party.lemons.biomemakeover.init.BMParticles;
 import party.lemons.biomemakeover.client.particle.LightningSparkParticle;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import party.lemons.biomemakeover.init.BMBlockEntities;
+import party.lemons.biomemakeover.client.render.LightningBugBottleRenderer;
 
 public final class BiomeMakeoverClient implements ClientModInitializer {
     private static final TagKey<Biome> SWAMPS = TagKey.create(Registries.BIOME, BiomeMakeover.id("swamps"));
@@ -56,7 +59,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
             BMBlocks.WILLOW_LEAVES, BMBlocks.SWAMP_CYPRESS_LEAVES, BMBlocks.WILLOW_SAPLING, BMBlocks.SWAMP_CYPRESS_SAPLING,
             BMBlocks.WILLOWING_BRANCHES, BMBlocks.BUTTONBUSH, BMBlocks.MARIGOLD, BMBlocks.CATTAIL, BMBlocks.REED,
             BMBlocks.SMALL_LILY_PAD, BMBlocks.WATER_LILY, BMBlocks.WILLOW.get("willow_door"), BMBlocks.WILLOW.get("willow_trapdoor"),
-            BMBlocks.SWAMP_CYPRESS.get("swamp_cypress_door"), BMBlocks.SWAMP_CYPRESS.get("swamp_cypress_trapdoor"));
+            BMBlocks.SWAMP_CYPRESS.get("swamp_cypress_door"), BMBlocks.SWAMP_CYPRESS.get("swamp_cypress_trapdoor"),BMBlocks.LIGHTNING_BUG_BOTTLE);
         BMModelLayers.register();
         ArmorRenderer.register(context -> new CowboyHatArmorRenderer(context.getModelSet()),BMItems.COWBOY_HAT);
         EntityRenderers.register(BMEntities.OWL, OwlRenderer::new);
@@ -77,6 +80,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         EntityRenderers.register(BMEntities.LIGHTNING_BUG, LightningBugRenderer::new);
         EntityRenderers.register(BMEntities.LIGHTNING_BUG_ALTERNATE, LightningBugRenderer::new);
         EntityRenderers.register(BMEntities.DECAYED, DecayedRenderer::new);
+        BlockEntityRenderers.register(BMBlockEntities.LIGHTNING_BUG_BOTTLE,LightningBugBottleRenderer::new);
         ParticleFactoryRegistry.getInstance().register(BMParticles.LIGHTNING_SPARK,LightningSparkParticle.Provider::new);
         ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->{
             int color=world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):FoliageColor.FOLIAGE_DEFAULT;

@@ -44,6 +44,8 @@ import party.lemons.biomemakeover.block.SaguaroCactusBlock;
 import party.lemons.biomemakeover.block.ReedBlock;
 import party.lemons.biomemakeover.block.SmallLilyPadBlock;
 import party.lemons.biomemakeover.block.WaterLilyBlock;
+import party.lemons.biomemakeover.block.WaterSaplingBlock;
+import party.lemons.biomemakeover.block.LightningBugBottleBlock;
 import party.lemons.biomemakeover.block.WillowingBranchesBlock;
 import party.lemons.biomemakeover.block.PeatFarmlandBlock;
 
@@ -171,8 +173,8 @@ public final class BMBlocks {
     public static final Block SWAMP_CYPRESS_WALL_HANGING_SIGN = registerNoItem("swamp_cypress_wall_hanging_sign", p -> new WallHangingSignBlock(SWAMP_CYPRESS_WOOD_TYPE, p), signProperties());
     public static final Block WILLOW_LEAVES = register("willow_leaves", p -> new TintedParticleLeavesBlock(0.01F, p), swampLeaves(MapColor.TERRACOTTA_LIGHT_GREEN));
     public static final Block SWAMP_CYPRESS_LEAVES = register("swamp_cypress_leaves", p -> new TintedParticleLeavesBlock(0.01F, p), swampLeaves(MapColor.TERRACOTTA_GREEN));
-    public static final Block WILLOW_SAPLING = register("willow_sapling", p -> new SaplingBlock(WILLOW_GROWER, p), swampPlant(MapColor.PLANT).randomTicks());
-    public static final Block SWAMP_CYPRESS_SAPLING = register("swamp_cypress_sapling", p -> new SaplingBlock(SWAMP_CYPRESS_GROWER, p), swampPlant(MapColor.PLANT).randomTicks());
+    public static final Block WILLOW_SAPLING = register("willow_sapling", p -> new WaterSaplingBlock(WILLOW_GROWER, 1, p), swampPlant(MapColor.PLANT).randomTicks());
+    public static final Block SWAMP_CYPRESS_SAPLING = register("swamp_cypress_sapling", p -> new WaterSaplingBlock(SWAMP_CYPRESS_GROWER, 3, p), swampPlant(MapColor.PLANT).randomTicks());
     public static final Block POTTED_WILLOW_SAPLING = potted("potted_willow_sapling", WILLOW_SAPLING, 0);
     public static final Block POTTED_SWAMP_CYPRESS_SAPLING = potted("potted_swamp_cypress_sapling", SWAMP_CYPRESS_SAPLING, 0);
     public static final Block WILLOWING_BRANCHES = register("willowing_branches", WillowingBranchesBlock::new,
@@ -194,6 +196,8 @@ public final class BMBlocks {
         BlockBehaviour.Properties.of().instabreak().noCollision().sound(SoundType.LILY_PAD).mapColor(MapColor.PLANT).pushReaction(PushReaction.DESTROY));
     public static final Block WATER_LILY = registerOnWater("water_lily", WaterLilyBlock::new,
         BlockBehaviour.Properties.of().instabreak().noCollision().sound(SoundType.LILY_PAD).mapColor(MapColor.COLOR_PINK).pushReaction(PushReaction.DESTROY));
+    public static final Block LIGHTNING_BUG_BOTTLE = register("lightning_bug_bottle", LightningBugBottleBlock::new,
+        BlockBehaviour.Properties.of().strength(0.5F).lightLevel(state -> 15).noOcclusion().pushReaction(PushReaction.DESTROY));
 
     public static final Block ANCIENT_OAK_LOG = register("ancient_oak_log", RotatedPillarBlock::new, woodProps());
     public static final Block STRIPPED_ANCIENT_OAK_LOG = register("stripped_ancient_oak_log", RotatedPillarBlock::new, woodProps());
@@ -467,7 +471,7 @@ public final class BMBlocks {
             entries.accept(PAYDIRT); entries.accept(SAGUARO_CACTUS); entries.accept(BARREL_CACTUS); entries.accept(BARREL_CACTUS_FLOWERED);
             entries.accept(WILLOW_LEAVES); entries.accept(WILLOW_SAPLING); entries.accept(SWAMP_CYPRESS_LEAVES); entries.accept(SWAMP_CYPRESS_SAPLING);
             entries.accept(WILLOWING_BRANCHES); entries.accept(PEAT); entries.accept(MOSSY_PEAT); entries.accept(CATTAIL); entries.accept(REED);
-            entries.accept(BUTTONBUSH); entries.accept(MARIGOLD); entries.accept(SMALL_LILY_PAD); entries.accept(WATER_LILY);
+            entries.accept(BUTTONBUSH); entries.accept(MARIGOLD); entries.accept(SMALL_LILY_PAD); entries.accept(WATER_LILY); entries.accept(LIGHTNING_BUG_BOTTLE);
         });
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.BUILDING_BLOCKS).register(entries -> {
             WILLOW.values().forEach(entries::accept); SWAMP_CYPRESS.values().forEach(entries::accept);
