@@ -143,3 +143,17 @@ had retained only the dimensions; consequently `Entity.positionRider` subtracted
 instead of Pillager's `-0.6` riding attachment, leaving the Cowboy visibly too high. The Cowboy registration now copies
 those two modern Pillager attachment values. No runtime offset override was introduced, and patrol creation, mounting,
 horse state, persistence, hats, banner and captain loot paths are unchanged.
+
+## Leader-horse hat seating correction
+
+The released horse layer attached to the first `HorseModel.headParts()` entry, then used a `-0.4` lift and `-25` degree
+X leveling rotation. Both released 1.20.1 and current 1.21.10 horse meshes identify that same part as `head_parts`,
+with the same neutral `+30` degree X pitch and `(0, 4, -12)` pivot; selecting an inner muzzle/head cuboid would lose
+the complete animated neck/head transform and is not equivalent.
+
+The initial 1.21.10 translation mechanically retained the immediate-render call order. In the render-state layer, that
+put the `-0.4` seating lift into the still-pitched head-local axes, adding a visible forward component before the hat
+was leveled. The layer now keeps the exact animated `head_parts` attachment and historical scale, lift magnitude and
+leveling angle, but applies the leveling rotation before the lift so the lift is expressed in the seated hat frame.
+This is a horse-only transform-order adaptation: the shared model, texture, UVs, Cowboy/player paths, synchronized hat
+state and all patrol/captain behavior are unchanged.
