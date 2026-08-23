@@ -256,9 +256,9 @@ passenger attachments and vehicle/riding attachment—not only width and height.
 successfully while positioning passengers incorrectly. Prefer the authoritative vanilla type contract over a runtime
 Y-offset override.
 
-## 40. Preserve attachment intent when render-pipeline coordinate spaces change
+## 40. Derive attachment corrections from model geometry
 
-Copying historical translation and rotation values is insufficient if a deferred render-state layer applies them in
-a different local frame. Trace the parent part's neutral and animated pivot/rotation, then preserve what each transform
-does: parent attachment, leveling, and seating. Prefer an evidence-backed transform-order translation over arbitrary
-world-space offsets, and keep the correction isolated from shared geometry and textures.
+Before changing attachment transform order, trace the parent renderer's complete pose and verify whether the modern
+layer actually begins in a different coordinate space. If the pipeline is equivalent but attachment centers differ,
+derive the correction from named model-part cuboid bounds and pixel-to-model-unit conversion. Record failed runtime
+theories, avoid visual tuning, and keep corrections isolated from shared geometry and textures.

@@ -343,8 +343,8 @@ $patrolSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemo
 $horseSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/HorseMixin.java') -Raw
 $cowboyRenderer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/CowboyRenderer.java') -Raw
 $cowboyHatLayer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/CowboyHatLayer.java') -Raw
-if ($cowboyHatLayer -notmatch '(?s)getChild\("head_parts"\)\.translateAndRotate\(pose\).*?rotationDegrees\(-25\).*?translate\(0,-\.4F,0\)') {
-    Add-Failure 'Leader-horse Cowboy Hat must level the animated head before applying its historical seating lift'
+if ($cowboyHatLayer -notmatch '(?s)getChild\("head_parts"\)\.translateAndRotate\(pose\).*?translate\(0,-\.4F,3F/32F\).*?rotationDegrees\(-25\)') {
+    Add-Failure 'Leader-horse Cowboy Hat must use historical transform order and the skull-centered local Z anchor'
 }
 $horseRendererMixin = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/mixin/client/HorseRendererMixin.java') -Raw
 $itemsSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw

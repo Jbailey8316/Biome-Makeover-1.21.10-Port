@@ -151,9 +151,15 @@ X leveling rotation. Both released 1.20.1 and current 1.21.10 horse meshes ident
 with the same neutral `+30` degree X pitch and `(0, 4, -12)` pivot; selecting an inner muzzle/head cuboid would lose
 the complete animated neck/head transform and is not equivalent.
 
-The initial 1.21.10 translation mechanically retained the immediate-render call order. In the render-state layer, that
-put the `-0.4` seating lift into the still-pitched head-local axes, adding a visible forward component before the hat
-was leveled. The layer now keeps the exact animated `head_parts` attachment and historical scale, lift magnitude and
-leveling angle, but applies the leveling rotation before the lift so the lift is expressed in the seated hat frame.
-This is a horse-only transform-order adaptation: the shared model, texture, UVs, Cowboy/player paths, synchronized hat
-state and all patrol/captain behavior are unchanged.
+The first attempted correction moved the `-25` degree leveling rotation before the lift. Prism disproved that
+coordinate-space theory: it moved the hat substantially farther forward and down over the eyes and muzzle. That order
+has been reverted. Inspection of the full parent renderer and model setup confirms that feature layers already inherit
+the same entity orientation, `-1/-1/+1` model-space flip, renderer scale and animated parent model pose before their
+local submission; no missing root transform justified changing the released order.
+
+The remaining measurable mismatch is the attachment anchor inside `head_parts`. The hat geometry is centered at local
+Z `0`, while the actual horse skull cuboid spans local Z `-2..5`, whose center is `+1.5` model pixels. The horse-only
+attachment now retains the released head transform, `-0.4` lift, then `-25` degree rotation, and adds exactly
+`+1.5 / 16` (`3/32`) local Z to center the hat over that skull geometry rather than over the forward edge. This value
+comes from the authoritative model cuboid, not visual tuning. Shared model/texture/UVs, scales, Cowboy/player paths,
+synchronized state and all patrol/captain behavior remain unchanged; runtime visual acceptance is still required.
