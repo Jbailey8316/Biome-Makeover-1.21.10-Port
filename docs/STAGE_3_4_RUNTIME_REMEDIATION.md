@@ -89,3 +89,90 @@ additive; a copied-world runtime test is still required.
 6. Continue the existing Stage 3/4 runtime checklists only after registry loading succeeds.
 
 Dedicated-server, multiplayer, save/reload, and existing-world-copy validation remain manual requirements.
+
+## Second runtime checkpoint: world-load success and targeted Badlands crash
+
+The next Prism test advanced the runtime state: client bootstrap, resource loading, dynamic registry loading, world
+creation, initial-spawn generation, and entering the world all passed. Targeted fresh Badlands generation then crashed
+in `SaguaroCactusBlock.generateCactus`. This document does not claim that the remediation below has passed a Prism
+retest. Fresh Badlands and fresh Mushroom Fields generation remain manual P0 gates.
+
+### Saguaro root cause and remediation
+
+The released implementation at historical commit `2f314c0596af095a4890995a465f308f69476b4a` always places the first trunk
+block at the feature origin and only requires air for subsequent trunk blocks. It then verifies that an arm's center is
+the Saguaro block before applying a directional property. The Stage 4 translation instead required the origin itself to
+be air, although `WORLD_SURFACE_WG` supplied the surface position. It therefore placed no trunk, later read air at the
+chosen arm center, and applied `north`/`south`/`east`/`west` to that air state.
+
+The generator now faithfully translates the complete released algorithm: inclusive height range 4–8, random north-
+south/east-west axis, 80% arm chance, released one/two-arm selection, independently randomized arm starts, guarded
+center-state mutation, released arm-height calculation, and recursive tall-form chance. The feature and bonemeal paths
+both pass the released axis/recursion parameters. The scan of all Stage 3/4 custom feature classes found no other code
+that reads a world state and immediately applies a BM-only property; Saguaro was the sole matching placement-order
+pattern. Runtime confirmation is still required.
+
+### Global recipe audit
+
+The packaged checkpoint before remediation contained 260 BM recipes. All were inspected across shaped crafting,
+shapeless crafting, smelting, smoking, campfire cooking, and stonecutting. Minecraft 1.21.10 requires the recipe result
+to be an item-stack object containing `id`; the historical resources used 107 result strings and 122 `{item: ...}`
+objects. All 229 historical forms are deterministically converted while preserving output counts and every other
+recipe field. The remaining 28 current recipes already used the modern form.
+
+Three accidentally packaged recipes are excluded by ownership rather than papered over: Blighted Balsa boat and chest
+boat remain deferred with their historical boat infrastructure, and `white_dye_from_buttonbush` belongs to Stage 5.
+The Stage 3 hanging-sign recipe remains and maps the removed 1.20.1 `minecraft:chain` input to its 1.21.10 replacement,
+`minecraft:iron_chain`. The final package contains 257 recipes: 131 shaped, 12 shapeless, 3 smelting, 1 smoking,
+1 campfire-cooking, and 109 stonecutting.
+
+### Advancement audit
+
+All 17 previously packaged BM advancements were inspected. The nine reported children failed because their common
+`biomemakeover/biomemakeover/root` parent had not been packaged. A Stage 3/4-safe root is now generated with only the
+released Mushroom Fields and Badlands criteria; deferred Swamp/Dark Forest criteria and the hidden `icon_item` ID are
+not activated early. The Cacti predicate's released singular `item` typo is normalized to the current `items` field.
+The complete-log audit also found `glowfish_save` had an explicitly empty requirements array; removing that invalid
+override lets the codec derive its sole criterion requirement. This root scaffold must be reconciled with the full
+historical advancement tree in the owning progression stage.
+
+### Pink Bud texture
+
+The generated palette image existed in the JAR, but its `permutations/buds` path was outside the directories stitched
+by the 1.21.10 block atlas. The same deterministic released palette output is now generated as
+`textures/item/pink_bud_overlay.png`, and the released two-layer model points to that stitched item texture. No artwork
+was invented.
+
+### Validator expansion
+
+The validator now rejects unsupported packaged recipe types, non-object/missing-ID recipe results, empty shapeless
+ingredients, empty shaped patterns/keys, missing internal advancement parents, empty advancement criteria, mismatched
+requirements, and the obsolete singular advancement item-array predicate. Existing model/texture validation covers
+the Pink Bud's new resolvable item path. Static validation supplements, but does not replace, targeted runtime testing.
+
+### Complete Prism log disposition
+
+| Log family | Disposition |
+|---|---|
+| Saguaro feature-placement exception | **FIXED in source; runtime verification open.** Root-cause translation above. |
+| 108 `Not a JSON object` recipe errors | **FIXED in package validation; runtime verification open.** Global result conversion. |
+| Empty Buttonbush dye ingredients | **INTENTIONALLY DEFERRED.** Stage 5 recipe was accidentally packaged and is now excluded. |
+| Blighted Balsa boat/chest-boat unknown IDs | **INTENTIONALLY DEFERRED.** Recipes removed until faithful boat infrastructure exists. |
+| Blighted Balsa hanging-sign `minecraft:chain` | **FIXED in package validation.** Mapped to vanilla 1.21.10 `minecraft:iron_chain`. |
+| Nine advancement descendants missing | **FIXED in package validation; runtime verification open.** Valid Stage 3/4 root and predicates. |
+| `glowfish_save` requirements mismatch | **FIXED in package validation; runtime verification open.** Found only in complete log audit. |
+| Pink Bud missing texture | **FIXED in package validation; runtime verification open.** Moved deterministic overlay into stitched item atlas path. |
+| JourneyMap refmap warnings | **Unrelated third-party compatibility warning.** No BM action. |
+| Bare `onRegisterSpecialGuiRenderer()` warning | **Unrelated integration/launcher warning.** Surrounding initialization is third-party; no BM stack or resource. |
+| Dynamic-transform UBO resize messages | **Harmless Minecraft renderer informational messages.** No BM action. |
+
+### Mandatory next Prism gates
+
+1. Confirm client/resource/dynamic-registry/world-creation gates still pass and capture the full log.
+2. Confirm all 257 BM recipes decode without warnings and sample each recipe type.
+3. Confirm all 18 BM advancements decode; exercise the Mushroom Fields/Badlands roots and Stage 3/4 child criteria.
+4. Inspect Pink Bud in inventory/world and confirm both model layers render.
+5. Generate fresh Badlands chunks around Saguaro features; inspect height, axes, one/two arms, collisions, and absence of
+   feature-placement crashes. This is required before the crash can be called runtime-fixed.
+6. Generate fresh Mushroom Fields chunks separately. No Mushroom Fields safety claim exists yet.
+7. Continue entity, save/reload, dedicated-server, multiplayer, and existing-world-copy checks.

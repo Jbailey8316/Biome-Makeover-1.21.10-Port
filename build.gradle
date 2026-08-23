@@ -112,6 +112,8 @@ tasks.register('generateStage4ItemDefinitions') {
         }
         def budOutput=stage4GeneratedResources.get().dir('assets/biomemakeover/textures/permutations/buds').asFile
         budOutput.mkdirs(); ImageIO.write(pinkBud,'png',new File(budOutput,'bud_pink.png'))
+        def itemBudOutput=stage4GeneratedResources.get().dir('assets/biomemakeover/textures/item').asFile
+        itemBudOutput.mkdirs(); ImageIO.write(pinkBud,'png',new File(itemBudOutput,'pink_bud_overlay.png'))
     }
 }
 
@@ -191,6 +193,7 @@ processResources {
         include 'assets/biomemakeover/textures/entity/signs/blighted_balsa.png'
         include 'assets/biomemakeover/textures/entity/signs/hanging/blighted_balsa.png'
         include 'assets/biomemakeover/textures/gui/hanging_signs/blighted_balsa.png'
+        include 'assets/biomemakeover/textures/gui/advancements.png'
         include 'data/biomemakeover/worldgen/configured_feature/mushroom_fields/*.json'
         include 'data/biomemakeover/worldgen/placed_feature/mushroom_fields/*.json'
         include 'data/biomemakeover/loot_tables/entities/glowfish.json'
@@ -369,6 +372,14 @@ processResources {
         }
         def recipeRoot = destinationDir.toPath().resolve('data/biomemakeover/recipe').toFile()
         if (recipeRoot.exists()) {
+            // These resources were swept in by broad historical family includes,
+            // but their owning content is intentionally deferred or belongs to
+            // Stage 5. Do not leave recipes pointing at absent registry entries.
+            [
+                'wood/blighted_balsa/blighted_balsa_boat.json',
+                'wood/blighted_balsa/blighted_balsa_chest_boat.json',
+                'decoration/terracotta_bricks/white_dye_from_buttonbush.json'
+            ].each { new File(recipeRoot, it).delete() }
             fileTree(recipeRoot).matching { include '**/*.json' }.files.each { recipeFile ->
                 def recipe = new JsonSlurper().parse(recipeFile)
                 def ingredient = { value ->
@@ -382,6 +393,10 @@ processResources {
                 if (recipe.result instanceof Map && recipe.result.item) {
                     recipe.result.id = recipe.result.remove('item')
                 }
+                if (recipe.result instanceof String) recipe.result = [id: recipe.result]
+                // Vanilla renamed the chain item in 1.21.10. This preserves the
+                // hanging-sign recipe's iron-chain input under its modern ID.
+                if (recipe.key instanceof Map) recipe.key.replaceAll { k, v -> v == 'minecraft:chain' ? 'minecraft:iron_chain' : v }
                 recipeFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(recipe)) + System.lineSeparator()
             }
         }
@@ -395,10 +410,46 @@ processResources {
                 advancement.criteria?.values()?.each { criterion ->
                     criterion.conditions?.items?.each { predicate ->
                         if (predicate.items instanceof List && predicate.items.size() == 1) predicate.items = predicate.items[0]
+                        if (predicate.item instanceof List && predicate.item.size() == 1) {
+                            predicate.items = predicate.item[0]
+                            predicate.remove('item')
+                        }
                     }
                 }
+                if (advancement.requirements instanceof List && advancement.requirements.isEmpty()) advancement.remove('requirements')
                 advancementFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(advancement)) + System.lineSeparator()
             }
+
+            // The historical root references the hidden icon_item and two biome
+            // branches not yet restored. Keep the Stage 3/4 advancement tree
+            // reachable without prematurely registering or activating them.
+            def root = [
+                display: [
+                    icon: [id: 'minecraft:mycelium'],
+                    title: [translate: 'advancements.biomemakeover.root.title'],
+                    description: [translate: 'advancements.biomemakeover.root.description'],
+                    frame: 'task', show_toast: false, announce_to_chat: false, hidden: false,
+                    background: 'biomemakeover:textures/gui/advancements.png'
+                ],
+                criteria: [
+                    enter_badlands: [trigger: 'minecraft:location', conditions: [player: [[condition: 'minecraft:entity_properties', entity: 'this', predicate: [location: [biome: 'minecraft:badlands']]]]]],
+                    enter_mushroom_fields: [trigger: 'minecraft:location', conditions: [player: [[condition: 'minecraft:entity_properties', entity: 'this', predicate: [location: [biome: 'minecraft:mushroom_fields']]]]]]
+                ],
+                requirements: [['enter_badlands', 'enter_mushroom_fields']]
+            ]
+            def rootFile = new File(advancementRoot, 'biomemakeover/root.json')
+            rootFile.parentFile.mkdirs()
+            rootFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(root)) + System.lineSeparator()
+        }
+
+        // Paletted-permutation output outside item/ and block/ is not stitched by
+        // the 1.21.10 block atlas directory sources. Point the released two-layer
+        // Pink Bud model at the identical generated overlay in item/.
+        def pinkBudModel = new File(destinationDir, 'assets/biomemakeover/models/item/pink_bud.json')
+        if (pinkBudModel.exists()) {
+            def model = new JsonSlurper().parse(pinkBudModel)
+            model.textures.layer1 = 'biomemakeover:item/pink_bud_overlay'
+            pinkBudModel.text = JsonOutput.prettyPrint(JsonOutput.toJson(model)) + System.lineSeparator()
         }
         def contract = new JsonSlurper().parse(file('validation/foundations/stage_3_mushroom_fields_contract.json'))
         def stage4Contract = new JsonSlurper().parse(file('validation/foundations/stage_4_badlands_contract.json'))

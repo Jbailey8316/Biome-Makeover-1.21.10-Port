@@ -132,3 +132,15 @@ retrofit these rules. Its carried validation debt is explicit:
 - Mushroom House, possible Mushroom Trader reachability, and its disc remain Stage 10A.
 
 No dependency is changed solely to eliminate this runtime-environment limitation.
+
+## 22. Target every restored worldgen family in fresh chunks
+
+A successful client bootstrap, resource reload, dynamic-registry load, world creation, and initial spawn do not
+establish worldgen runtime safety. Feature placement code can remain dormant until an affected biome and feature are
+actually generated. Every biome restoration checkpoint must therefore test targeted fresh chunks in every affected
+biome and exercise each custom feature family.
+
+Runtime reports must keep these gates distinct: client bootstrap; resource loading; dynamic registry loading; world
+creation; initial-spawn generation; recipe/data decoding; advancement decoding; model/texture resolution; targeted
+Mushroom Fields generation; targeted Badlands generation; feature-specific generation; entity behavior; save/reload;
+and dedicated-server/multiplayer behavior. Passing one gate never implies a later gate passed.

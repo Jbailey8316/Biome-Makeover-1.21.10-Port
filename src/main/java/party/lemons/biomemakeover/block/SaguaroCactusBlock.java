@@ -69,23 +69,74 @@ public final class SaguaroCactusBlock extends Block implements BonemealableBlock
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(HORIZONTAL, HORIZONTAL_DIRECTION, NORTH, SOUTH, EAST, WEST); }
     @Override public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) { return state.equals(defaultBlockState()) && level.getBlockState(pos.above()).isAir(); }
     @Override public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) { return random.nextFloat() < .45F; }
-    @Override public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) { generateCactus(this, level, pos, random); }
+    @Override public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) { generateCactus(this, level, random.nextBoolean(), pos, random, false); }
     @Override protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) { if (random.nextInt(10) == 0 && isValidBonemealTarget(level, pos, state)) performBonemeal(level, random, pos, state); }
 
-    public static boolean generateCactus(Block block, WorldGenLevel level, BlockPos origin, RandomSource random) {
+    private static final Direction[] NORTH_SOUTH = {Direction.NORTH, Direction.SOUTH};
+    private static final Direction[] EAST_WEST = {Direction.EAST, Direction.WEST};
+
+    public static boolean generateCactus(Block block, WorldGenLevel level, boolean northSouth, BlockPos origin, RandomSource random, boolean isBig) {
         if (!block.defaultBlockState().canSurvive(level, origin)) return false;
-        int height = 4 + random.nextInt(5);
-        for (int y = 0; y < height && level.getBlockState(origin.above(y)).isAir(); y++) level.setBlock(origin.above(y), block.defaultBlockState(), 2);
-        if (random.nextInt(10) > 1 && height > 2) {
-            Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(random);
-            int armY = 1 + random.nextInt(height - 2);
-            BlockPos center = origin.above(armY), arm = center.relative(direction);
-            if (level.getBlockState(arm).isAir()) {
-                level.setBlock(center, level.getBlockState(center).setValue(CONNECTIONS.get(direction), true), 2);
-                level.setBlock(arm, block.defaultBlockState().setValue(HORIZONTAL, true).setValue(HORIZONTAL_DIRECTION, direction.getOpposite()).setValue(CONNECTIONS.get(direction.getOpposite()), true), 2);
-                if (level.getBlockState(arm.above()).isAir()) level.setBlock(arm.above(), block.defaultBlockState(), 2);
+
+        boolean hasArms = random.nextInt(10) > 1;
+        boolean hasTwoArms = random.nextInt(5) != 0;
+        int centerHeight = randomRange(random, 4, 8);
+        BlockPos.MutableBlockPos cursor = origin.mutable();
+
+        for (int y = 0; y < centerHeight; y++) {
+            // The released generator deliberately replaces the heightmap's
+            // surface position. Only subsequent trunk positions require air.
+            if (y > 0 && !level.getBlockState(cursor).isAir()) break;
+            level.setBlock(cursor, block.defaultBlockState(), 2);
+            cursor.move(Direction.UP);
+        }
+
+        if (!hasArms) return true;
+
+        int centerEndY = cursor.getY();
+        int armStart = randomRange(random, 1, centerHeight - 2);
+        Direction[] directions = northSouth ? NORTH_SOUTH : EAST_WEST;
+        if (hasTwoArms) {
+            for (Direction direction : directions) {
+                generateArm(block, level, direction, cursor.getX(), origin.getY() + armStart, cursor.getZ(), centerEndY, random);
+                armStart = randomRange(random, 1, centerHeight - 2);
             }
+        } else {
+            generateArm(block, level, directions[random.nextInt(directions.length)], cursor.getX(), origin.getY() + armStart, cursor.getZ(), centerEndY, random);
+        }
+
+        if ((!isBig && random.nextInt(10) == 0) || (isBig && random.nextInt(50) == 0)) {
+            BlockPos next = new BlockPos(origin.getX(), centerEndY, origin.getZ());
+            if (level.getBlockState(next).isAir()) generateCactus(block, level, random.nextBoolean(), next, random, true);
         }
         return true;
+    }
+
+    private static void generateArm(Block block, WorldGenLevel level, Direction direction, int centerX, int armY,
+                                    int centerZ, int centerHeight, RandomSource random) {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos(centerX + direction.getStepX(), armY,
+            centerZ + direction.getStepZ());
+        if (!level.getBlockState(cursor).isAir()) return;
+
+        BlockPos center = cursor.relative(direction.getOpposite());
+        BlockState centerState = level.getBlockState(center);
+        if (!centerState.is(block)) return;
+
+        level.setBlock(center, centerState.setValue(CONNECTIONS.get(direction), true), 2);
+        level.setBlock(cursor, block.defaultBlockState().setValue(HORIZONTAL, true)
+            .setValue(HORIZONTAL_DIRECTION, direction.getOpposite())
+            .setValue(CONNECTIONS.get(direction.getOpposite()), true), 2);
+
+        cursor.move(Direction.UP);
+        int amount = Math.max(1, centerHeight - cursor.getY() + randomRange(random, -3, -1));
+        for (int i = 0; i < amount; i++) {
+            if (!level.getBlockState(cursor).isAir()) return;
+            level.setBlock(cursor, block.defaultBlockState(), 2);
+            cursor.move(Direction.UP);
+        }
+    }
+
+    private static int randomRange(RandomSource random, int minimum, int maximum) {
+        return minimum + random.nextInt(maximum - minimum + 1);
     }
 }

@@ -10,6 +10,7 @@ import party.lemons.biomemakeover.init.BMBlocks;
 public final class SaguaroCactusFeature extends Feature<NoneFeatureConfiguration> {
     public SaguaroCactusFeature(Codec<NoneFeatureConfiguration> codec) { super(codec); }
     @Override public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
-        return SaguaroCactusBlock.generateCactus(BMBlocks.SAGUARO_CACTUS, context.level(), context.origin(), context.random());
+        return SaguaroCactusBlock.generateCactus(BMBlocks.SAGUARO_CACTUS, context.level(), context.random().nextBoolean(),
+            context.origin(), context.random(), false);
     }
 }

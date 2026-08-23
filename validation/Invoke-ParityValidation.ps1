@@ -226,6 +226,55 @@ if (Test-Path $configuredRoot) {
     }
 }
 
+$recipeRoot = Join-Path $builtData 'biomemakeover/recipe'
+$supportedRecipeTypes = @(
+    'minecraft:crafting_shaped', 'minecraft:crafting_shapeless', 'minecraft:smelting',
+    'minecraft:smoking', 'minecraft:campfire_cooking', 'minecraft:stonecutting'
+)
+if (Test-Path $recipeRoot) {
+    Get-ChildItem $recipeRoot -Recurse -File -Filter '*.json' | ForEach-Object {
+        $recipeFile = $_
+        $recipe = Get-Content $recipeFile.FullName -Raw | ConvertFrom-Json
+        $relative = $recipeFile.FullName.Substring($RepositoryRoot.Length + 1)
+        if ($recipe.type -notin $supportedRecipeTypes) { Add-Failure "Unvalidated recipe type $($recipe.type) in $relative" }
+        if ($recipe.result -is [string] -or -not ($recipe.result.PSObject.Properties.Name -contains 'id')) {
+            Add-Failure "Recipe result is not a 1.21.10 item-stack object with id: $relative"
+        }
+        if ($recipe.type -eq 'minecraft:crafting_shapeless' -and @($recipe.ingredients).Count -lt 1) {
+            Add-Failure "Shapeless recipe has no ingredients: $relative"
+        }
+        if ($recipe.type -eq 'minecraft:crafting_shaped') {
+            if (@($recipe.pattern).Count -lt 1 -or @($recipe.key.PSObject.Properties).Count -lt 1) {
+                Add-Failure "Shaped recipe has an empty pattern/key: $relative"
+            }
+        }
+    }
+}
+
+$advancementRoot = Join-Path $builtData 'biomemakeover/advancement'
+if (Test-Path $advancementRoot) {
+    $advancementIds = Resource-Ids 'build/resources/main/data/biomemakeover/advancement'
+    Get-ChildItem $advancementRoot -Recurse -File -Filter '*.json' | ForEach-Object {
+        $advancementFile = $_
+        $advancement = Get-Content $advancementFile.FullName -Raw | ConvertFrom-Json
+        $relative = $advancementFile.FullName.Substring($RepositoryRoot.Length + 1)
+        $criteria = @($advancement.criteria.PSObject.Properties.Name)
+        if ($criteria.Count -lt 1) { Add-Failure "Advancement has no criteria: $relative" }
+        if ($advancement.parent -like 'biomemakeover:*') {
+            $parent = ([string]$advancement.parent).Substring('biomemakeover:'.Length)
+            if ($parent -notin $advancementIds) { Add-Failure "Advancement references missing BM parent $($advancement.parent): $relative" }
+        }
+        if ($null -ne $advancement.requirements) {
+            $required = @($advancement.requirements | ForEach-Object { @($_) } | ForEach-Object { $_ })
+            $missing = @($criteria | Where-Object { $_ -notin $required })
+            $unknown = @($required | Where-Object { $_ -notin $criteria })
+            if ($missing.Count -or $unknown.Count) { Add-Failure "Advancement requirements mismatch in ${relative}: missing=[$($missing -join ', ')], unknown=[$($unknown -join ', ')]" }
+        }
+        $raw = Get-Content $advancementFile.FullName -Raw
+        if ($raw -match '"item"\s*:\s*\[') { Add-Failure "Obsolete singular advancement item predicate in $relative" }
+    }
+}
+
 $registryByTagDirectory = @{
     'block' = $blocks; 'item' = $items; 'entity_type' = $entities
 }
