@@ -44,7 +44,12 @@ public final class BMEntities {
         EntityType.Builder.<ScuttlerEntity>of(ScuttlerEntity::new,MobCategory.CREATURE).sized(.8F,.6F).clientTrackingRange(12));
     public static final Item SCUTTLER_SPAWN_EGG = registerSpawnEgg("scuttler_spawn_egg",SCUTTLER);
     public static final EntityType<CowboyEntity> COWBOY = registerEntity("cowboy",
-        EntityType.Builder.<CowboyEntity>of(CowboyEntity::new,MobCategory.MONSTER).sized(.6F,1.95F).canSpawnFarFromPlayer().clientTrackingRange(12));
+        EntityType.Builder.<CowboyEntity>of(CowboyEntity::new,MobCategory.MONSTER)
+            .sized(.6F,1.95F)
+            .passengerAttachments(2.0F)
+            .ridingOffset(-0.6F)
+            .canSpawnFarFromPlayer()
+            .clientTrackingRange(12));
     public static final Item COWBOY_SPAWN_EGG = registerSpawnEgg("cowboy_spawn_egg",COWBOY);
     public static final EntityType<TumbleweedEntity> TUMBLEWEED = registerEntity("tumbleweed",
         EntityType.Builder.<TumbleweedEntity>of(TumbleweedEntity::new,MobCategory.MISC).sized(.7F,.7F).clientTrackingRange(12));

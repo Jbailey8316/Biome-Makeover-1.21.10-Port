@@ -335,6 +335,10 @@ if ($saguaroSource -notmatch 'ticks\.scheduleTick\(pos\s*,\s*this\s*,\s*1\)' -or
 }
 
 $cowboySource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/CowboyEntity.java') -Raw
+$entitiesSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java') -Raw
+if ($entitiesSource -notmatch '(?s)COWBOY\s*=.*?\.sized\(\.6F,1\.95F\).*?\.passengerAttachments\(2\.0F\).*?\.ridingOffset\(-0\.6F\)') {
+    Add-Failure 'Cowboy must retain the Minecraft 1.21.10 Pillager passenger/vehicle attachment contract'
+}
 $patrolSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/PatrolSpawnerMixin.java') -Raw
 $horseSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/HorseMixin.java') -Raw
 $cowboyRenderer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/CowboyRenderer.java') -Raw

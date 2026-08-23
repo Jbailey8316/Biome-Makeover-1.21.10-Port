@@ -130,3 +130,16 @@ head item and submitted its normal flat 16x16 inventory model. This duplicate wa
 and also affected equipped Cowboys. `ArmorRenderer.shouldRenderDefaultHeadItem` is the current Fabric contract for
 this exact collision; the Cowboy renderer now returns false there. Inventory and dropped-item rendering are unchanged,
 and player/Cowboy/horse continue to share the historical 3D model and equipped texture.
+
+## Mounted rider attachment correction
+
+Released BM registered Cowboy at exactly `0.6 x 1.95`, matching the contemporary Pillager dimensions, and added no
+Cowboy-specific riding-position override or horse-position mixin. Its patrol path simply called `startRiding(horse)`,
+so the released observable contract was the inherited vanilla illager-on-horse position.
+
+Minecraft 1.21.10 expresses attachment geometry on `EntityType.Builder`. Vanilla Pillager now declares
+`passengerAttachments(2.0F)` and `ridingOffset(-0.6F)` in addition to the same dimensions. Cowboy's ported registration
+had retained only the dimensions; consequently `Entity.positionRider` subtracted Cowboy's default vehicle attachment
+instead of Pillager's `-0.6` riding attachment, leaving the Cowboy visibly too high. The Cowboy registration now copies
+those two modern Pillager attachment values. No runtime offset override was introduced, and patrol creation, mounting,
+horse state, persistence, hats, banner and captain loot paths are unchanged.

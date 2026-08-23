@@ -247,3 +247,11 @@ A component-based wearable can enter both custom armor rendering and the generic
 historical item subclass no longer exists. If correct 3D geometry is overlaid by flat inventory art, audit both paths
 before changing UVs or textures. Use the rendering API's explicit default-head-item suppression contract and validate
 that equipped and inventory textures remain independently bound.
+
+## 39. Subclass entity types must inherit modern attachment metadata explicitly
+
+Entity behavior formerly inherited from a vanilla superclass may move into `EntityType` dimensions and attachment
+metadata. When registering a custom type whose entity subclasses a vanilla mob, compare current vanilla `eyeHeight`,
+passenger attachments and vehicle/riding attachment—not only width and height. Missing metadata can compile and mount
+successfully while positioning passengers incorrectly. Prefer the authoritative vanilla type contract over a runtime
+Y-offset override.
