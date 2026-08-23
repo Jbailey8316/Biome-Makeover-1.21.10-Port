@@ -11,6 +11,12 @@ import party.lemons.biomemakeover.client.render.GlowfishRenderer;
 import party.lemons.biomemakeover.client.render.TumbleweedRenderer;
 import party.lemons.biomemakeover.client.render.ScuttlerRenderer;
 import net.minecraft.client.renderer.entity.PillagerRenderer;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.state.HorseRenderState;
+import net.minecraft.client.model.HorseModel;
+import party.lemons.biomemakeover.client.render.CowboyHatLayer;
 import party.lemons.biomemakeover.client.render.CowboyRenderer;
 import party.lemons.biomemakeover.init.BMBlocks;
 import party.lemons.biomemakeover.init.BMEntities;
@@ -34,6 +40,15 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         EntityRenderers.register(BMEntities.GLOWFISH, GlowfishRenderer::new);
         EntityRenderers.register(BMEntities.TUMBLEWEED, TumbleweedRenderer::new);
         EntityRenderers.register(BMEntities.COWBOY, CowboyRenderer::new);
+        LivingEntityFeatureRendererRegistrationCallback.EVENT.register((type,renderer,helper,context)->{
+            if(type==EntityType.HORSE) {
+                @SuppressWarnings("unchecked")
+                RenderLayerParent<HorseRenderState,HorseModel> parent=(RenderLayerParent<HorseRenderState,HorseModel>)(Object)renderer;
+                @SuppressWarnings({"rawtypes","unchecked"})
+                net.minecraft.client.renderer.entity.layers.RenderLayer layer=new CowboyHatLayer<>(parent,context.getModelSet(),true);
+                helper.register(layer);
+            }
+        });
         EntityRenderers.register(BMEntities.SCUTTLER, ScuttlerRenderer::new);
         BiomeMakeover.LOGGER.info("Biome Makeover client initialized.");
     }

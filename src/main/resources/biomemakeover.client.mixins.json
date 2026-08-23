@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "party.lemons.biomemakeover.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["HorseRenderStateMixin", "HorseRendererMixin"],
+  "injectors": {"defaultRequire": 1}
+}

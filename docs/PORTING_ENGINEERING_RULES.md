@@ -208,3 +208,15 @@ producing unbounded-looking structures without changing the nominal feature heig
 Before adding an eye, overlay, tint, or extra model layer, compare the exact released texture pixels, historical model
 UVs, historical renderer layers, and the modern vanilla equivalents. A visually surprising omission may be authored
 released content rather than a migration loss. Record it explicitly and do not manufacture detail without evidence.
+
+## 33. Test constructor, command, and finalized spawn paths independently
+
+Entity construction, `/summon`, natural spawn, patrol/event spawn, and structure spawn need not call the same
+finalization hooks. Rendering can also expose unconditional historical state not represented by equipment. Trace and
+test each reachable creation path; do not force patrol-only mounts, leaders, or equipment onto direct summons.
+
+## 34. Translate progression effects at their modern semantic boundary
+
+When vanilla progression changes (for example Bad Omen becoming the precursor to Raid Omen), preserve the historical
+player-visible result through current effects and criteria rather than globally reverting vanilla raid code. Confine
+the adaptation to the custom feature's trigger and retain current vanilla behavior outside that scope.

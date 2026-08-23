@@ -334,6 +334,31 @@ if ($saguaroSource -notmatch 'ticks\.scheduleTick\(pos\s*,\s*this\s*,\s*1\)' -or
     Add-Failure 'Saguaro neighbor survival/update cleanup contract is incomplete'
 }
 
+$cowboySource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/CowboyEntity.java') -Raw
+$patrolSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/PatrolSpawnerMixin.java') -Raw
+$horseSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/HorseMixin.java') -Raw
+$cowboyRenderer = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/CowboyRenderer.java') -Raw
+$horseRendererMixin = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/mixin/client/HorseRendererMixin.java') -Raw
+if ($cowboySource -notmatch 'setDropChance\(EquipmentSlot\.HEAD\s*,\s*\.25F\)' -or
+    $cowboySource -notmatch 'setDropChance\(EquipmentSlot\.HEAD\s*,\s*2\.0F\)' -or
+    $cowboySource -notmatch 'DataComponents\.BANNER_PATTERNS' -or $cowboySource -notmatch 'MobEffects\.BAD_OMEN') {
+    Add-Failure 'Cowboy ordinary/leader equipment, custom banner, drop, or modern Bad Omen contract is incomplete'
+}
+if ($patrolSource -notmatch 'biomemakeover\$setCowboySpawned' -or $patrolSource -notmatch 'if\(leader\).*biomemakeover\$setHat') {
+    Add-Failure 'Badlands patrol replacement does not mark every horse persistent and the leader horse hatted'
+}
+if ($horseSource -notmatch 'putBoolean\("Hat"' -or $horseSource -notmatch 'putBoolean\("CowboySpawned"' -or
+    $horseSource -notmatch 'removeWhenFarAway') {
+    Add-Failure 'Cowboy horse synchronized/persistent/despawn contract is incomplete'
+}
+if ($cowboyRenderer -notmatch 'CowboyHatLayer' -or $horseRendererMixin -notmatch 'biomemakeover\$setHasHat') {
+    Add-Failure 'Cowboy or leader-horse hat render-state chain is incomplete'
+}
+$clientMixinConfig = Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.client.mixins.json') -Raw | ConvertFrom-Json
+if ('HorseRenderStateMixin' -notin @($clientMixinConfig.client) -or 'HorseRendererMixin' -notin @($clientMixinConfig.client)) {
+    Add-Failure 'Cowboy horse rendering mixins are not isolated and registered in the client-only mixin list'
+}
+
 $registryByTagDirectory = @{
     'block' = $blocks; 'item' = $items; 'entity_type' = $entities
 }

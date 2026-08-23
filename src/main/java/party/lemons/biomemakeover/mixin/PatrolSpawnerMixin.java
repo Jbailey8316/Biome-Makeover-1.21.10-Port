@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import party.lemons.biomemakeover.init.BMEntities;
+import party.lemons.biomemakeover.entity.HorseHat;
 
 @Mixin(PatrolSpawner.class)
 public abstract class PatrolSpawnerMixin {
@@ -27,7 +28,9 @@ public abstract class PatrolSpawnerMixin {
         var cowboy=BMEntities.COWBOY.create(level,EntitySpawnReason.PATROL); Horse horse=EntityType.HORSE.create(level,EntitySpawnReason.PATROL);
         if(cowboy==null||horse==null){cir.setReturnValue(false);return;}
         horse.setPos(pos.getX(),pos.getY(),pos.getZ()); horse.finalizeSpawn(level,level.getCurrentDifficultyAt(pos),EntitySpawnReason.PATROL,null);
+        ((HorseHat)horse).biomemakeover$setCowboySpawned();
         cowboy.setPos(pos.getX(),pos.getY(),pos.getZ()); cowboy.setPatrolLeader(leader); if(leader)cowboy.findPatrolTarget();
+        if(leader)((HorseHat)horse).biomemakeover$setHat();
         cowboy.finalizeSpawn(level,level.getCurrentDifficultyAt(pos),EntitySpawnReason.PATROL,null); cowboy.startRiding(horse);
         level.addFreshEntityWithPassengers(horse); cir.setReturnValue(true);
     }
