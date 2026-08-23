@@ -12,6 +12,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BonemealableBlock;
@@ -58,12 +59,34 @@ public final class SaguaroCactusBlock extends Block implements BonemealableBlock
         return level.getBlockState(pos.below()).is(BMBlocks.SAGUARO_CACTUS_PLANTABLE) && level.getFluidState(pos.above()).isEmpty();
     }
 
+    @Override protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks,
+                                               BlockPos pos, Direction direction, BlockPos neighborPos,
+                                               BlockState neighborState, RandomSource random) {
+        if (!canSurvive(state,level,pos)) {
+            ticks.scheduleTick(pos,this,1);
+            return super.updateShape(state,level,ticks,pos,direction,neighborPos,neighborState,random);
+        }
+        if (direction.getAxis().isHorizontal()) {
+            BooleanProperty connection = CONNECTIONS.get(direction);
+            if (neighborState.is(this) && neighborState.getValue(HORIZONTAL)
+                && neighborState.getValue(CONNECTIONS.get(direction.getOpposite()))) {
+                return state.setValue(connection,true);
+            }
+            if (!neighborState.is(this)) return state.setValue(connection,false);
+        }
+        return super.updateShape(state,level,ticks,pos,direction,neighborPos,neighborState,random);
+    }
+
+    @Override protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (!state.canSurvive(level,pos)) level.destroyBlock(pos,true);
+    }
+
     @Override protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        VoxelShape shape = state.getValue(HORIZONTAL) ? box(4, 8, 4, 12, 16, 12) : box(4, 0, 4, 12, 16, 12);
-        if (state.getValue(NORTH)) shape = Shapes.or(shape, box(4, 8, 0, 12, 16, 4));
-        if (state.getValue(SOUTH)) shape = Shapes.or(shape, box(4, 8, 12, 12, 16, 16));
-        if (state.getValue(WEST)) shape = Shapes.or(shape, box(0, 8, 4, 4, 16, 12));
-        if (state.getValue(EAST)) shape = Shapes.or(shape, box(12, 8, 4, 16, 16, 12));
+        VoxelShape shape = state.getValue(HORIZONTAL) ? box(4, 8, 4, 12, 15.98, 12) : box(4, 0, 4, 12, 15.98, 12);
+        if (state.getValue(NORTH)) shape = Shapes.or(shape, box(4, 8, 0, 12, 15.98, 4));
+        if (state.getValue(SOUTH)) shape = Shapes.or(shape, box(4, 8, 12, 12, 15.98, 16));
+        if (state.getValue(WEST)) shape = Shapes.or(shape, box(0, 8, 4, 4, 15.98, 12));
+        if (state.getValue(EAST)) shape = Shapes.or(shape, box(12, 8, 4, 16, 15.98, 12));
         return shape;
     }
 
@@ -74,9 +97,11 @@ public final class SaguaroCactusBlock extends Block implements BonemealableBlock
         return state.equals(defaultBlockState()) && (support.is(Blocks.SAND) || support.is(Blocks.RED_SAND))
             && level.getBlockState(pos.above()).isAir();
     }
-    @Override public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) { return random.nextFloat() < .45F; }
+    @Override public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) { return level.random.nextFloat() < .45F; }
     @Override public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) { generateCactus(this, level, random.nextBoolean(), pos, random, false); }
-    @Override protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) { if (random.nextInt(10) == 0 && isValidBonemealTarget(level, pos, state)) performBonemeal(level, random, pos, state); }
+    @Override protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        if (isValidBonemealTarget(level,pos,state) && random.nextInt(10) == 0) performBonemeal(level,random,pos,state);
+    }
 
     private static final Direction[] NORTH_SOUTH = {Direction.NORTH, Direction.SOUTH};
     private static final Direction[] EAST_WEST = {Direction.EAST, Direction.WEST};

@@ -202,3 +202,9 @@ outer entity pose and will visibly detach even if its local offsets are identica
 When a generated plant also random-ticks or accepts bonemeal, compare its historical growth-origin predicate as part
 of the generation algorithm. Dropping a substrate check can turn every exposed segment into a new recursive origin,
 producing unbounded-looking structures without changing the nominal feature height or recursion probabilities.
+
+## 32. Do not infer missing visual detail when the released texture omits it
+
+Before adding an eye, overlay, tint, or extra model layer, compare the exact released texture pixels, historical model
+UVs, historical renderer layers, and the modern vanilla equivalents. A visually surprising omission may be authored
+released content rather than a migration loss. Record it explicitly and do not manufacture detail without evidence.

@@ -65,7 +65,7 @@ functional blocks/block entities, and the bulk of recipes/loot/advancements.
 | Blighted Balsa wood set | None | MISSING | Foundational wood-family registration before trees/recipes/boats |
 | Glowshrooms, huge variants, sprouts, roots, tall mushrooms | One generic Wild Mushrooms block | PARTIAL | Plant behavior, huge-feature codecs, placement, loot and models |
 | Glowshroom/blighted masonry | None | MISSING | Block families, recipes, stonecutting, tags, loot |
-| Glowfish ecology | Restored entity, water spawning, Salmon AI, renderer/attachment, loot and bucket behavior | PARTIAL / NEEDS-RUNTIME-VERIFICATION | Historical default model and transformed Glowshroom layer are statically restored; visual attachment, bucket release and save/reload remain runtime-open |
+| Glowfish ecology | Restored entity, water spawning, Salmon AI, renderer/attachment, loot and bucket behavior | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Body, attachment, multi-entity rendering and swimming/orientation are runtime PASS; released texture source-confirms its lack of vanilla dark eye pixels; bucket release and save/reload remain runtime-open |
 | Mushroom House structure and loot | None | MISSING | Structure registration, pieces/templates/processors and loot |
 
 Mushroom Trader and Blight Bat registrations/resources are historical, but

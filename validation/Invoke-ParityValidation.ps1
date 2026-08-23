@@ -326,6 +326,13 @@ if ($scuttlerRendererSource -notmatch 'state\.rattleTime\s*=\s*entity\.getRattle
 if ($saguaroSource -notmatch 'support\.is\(Blocks\.SAND\)' -or $saguaroSource -notmatch 'support\.is\(Blocks\.RED_SAND\)') {
     Add-Failure 'Saguaro growth origins must retain the released sand/red-sand support gate'
 }
+if ($saguaroSource -notmatch 'if\s*\(isValidBonemealTarget\([^)]+\)\s*&&\s*random\.nextInt\(10\)\s*==\s*0\)') {
+    Add-Failure 'Saguaro random ticking must validate the released base growth origin before consuming its growth roll'
+}
+if ($saguaroSource -notmatch 'ticks\.scheduleTick\(pos\s*,\s*this\s*,\s*1\)' -or
+    $saguaroSource -notmatch 'if\s*\(!state\.canSurvive\(level\s*,\s*pos\)\)\s*level\.destroyBlock') {
+    Add-Failure 'Saguaro neighbor survival/update cleanup contract is incomplete'
+}
 
 $registryByTagDirectory = @{
     'block' = $blocks; 'item' = $items; 'entity_type' = $entities

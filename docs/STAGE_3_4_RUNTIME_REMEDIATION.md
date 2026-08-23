@@ -410,6 +410,67 @@ leader mounted members, then test equipment, combat, death/drops/reward, save/re
 
 Stage 3 and Stage 4 remain short of full runtime parity.
 
+## Seventh runtime checkpoint: Glowfish eyes and final Saguaro source audit
+
+The reported Prism run establishes the Glowfish body, natural multi-entity rendering, attachment connection, swimming,
+and orientation as runtime PASS. It also confirms the runaway Saguaro growth remediation substantially corrected
+fresh generation. Tumbleweed, Scuttler, Pink Bud, Wild Mushrooms, and biome generation remain accepted runtime/source
+results and were not modified.
+
+### Glowfish eye evidence
+
+Minecraft 1.20.1 and 1.21.10 medium Salmon models use the same 32x32 layout, head box dimensions, and head UV origin
+`(22,0)`. Their `salmon.png` files decode to pixel-identical content despite different PNG encoding. The released BM
+renderer used only `textures/entity/glow_fish.png`; it registered no eye layer, tint, alternate model, or eye asset.
+At the two vanilla Salmon eye locations the released Glowfish texture contains the surrounding pale body color rather
+than Salmon's dark eye pixels. Thus the current missing/difficult-to-see eyes are not a render-state or UV migration
+loss: they are the appearance encoded by the authoritative released texture.
+
+No eye pixels, overlay, geometry, or invented eye layer were added. The fixed default model, historical texture,
+full-bright lighting, rear-fin suppression, and connected Glowshroom layer remain unchanged. This is
+**SOURCE-CONFIRMED HISTORICAL / NO CHANGE**, subject only to user acceptance of the released asset itself.
+
+Static bucket audit found the current `GlowfishEntity` still returns the registered `glowfish_bucket`; the item is a
+vanilla 1.21.10 `MobBucketItem` bound to the Glowfish type, water, and fish-empty sound. Salmon/AbstractFish supplies
+bucket capture data, from-bucket persistence, and release restoration. The historical fall-save trigger is preserved
+after a consuming server-side bucket use. No evidence-supported bucket change was found; pickup/release and save/reload
+remain runtime-open.
+
+### Saguaro line-by-line result
+
+Feature entry and generation now match the release: origin survival is checked; arm/double-arm rolls precede the
+separate shared shape-RNG height draw; trunk height is 4-7; the mutable cursor advances once per successfully placed
+trunk block; arm origins are `originY + [1, height-3]`; horizontal arms are one block and upward portions are 1-3
+blocks; connections and facings match; recursion starts at the actual trunk end on the central column. Recursion is
+considered only for an arm-bearing segment: initial continuation probability is therefore `0.8 * 0.10 = 8%`, and each
+later continuation is `0.8 * 0.02 = 1.6%`.
+
+Consequently the released algorithm has no finite theoretical maximum. Approximate segment-count probabilities are:
+92% one segment (4-7 blocks), 7.872% two segments (8-14), 0.125952% three segments (12-21), and 0.002015% four.
+Separated branch groups on a rare two/three-segment cactus are valid historical evidence, not grounds for a cap.
+
+The prior pass restored the critical sand/red-sand base-only random-growth gate. This audit restored remaining exact
+block contracts: validate that base before consuming the random-tick 1-in-10 roll; use the level RNG for the historical
+45% bonemeal-success roll; schedule unsupported blocks and destroy them on the scheduled tick; update horizontal
+connection properties from neighbors; and preserve the historical 15.98/16 outline gap. These affect growth call
+order, survival/connections, and geometry, not generation frequency, segment bounds, or recursion probabilities.
+
+Fresh-chunk sample testing remains required. Extremely tall examples should be evaluated statistically: ordinary
+8-14-block two-segment specimens are expected, 12-21-block three-segment specimens are rare but valid, while frequent
+three-plus segment towers would remain evidence of another defect.
+
+### Focused status after checkpoint seven
+
+| Contract | Status |
+|---|---|
+| Glowfish body/attachment/swimming/orientation | **RUNTIME PASS** |
+| Glowfish eyes | **SOURCE-CONFIRMED RELEASED TEXTURE; NO CHANGE** |
+| Glowfish bucket pickup/release/save | **STATICALLY COMPATIBLE; RUNTIME OPEN** |
+| Saguaro crash/runaway segment growth | **RUNTIME PASS / SUBSTANTIALLY IMPROVED** |
+| Saguaro source algorithm/block contracts | **STATIC PARITY; REPRESENTATIVE FRESH-CHUNK SAMPLE OPEN** |
+
+Stage 3 and Stage 4 remain short of full runtime parity.
+
 ## Sixth runtime checkpoint: focused Glowfish, Saguaro, and Wild Mushroom pass
 
 The input Prism run confirms Tumbleweed rendering/rolling and the Scuttler threat, food, flee, and visible rattler
