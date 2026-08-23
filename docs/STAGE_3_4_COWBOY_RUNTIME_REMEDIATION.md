@@ -115,3 +115,18 @@ The 1.21.10 Voluntary Exile advancement independently requires vanilla's exact b
 seven-pattern banner cannot satisfy it, so focused manual awarding remains for a responsible player or tame-wolf owner
 who kills a matching BM captain. That award does not create Bad Omen or a bottle. Mounted patrol behavior, the custom
 leader banner, and the deliberately hatted leader horse are unchanged.
+
+## Shared rear item-artifact correction
+
+The pinned equipped texture is 64x64 and its packaged SHA-256 is identical to the released
+`textures/misc/cowboy_hat.png`; the separate inventory texture is 16x16 and remains bound only by the generated item
+model. All five current hat cuboids reproduce the released UV origins (`32,32`, `32,46`, `32,0`, `0,46`, `0,12`),
+mirror flags and 64x64 layer dimensions. Player, Cowboy and horse 3D paths all instantiate the same baked
+`CowboyHatModel` and bind the same equipped texture. The artifact therefore was not a changed texture or UV conversion.
+
+The modern hat is a component-based plain `Item`, while released `HatItem` extended `ArmorItem`. After Fabric's custom
+armor renderer submitted the correct 3D model, Minecraft's default head-item path also treated the modern stack as a
+head item and submitted its normal flat 16x16 inventory model. This duplicate was most obvious behind the wide brim
+and also affected equipped Cowboys. `ArmorRenderer.shouldRenderDefaultHeadItem` is the current Fabric contract for
+this exact collision; the Cowboy renderer now returns false there. Inventory and dropped-item rendering are unchanged,
+and player/Cowboy/horse continue to share the historical 3D model and equipped texture.

@@ -240,3 +240,10 @@ Do not assume a changed vanilla reward remains entity death code. Trace predicat
 components, advancement criteria and later effect transitions. When a custom visual identity prevents a vanilla
 predicate from recognizing the entity, restore that identity narrowly and mirror the authoritative vanilla data path;
 do not combine the modern reward with the superseded legacy effect.
+
+## 38. Custom wearable rendering must suppress duplicate head-item rendering
+
+A component-based wearable can enter both custom armor rendering and the generic head-item path, especially when the
+historical item subclass no longer exists. If correct 3D geometry is overlaid by flat inventory art, audit both paths
+before changing UVs or textures. Use the rendering API's explicit default-head-item suppression contract and validate
+that equipped and inventory textures remain independently bound.

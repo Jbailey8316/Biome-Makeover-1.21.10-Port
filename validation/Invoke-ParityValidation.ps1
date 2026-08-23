@@ -369,8 +369,15 @@ if ($itemsSource -match 'COWBOY_HAT[^\r\n]+humanoidArmor' -or
 if ($clientInitializer -notmatch 'ArmorRenderer\.register' -or
     $clientInitializer -notmatch 'CowboyHatArmorRenderer' -or
     $playerHatLayer -notmatch 'implements ArmorRenderer' -or
+    $playerHatLayer -notmatch 'shouldRenderDefaultHeadItem' -or
+    $playerHatLayer -notmatch 'return false' -or
     $playerHatLayer -notmatch 'translate\(0,-0\.125F,0\)') {
-    Add-Failure 'Player Cowboy Hat must use the historical custom model through Fabric custom armor rendering'
+    Add-Failure 'Cowboy Hat must use historical custom armor rendering and suppress the duplicate flat head-item model'
+}
+$hatModelSource = Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/model/CowboyHatModel.java') -Raw
+if ($hatModelSource -notmatch 'LayerDefinition\.create\(mesh,64,64\)' -or
+    $playerHatLayer -notmatch 'textures/misc/cowboy_hat\.png') {
+    Add-Failure 'Equipped Cowboy Hat must retain its historical 64x64 UV atlas and misc texture binding'
 }
 $cowboyLootPath = Join-Path $builtData 'biomemakeover/loot_table/entities/cowboy.json'
 $cowboyLootRaw = if (Test-Path $cowboyLootPath) { Get-Content $cowboyLootPath -Raw } else { '' }
