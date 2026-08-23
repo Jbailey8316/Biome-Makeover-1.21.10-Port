@@ -33,10 +33,12 @@ $baselinePath = Join-Path $RepositoryRoot 'validation/baselines/current_registry
 $historicalPath = Join-Path $RepositoryRoot 'validation/baselines/historical_registry_targets.json'
 $dependencyPath = Join-Path $RepositoryRoot 'validation/baselines/production_dependency_contract.json'
 $familyPath = Join-Path $RepositoryRoot 'validation/foundations/family_membership.json'
+$historicalFamilyPath = Join-Path $RepositoryRoot 'validation/foundations/historical_family_contracts.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
 $dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
 $familyContract = Get-Content $familyPath -Raw | ConvertFrom-Json
+$historicalFamilies = Get-Content $historicalFamilyPath -Raw | ConvertFrom-Json
 
 foreach ($property in $baseline.registries.PSObject.Properties) {
     $values = @($property.Value)
@@ -74,6 +76,30 @@ foreach ($family in $familyContract.families) {
     if ($notRegistered.Count) { Add-Failure "Family $($family.name) contains unregistered current IDs: $($notRegistered -join ', ')" }
     $sortedMembers = Sorted $members
     if (($members -join "`n") -cne ($sortedMembers -join "`n")) { Add-Failure "Family $($family.name) members are not deterministically sorted" }
+}
+
+$expectedDecorationSuffixes = @('slab', 'stairs', 'wall')
+Assert-EqualSet 'historical DecorationBlockFactory.all suffixes' $expectedDecorationSuffixes $historicalFamilies.decoration_all.generated_suffixes
+$expectedWoodBlocks = @(
+    '<base>_button', '<base>_door', '<base>_fence', '<base>_fence_gate', '<base>_hanging_sign',
+    '<base>_log', '<base>_planks', '<base>_pressure_plate', '<base>_sign', '<base>_slab',
+    '<base>_stairs', '<base>_trapdoor', '<base>_wall_hanging_sign', '<base>_wall_sign', '<base>_wood',
+    'stripped_<base>_log', 'stripped_<base>_wood'
+)
+$expectedWoodBlockItems = @(
+    '<base>_button', '<base>_door', '<base>_fence', '<base>_fence_gate', '<base>_log',
+    '<base>_planks', '<base>_pressure_plate', '<base>_slab', '<base>_stairs', '<base>_trapdoor',
+    '<base>_wood', 'stripped_<base>_log', 'stripped_<base>_wood'
+)
+$expectedWoodSpecialItems = @('<base>_boat', '<base>_chest_boat', '<base>_hanging_sign', '<base>_sign')
+Assert-EqualSet 'historical WoodBlockFactory.all blocks' $expectedWoodBlocks $historicalFamilies.wood_all.block_paths
+Assert-EqualSet 'historical WoodBlockFactory ordinary block items' $expectedWoodBlockItems $historicalFamilies.wood_all.ordinary_block_item_paths
+Assert-EqualSet 'historical WoodBlockFactory special items' $expectedWoodSpecialItems $historicalFamilies.wood_all.special_item_paths
+if (-not $historicalFamilies.wood_all.leaves_and_saplings_separate) { Add-Failure 'Historical wood contract must keep leaves and saplings separate' }
+$owners = @($historicalFamilies.released_bm_family_ownership | ForEach-Object { $_.family })
+if ((Sorted $owners).Count -ne $owners.Count) { Add-Failure 'Duplicate family in historical ownership contract' }
+foreach ($ownership in $historicalFamilies.released_bm_family_ownership) {
+    if ([string]::IsNullOrWhiteSpace([string]$ownership.owner)) { Add-Failure "Missing owner for historical family $($ownership.family)" }
 }
 
 $gradleProperties = @{}
@@ -146,7 +172,7 @@ if ($failures.Count) {
 Write-Host 'PARITY VALIDATION PASSED'
 Write-Host " registries: blocks=$($blocks.Count), items=$($items.Count), entities=$($entities.Count), sounds=$($sounds.Count)"
 Write-Host " worldgen resources: configured=$($configured.Count), placed=$($placed.Count), injected=$($injected.Count)"
-Write-Host " foundations: families=$(@($familyContract.families).Count), runtime_dependencies=$(@($fabricMetadata.depends.PSObject.Properties).Count)"
+Write-Host " foundations: current_families=$(@($familyContract.families).Count), historical_owned_families=$($owners.Count), runtime_dependencies=$(@($fabricMetadata.depends.PSObject.Properties).Count)"
 Write-Host ' JSON syntax, dependencies, family membership, and current block/item/feature resource contracts passed'
 if ($warnings.Count) {
     Write-Host " warnings=$($warnings.Count)"

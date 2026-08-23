@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "Lemonszz/taniwha",
+    "tag": "1.20.0-5.4.4",
+    "commit": "ee029d785850d8b0ad8ba69bee4e069b03253afe",
+    "decoration_factory_path": "common/src/main/java/party/lemons/taniwha/block/DecorationBlockFactory.java",
+    "wood_factory_path": "common/src/main/java/party/lemons/taniwha/block/WoodBlockFactory.java"
+  },
+  "decoration_all": {
+    "base_is_registered_separately": true,
+    "generated_suffixes": ["slab", "stairs", "wall"],
+    "id_rule": "<base>_<suffix>",
+    "ordinary_block_items": true,
+    "properties": {
+      "slab": "TSlabBlock using supplied settings and supplied modifiers",
+      "stairs": "TStairBlock using base default state, supplied settings and supplied modifiers",
+      "wall": "vanilla WallBlock using supplied settings; factory does not apply supplied modifiers"
+    }
+  },
+  "wood_all": {
+    "block_paths": [
+      "<base>_button", "<base>_door", "<base>_fence", "<base>_fence_gate",
+      "<base>_hanging_sign", "<base>_log", "<base>_planks", "<base>_pressure_plate",
+      "<base>_sign", "<base>_slab", "<base>_stairs", "<base>_trapdoor",
+      "<base>_wall_hanging_sign", "<base>_wall_sign", "<base>_wood",
+      "stripped_<base>_log", "stripped_<base>_wood"
+    ],
+    "ordinary_block_item_paths": [
+      "<base>_button", "<base>_door", "<base>_fence", "<base>_fence_gate",
+      "<base>_log", "<base>_planks", "<base>_pressure_plate", "<base>_slab",
+      "<base>_stairs", "<base>_trapdoor", "<base>_wood", "stripped_<base>_log",
+      "stripped_<base>_wood"
+    ],
+    "special_item_paths": ["<base>_boat", "<base>_chest_boat", "<base>_hanging_sign", "<base>_sign"],
+    "leaves_and_saplings_separate": true,
+    "default_properties": "strength 2.0/3.0 and SoundType.WOOD; bark/plank MapColor supplied by BM",
+    "member_rules": {
+      "log": "axis color: Y uses plank color, horizontal uses bark color; bass instrument; ignited by lava; explosion resistance 2; flammable wood; strips to stripped log",
+      "stripped_log": "plank color; bass instrument; ignited by lava; explosion resistance 2; flammable wood",
+      "wood": "bark color; bass instrument; ignited by lava; explosion resistance 2; flammable wood; strips to stripped wood",
+      "stripped_wood": "plank color; bass instrument; ignited by lava; explosion resistance 2; flammable wood",
+      "planks": "plank color; bass instrument; ignited by lava; flammable wood",
+      "slab": "plank color; bass instrument; ignited by lava; flammable wood",
+      "stairs": "base plank state; plank color; bass instrument; ignited by lava; flammable wood",
+      "fence": "plank color; bass instrument; ignited by lava; force solid; flammable wood",
+      "fence_gate": "factory WoodType; plank color; bass instrument; ignited by lava; force solid; flammable wood",
+      "pressure_plate": "EVERYTHING sensitivity; factory BlockSetType; plank color; destroy push reaction; bass; ignited; force solid; strength 0.5; no collision",
+      "button": "factory BlockSetType; 30 tick press duration; wooden projectile activation; plank color; strength 0.5; destroy push reaction; no collision",
+      "trapdoor": "factory BlockSetType; plank color; strength 3; no occlusion; bass; ignited; never valid spawn; cutout",
+      "door": "factory BlockSetType; plank color; bass; ignited; destroy push reaction; strength 3; no occlusion; cutout",
+      "sign": "factory WoodType; plank color; strength 1; bass; ignited; destroy push reaction; force solid; wood sound; no collision; no block item",
+      "wall_sign": "factory WoodType; plank color; strength 1; bass; ignited; destroy push reaction; wood sound; no collision; no block item",
+      "hanging_sign": "factory WoodType; plank color; force solid; bass; no collision; strength 1; ignited; no block item",
+      "wall_hanging_sign": "factory WoodType; plank color; force solid; bass; no collision; strength 1; ignited; no block item",
+      "sign_item": "stack size 16; places standing and wall sign",
+      "hanging_sign_item": "stack size 16; places ceiling and wall hanging sign",
+      "boat_items": "stack size 1; TBoatItem references the BM BoatType; false for boat and true for chest boat"
+    }
+  },
+  "released_bm_family_ownership": [
+    {"family": "blighted_balsa", "kind": "wood", "owner": "stage_3_mushroom_fields"},
+    {"family": "mushroom_and_glowshroom_masonry", "kind": "decoration", "owner": "stage_3_mushroom_fields"},
+    {"family": "blighted_stone", "kind": "decoration", "owner": "stage_3_mushroom_fields"},
+    {"family": "terracotta_bricks", "kind": "decoration", "owner": "stage_4_badlands"},
+    {"family": "cracked_bricks", "kind": "decoration", "owner": "stage_4_badlands"},
+    {"family": "willow", "kind": "wood", "owner": "stage_5_swamp"},
+    {"family": "swamp_cypress", "kind": "wood", "owner": "stage_5_swamp"},
+    {"family": "peat_masonry", "kind": "decoration", "owner": "stage_5_swamp"},
+    {"family": "reed_thatch", "kind": "partial_decoration", "owner": "stage_5_swamp"},
+    {"family": "ancient_oak", "kind": "wood", "owner": "stage_6_dark_forest"},
+    {"family": "mesmerite", "kind": "decoration", "owner": "stage_6_dark_forest"},
+    {"family": "tapestries", "kind": "functional_decoration", "owner": "stage_9_functional_blocks"},
+    {"family": "cladding_and_illunite", "kind": "progression", "owner": "stage_12_illager_progression"}
+  ]
+}

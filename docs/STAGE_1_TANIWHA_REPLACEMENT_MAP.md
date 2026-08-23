@@ -117,9 +117,13 @@ randomness, suspicious-block data and loot assignment must be derived from the
 5.4.4 binary or a historical runtime before Stage 10C. No speculative local
 processor was created.
 
-Exact WoodBlockFactory/DecorationBlockFactory generated membership and some
-modifier defaults also require the historical registry/tag dump mandated by
-Stage 0 before Stage 2 registration.
+WoodBlockFactory and DecorationBlockFactory membership and factory properties
+were subsequently resolved from the official Taniwha `1.20.0-5.4.4` source at
+commit `ee029d785850d8b0ad8ba69bee4e069b03253afe`. The authoritative executable
+contract is recorded in
+`validation/foundations/historical_family_contracts.json`. Runtime dumps are
+still useful for final registry/tag confirmation, but factory membership is no
+longer unresolved.
 
 ## H. Explicitly unnecessary Taniwha functionality
 
