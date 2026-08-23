@@ -13,6 +13,9 @@ import party.lemons.biomemakeover.client.render.ScuttlerRenderer;
 import net.minecraft.client.renderer.entity.PillagerRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderer;
+import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
+import net.minecraft.world.level.FoliageColor;
+import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HorseRenderState;
@@ -26,6 +29,9 @@ import party.lemons.biomemakeover.client.render.DecayedRenderer;
 import party.lemons.biomemakeover.init.BMBlocks;
 import party.lemons.biomemakeover.init.BMEntities;
 import party.lemons.biomemakeover.init.BMItems;
+import party.lemons.biomemakeover.init.BMParticles;
+import party.lemons.biomemakeover.client.particle.LightningSparkParticle;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 
 public final class BiomeMakeoverClient implements ClientModInitializer {
     @Override
@@ -66,6 +72,21 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         EntityRenderers.register(BMEntities.LIGHTNING_BUG, LightningBugRenderer::new);
         EntityRenderers.register(BMEntities.LIGHTNING_BUG_ALTERNATE, LightningBugRenderer::new);
         EntityRenderers.register(BMEntities.DECAYED, DecayedRenderer::new);
+        ParticleFactoryRegistry.getInstance().register(BMParticles.LIGHTNING_SPARK,LightningSparkParticle.Provider::new);
+        ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->{
+            int color=world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):FoliageColor.FOLIAGE_DEFAULT;
+            return shiftColor(color,-20,40,-20);
+        },BMBlocks.SMALL_LILY_PAD,BMBlocks.WATER_LILY);
+        ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->{
+            int color=world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):FoliageColor.FOLIAGE_DEFAULT;
+            return shiftColor(color,-10,15,-10);
+        },BMBlocks.WILLOW_LEAVES,BMBlocks.WILLOWING_BRANCHES);
+        ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):0x84AB6F,BMBlocks.SWAMP_CYPRESS_LEAVES);
         BiomeMakeover.LOGGER.info("Biome Makeover client initialized.");
+    }
+
+    private static int shiftColor(int color,int red,int green,int blue){
+        int r=Math.clamp(((color>>16)&255)+red,0,255),g=Math.clamp(((color>>8)&255)+green,0,255),b=Math.clamp((color&255)+blue,0,255);
+        return (r<<16)|(g<<8)|b;
     }
 }

@@ -94,8 +94,8 @@ public final class BMEntities {
         FabricDefaultAttributeRegistry.register(COWBOY, net.minecraft.world.entity.monster.Pillager.createAttributes());
         FabricDefaultAttributeRegistry.register(DECAYED, DecayedEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(DRAGONFLY, DragonflyEntity.createAttributes());
-        FabricDefaultAttributeRegistry.register(LIGHTNING_BUG, DragonflyEntity.createAttributes());
-        FabricDefaultAttributeRegistry.register(LIGHTNING_BUG_ALTERNATE, DragonflyEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(LIGHTNING_BUG, LightningBugEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(LIGHTNING_BUG_ALTERNATE, LightningBugEntity.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,

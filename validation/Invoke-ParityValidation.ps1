@@ -56,7 +56,7 @@ foreach ($setName in @('blocks_with_items','no_item_blocks','items','spawn_eggs'
     $values = @($stage4.registry.$setName)
     if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in Stage 4 contract set $setName" }
 }
-foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','spawn_eggs','entities','sounds','configured_features','placed_features')) {
+foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','spawn_eggs','entities','sounds','particles','configured_features','placed_features')) {
     $values = @($stage5.$setName)
     if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in Stage 5 contract set $setName" }
 }
@@ -75,6 +75,8 @@ $spawnEggs = @($entityFileIds | Where-Object { $_ -like '*_spawn_egg' })
 $allNoItemBlocks = @($stage3.no_item_blocks) + @($stage4.registry.no_item_blocks) + @($stage5.no_item_blocks)
 $items = Sorted (@($blocks | Where-Object { $_ -notin $allNoItemBlocks }) + @($standaloneItems) + @($spawnEggs))
 $sounds = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMSounds.java'
+$particleText=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMParticles.java') -Raw
+$particles=Sorted ([regex]::Matches($particleText,'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)')|ForEach-Object{$_.Groups[1].Value})
 $stage3Java = (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java') -Raw) +
     (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw) +
     (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java') -Raw)
@@ -88,6 +90,7 @@ Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @(
 Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs))) $items
 Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities))) $entities
 Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds))) $sounds
+Assert-EqualSet 'particle registry IDs' (Sorted (@($baseline.registries.particle_type) + @($stage5.particles))) $particles
 
 $configured = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/configured_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/configured_feature'))
 $placed = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/placed_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/placed_feature'))
@@ -254,11 +257,17 @@ if (Test-Path $recipeRoot) {
                 Add-Failure "Shaped recipe has an empty pattern/key: $relative"
             }
         }
+        $rawRecipe=Get-Content $recipeFile.FullName -Raw
+        [regex]::Matches($rawRecipe,'"biomemakeover:([a-z0-9_./-]+)"') | ForEach-Object {
+            if ($_.Groups[1].Value -notin $items) { Add-Failure "Recipe references missing BM item biomemakeover:$($_.Groups[1].Value): $relative" }
+        }
     }
 }
 
 $advancementRoot = Join-Path $builtData 'biomemakeover/advancement'
 if (Test-Path $advancementRoot) {
+    $advancementJava=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMAdvancements.java') -Raw
+    $registeredCustomTriggers=Sorted ([regex]::Matches($advancementJava,'CriteriaTriggers\.register\(\s*"biomemakeover:([a-z0-9_./-]+)"')|ForEach-Object{$_.Groups[1].Value})
     $advancementIds = Resource-Ids 'build/resources/main/data/biomemakeover/advancement'
     Get-ChildItem $advancementRoot -Recurse -File -Filter '*.json' | ForEach-Object {
         $advancementFile = $_
@@ -278,8 +287,13 @@ if (Test-Path $advancementRoot) {
         }
         $raw = Get-Content $advancementFile.FullName -Raw
         if ($raw -match '"item"\s*:\s*\[') { Add-Failure "Obsolete singular advancement item predicate in $relative" }
+        [regex]::Matches($raw,'"trigger"\s*:\s*"biomemakeover:([a-z0-9_./-]+)"')|ForEach-Object{if($_.Groups[1].Value -notin $registeredCustomTriggers){Add-Failure "Advancement leaks unavailable BM custom trigger biomemakeover:$($_.Groups[1].Value) in $relative"}}
+        if ($raw -match '"condition"\s*:\s*"minecraft:match_tool"[\s\S]{0,180}"tag"\s*:') { Add-Failure "Obsolete match_tool tag predicate in $relative" }
     }
 }
+
+$lootRoot=Join-Path $builtData 'biomemakeover/loot_table'
+if(Test-Path $lootRoot){Get-ChildItem $lootRoot -Recurse -File -Filter '*.json'|ForEach-Object{$raw=Get-Content $_.FullName -Raw;$relative=$_.FullName.Substring($RepositoryRoot.Length+1);if($raw -match 'minecraft:(looting_enchant|random_chance_with_looting)'){Add-Failure "Obsolete pre-1.21 Looting schema in $relative"}}}
 
 # Minecraft 1.21.10 TemptGoal reads Attributes.TEMPT_RANGE on every canUse
 # evaluation. Animal.createAnimalAttributes supplies the vanilla 10-block
@@ -413,6 +427,14 @@ $mainInitializer = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/l
 if ($mainInitializer -match 'BMDebugCommands') {
     Add-Failure 'Production initializer still exposes the temporary Cowboy patrol test command'
 }
+$dragonflySource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/DragonflyEntity.java') -Raw
+if($dragonflySource -notmatch 'implements FlyingAnimal' -or $dragonflySource -notmatch 'causeFallDamage' -or $dragonflySource -notmatch 'PathType\.WATER,-1F'){Add-Failure 'Dragonfly/Lightning Bug must retain released flying no-fall and water-avoidance contracts'}
+$decayedBreathingTag=Join-Path $builtData 'minecraft/tags/entity_type/can_breathe_under_water.json'
+if(-not(Test-Path $decayedBreathingTag) -or (Get-Content $decayedBreathingTag -Raw) -notmatch 'biomemakeover:decayed'){Add-Failure 'Modern Decayed type must retain the released non-drowning undead water contract'}
+$lightningRendererSource=Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/LightningBugRenderer.java') -Raw
+if($lightningRendererSource -notmatch 'LIGHTNING_BUG_INNER' -or $lightningRendererSource -notmatch 'LIGHTNING_BUG_OUTER' -or $lightningRendererSource -notmatch 'entityTranslucent' -or $lightningRendererSource -notmatch '0x00F000F0'){Add-Failure 'Lightning Bug must retain separate translucent inner/outer full-bright render layers'}
+$lightningParticle=Join-Path $builtAssets 'particles/lightning_spark.json'
+if(-not(Test-Path $lightningParticle)){Add-Failure 'Released Lightning Bug spark particle definition is not packaged'}
 $clientMixinConfig = Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.client.mixins.json') -Raw | ConvertFrom-Json
 if ('HorseRenderStateMixin' -notin @($clientMixinConfig.client) -or 'HorseRendererMixin' -notin @($clientMixinConfig.client)) {
     Add-Failure 'Cowboy horse rendering mixins are not isolated and registered in the client-only mixin list'
@@ -454,7 +476,7 @@ if ($failures.Count) {
 }
 
 Write-Host 'PARITY VALIDATION PASSED'
-Write-Host " registries: blocks=$($blocks.Count), items=$($items.Count), entities=$($entities.Count), sounds=$($sounds.Count)"
+Write-Host " registries: blocks=$($blocks.Count), items=$($items.Count), entities=$($entities.Count), sounds=$($sounds.Count), particles=$($particles.Count)"
 Write-Host " worldgen resources: configured=$($configured.Count), placed=$($placed.Count), injected=$($injected.Count)"
 Write-Host " foundations: current_families=$(@($familyContract.families).Count), historical_owned_families=$($owners.Count), runtime_dependencies=$(@($fabricMetadata.depends.PSObject.Properties).Count)"
 Write-Host ' JSON syntax, dependencies, family membership, and current block/item/feature resource contracts passed'

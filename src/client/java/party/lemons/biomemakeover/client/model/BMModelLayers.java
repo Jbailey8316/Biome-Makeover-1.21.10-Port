@@ -10,6 +10,8 @@ public final class BMModelLayers {
     public static final ModelLayerLocation COWBOY_HAT = new ModelLayerLocation(BiomeMakeover.id("cowboy_hat"), "main");
     public static final ModelLayerLocation DRAGONFLY = new ModelLayerLocation(BiomeMakeover.id("dragonfly"), "main");
     public static final ModelLayerLocation LIGHTNING_BUG = new ModelLayerLocation(BiomeMakeover.id("lightning_bug"), "main");
+    public static final ModelLayerLocation LIGHTNING_BUG_INNER = new ModelLayerLocation(BiomeMakeover.id("lightning_bug_inner"), "main");
+    public static final ModelLayerLocation LIGHTNING_BUG_OUTER = new ModelLayerLocation(BiomeMakeover.id("lightning_bug_outer"), "main");
 
     private BMModelLayers() {}
 
@@ -18,6 +20,8 @@ public final class BMModelLayers {
         EntityModelLayerRegistry.registerModelLayer(SCUTTLER, ScuttlerModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(COWBOY_HAT, CowboyHatModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(DRAGONFLY, DragonflyModel::createBodyLayer);
-        EntityModelLayerRegistry.registerModelLayer(LIGHTNING_BUG, LightningBugModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(LIGHTNING_BUG, LightningBugModel::createEmptyLayer);
+        EntityModelLayerRegistry.registerModelLayer(LIGHTNING_BUG_INNER, LightningBugModel::createInnerLayer);
+        EntityModelLayerRegistry.registerModelLayer(LIGHTNING_BUG_OUTER, LightningBugModel::createOuterLayer);
     }
 }

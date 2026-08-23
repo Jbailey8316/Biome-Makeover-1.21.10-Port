@@ -262,3 +262,22 @@ Before changing attachment transform order, trace the parent renderer's complete
 layer actually begins in a different coordinate space. If the pipeline is equivalent but attachment centers differ,
 derive the correction from named model-part cuboid bounds and pixel-to-model-unit conversion. Record failed runtime
 theories, avoid visual tuning, and keep corrections isolated from shared geometry and textures.
+
+## 41. Custom entity types do not inherit vanilla type tags
+
+Modern behavior may move from a Java superclass into an `EntityType` tag. A custom entity class extending a vanilla
+mob does not inherit membership held by the vanilla registry ID. Audit current type tags controlling breathing,
+immunities, freezing, projectiles, or AI semantics and add the custom historical ID only when the released outcome
+requires it.
+
+## 42. Tint-indexed historical assets require explicit modern providers
+
+Copying a model with `tintindex` does not copy its historical color-provider registration. Audit block and item tint
+paths independently. A white model can be a missing provider rather than a bad texture; restore the released biome or
+temperature color contract rather than recoloring artwork.
+
+## 43. Validate resource semantics against registered runtime contracts
+
+Schema-valid JSON can still reference an absent item or custom trigger. Validators must resolve BM recipe item IDs,
+advancement parents/triggers, and versioned loot functions/conditions against the packaged registry/runtime contract.
+When a functional system is deferred, defer its dependent data instead of creating a placeholder trigger or item.

@@ -21,12 +21,13 @@ public final class DecayedRenderer extends ZombieRenderer {
 
     private static final class OuterLayer extends RenderLayer<ZombieRenderState, ZombieModel<ZombieRenderState>> {
         private static final ResourceLocation OUTER=BiomeMakeover.id("textures/entity/decayed_outer_layer.png");
-        private final DrownedModel model;
+        private final DrownedModel model,babyModel;
         private OuterLayer(RenderLayerParent<ZombieRenderState,ZombieModel<ZombieRenderState>> parent, EntityModelSet models){
             super(parent);model=new DrownedModel(models.bakeLayer(ModelLayers.DROWNED_OUTER_LAYER));
+            babyModel=new DrownedModel(models.bakeLayer(ModelLayers.DROWNED_BABY_OUTER_LAYER));
         }
         @Override public void submit(PoseStack pose, SubmitNodeCollector output, int light, ZombieRenderState state, float yRot, float xRot){
-            coloredCutoutModelCopyLayerRender(model,OUTER,pose,output,light,state,-1,1);
+            coloredCutoutModelCopyLayerRender(state.isBaby?babyModel:model,OUTER,pose,output,light,state,-1,1);
         }
     }
 }

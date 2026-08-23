@@ -33,7 +33,7 @@
     "swamp_cypress_sign", "swamp_cypress_wall_hanging_sign", "swamp_cypress_wall_sign",
     "willow_hanging_sign", "willow_sign", "willow_wall_hanging_sign", "willow_wall_sign"
   ],
-  "special_items": ["swamp_cypress_hanging_sign", "swamp_cypress_sign", "willow_hanging_sign", "willow_sign"],
+  "special_items": ["magenta_bud", "swamp_cypress_hanging_sign", "swamp_cypress_sign", "willow_hanging_sign", "willow_sign"],
   "entities": ["decayed", "dragonfly", "lightning_bug", "lightning_bug_alternate"],
   "spawn_eggs": ["decayed_spawn_egg", "dragonfly_spawn_egg", "lightning_bug_spawn_egg"],
   "sounds": [
@@ -41,6 +41,7 @@
     "entity.decayed.hurt", "entity.decayed.hurt_water", "entity.decayed.step", "entity.decayed.swim",
     "entity.dragonfly.death", "entity.dragonfly.hurt", "entity.dragonfly.loop"
   ],
+  "particles": ["lightning_spark"],
   "configured_features": [
     "swamp/flowers", "swamp/pads", "swamp/peat", "swamp/reeds", "swamp/swamp_cypress",
     "swamp/swamp_cypress_trees", "swamp/willow", "swamp/willow_trees"

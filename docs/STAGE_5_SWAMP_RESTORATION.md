@@ -115,3 +115,10 @@ Focused Prism checklist:
 
 Stage 5 must first pass review of this static checkpoint and the focused Prism
 runtime checklist. Stage 6 Dark Forest work is not included in this commit.
+
+## I. Runtime remediation 1 status
+
+The first Prism run runtime-confirmed fresh Swamp/Mangrove generation, Willow/Cypress presence, flora, water bonemeal,
+peat tilling, branch maturity/shearing, and natural entity reachability without a worldgen crash. The focused fixes and
+source-confirmed no-change decisions are recorded in `STAGE_5_RUNTIME_REMEDIATION_1.md`. Stage 5 remains runtime-open
+pending the targeted entity, loot/advancement, tint, save/reload, and server retests.

@@ -57,6 +57,7 @@ public final class BMItems {
         BMBlocks.SWAMP_CYPRESS_HANGING_SIGN, BMBlocks.SWAMP_CYPRESS_WALL_HANGING_SIGN, p.stacksTo(16)));
     public static final Item SCUTTLER_TAIL = register("scuttler_tail");
     public static final Item PINK_BUD = register("pink_bud");
+    public static final Item MAGENTA_BUD = register("magenta_bud");
     public static final Item COWBOY_HAT = register("cowboy_hat", p -> new Item(p
         .durability(500)
         .attributes(ItemAttributeModifiers.builder().add(Attributes.ARMOR,
@@ -92,7 +93,7 @@ public final class BMItems {
             entries.accept(LEAF_LITTER);
             entries.accept(OWL_EGG);
             entries.accept(GLOWSHROOM_STEW); entries.accept(GLOWFISH); entries.accept(COOKED_GLOWFISH); entries.accept(GLOWFISH_BUCKET);
-            entries.accept(SCUTTLER_TAIL); entries.accept(PINK_BUD); entries.accept(COWBOY_HAT); entries.accept(CRACKED_BRICK);
+            entries.accept(SCUTTLER_TAIL); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(CRACKED_BRICK);
         });
     }
 }

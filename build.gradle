@@ -120,6 +120,11 @@ tasks.register('generateStage4ItemDefinitions') {
 
 tasks.register('generateStage5ItemDefinitions') {
     inputs.file('validation/foundations/stage_5_swamp_contract.json')
+    inputs.files(
+        'reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover/textures/permutations/buds/bud.png',
+        'reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover/textures/permutations/buds/color_palettes/bud_palette.png',
+        'reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover/textures/permutations/buds/color_palettes/magenta_bud.png'
+    )
     outputs.dir(stage5GeneratedResources)
     doLast {
         def contract = new JsonSlurper().parse(file('validation/foundations/stage_5_swamp_contract.json'))
@@ -149,6 +154,13 @@ tasks.register('generateStage5ItemDefinitions') {
                 new File(modelOutput,"${id}.json").text=JsonOutput.prettyPrint(JsonOutput.toJson([parent:'minecraft:item/generated',textures:[layer0:"biomemakeover:item/${id}"]]))+System.lineSeparator()
             }
         }
+        def budRoot=file('reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover/textures/permutations/buds')
+        def bud=ImageIO.read(new File(budRoot,'bud.png')),sourcePalette=ImageIO.read(new File(budRoot,'color_palettes/bud_palette.png'))
+        def targetPalette=ImageIO.read(new File(budRoot,'color_palettes/magenta_bud.png')),palette=[:]
+        for(int x=0;x<sourcePalette.width;x++)for(int y=0;y<sourcePalette.height;y++)palette[sourcePalette.getRGB(x,y)]=targetPalette.getRGB(x,y)
+        def magenta=new BufferedImage(bud.width,bud.height,BufferedImage.TYPE_INT_ARGB)
+        for(int x=0;x<bud.width;x++)for(int y=0;y<bud.height;y++){int color=bud.getRGB(x,y);magenta.setRGB(x,y,palette.containsKey(color)?palette[color]:color)}
+        ImageIO.write(magenta,'png',new File(textureOutput,'magenta_bud_overlay.png'))
     }
 }
 
@@ -324,6 +336,7 @@ processResources {
         exclude 'assets/biomemakeover/models/item/*_chest_boat.json'
         include 'assets/biomemakeover/models/item/*peat*.json'
         include 'assets/biomemakeover/models/item/buttonbush.json', 'assets/biomemakeover/models/item/marigold.json', 'assets/biomemakeover/models/item/cattail.json', 'assets/biomemakeover/models/item/reed*.json', 'assets/biomemakeover/models/item/small_lily_pad.json', 'assets/biomemakeover/models/item/water_lily.json'
+        include 'assets/biomemakeover/models/item/magenta_bud.json'
         include 'assets/biomemakeover/textures/block/*willow*.png', 'assets/biomemakeover/textures/block/*swamp_cypress*.png'
         include 'assets/biomemakeover/textures/block/*peat*.png'
         include 'assets/biomemakeover/textures/block/buttonbush*.png', 'assets/biomemakeover/textures/block/marigold*.png', 'assets/biomemakeover/textures/block/cattail*.png', 'assets/biomemakeover/textures/block/reed*.png', 'assets/biomemakeover/textures/block/small_lily_pad*.png', 'assets/biomemakeover/textures/block/water_lily*.png'
@@ -334,6 +347,7 @@ processResources {
         include 'assets/biomemakeover/textures/entity/signs/hanging/willow.png', 'assets/biomemakeover/textures/entity/signs/hanging/swamp_cypress.png'
         include 'assets/biomemakeover/textures/gui/hanging_signs/willow.png', 'assets/biomemakeover/textures/gui/hanging_signs/swamp_cypress.png'
         include 'assets/biomemakeover/sounds/decayed*.ogg', 'assets/biomemakeover/sounds/dragonfly*.ogg'
+        include 'assets/biomemakeover/particles/lightning_spark.json', 'assets/biomemakeover/textures/particle/bolt_*.png'
         include 'data/biomemakeover/worldgen/configured_feature/swamp/*.json'
         include 'data/biomemakeover/worldgen/placed_feature/swamp/*.json'
         include 'data/biomemakeover/loot_tables/blocks/*willow*.json', 'data/biomemakeover/loot_tables/blocks/*swamp_cypress*.json'
@@ -345,8 +359,8 @@ processResources {
         exclude 'data/biomemakeover/recipes/wood/**/*_chest_boat.json'
         include 'data/biomemakeover/recipes/decoration/dried_peat_bricks/**/*.json', 'data/biomemakeover/recipes/decoration/mossy_dried_peat_bricks/**/*.json', 'data/biomemakeover/recipes/decoration/cracked_dried_peat_bricks/**/*.json', 'data/biomemakeover/recipes/decoration/reed_thatch/**/*.json'
         include 'data/biomemakeover/recipes/dried_peat.json', 'data/biomemakeover/recipes/dried_peat_from_mossy.json', 'data/biomemakeover/recipes/mossy_peat.json'
-        include 'data/biomemakeover/recipes/dye/magenta_buds_from_water_lily.json', 'data/biomemakeover/recipes/dye/orange_dye_from_marigold.json'
-        include 'data/biomemakeover/advancements/biomemakeover/enter_swamp.json', 'data/biomemakeover/advancements/biomemakeover/create_peat*.json', 'data/biomemakeover/advancements/biomemakeover/obtain_peat.json', 'data/biomemakeover/advancements/biomemakeover/obtain_dried_peat.json'
+        include 'data/biomemakeover/recipes/dye/magenta_buds_from_water_lily.json', 'data/biomemakeover/recipes/dye/magenta_dye_from_magenta_bud.json', 'data/biomemakeover/recipes/dye/orange_dye_from_marigold.json'
+        include 'data/biomemakeover/advancements/biomemakeover/enter_swamp.json', 'data/biomemakeover/advancements/biomemakeover/create_peat_farmland.json', 'data/biomemakeover/advancements/biomemakeover/obtain_peat.json', 'data/biomemakeover/advancements/biomemakeover/obtain_dried_peat.json'
         include 'data/biomemakeover/tags/blocks/lily_pads.json', 'data/biomemakeover/tags/blocks/peat.json', 'data/biomemakeover/tags/blocks/reeds.json'
         include 'data/biomemakeover/tags/items/peat.json', 'data/biomemakeover/tags/items/reeds.json'
         include 'data/biomemakeover/tags/entity_types/lightning_bugs.json'
@@ -450,7 +464,7 @@ processResources {
         def historicalLang = new JsonSlurper().parse(new File(historicalRoot, 'lang/en_us.json'))
         def stage4Tokens = ['badlands','terracotta_brick','cracked_brick','paydirt','saguaro','barrel_cactus','scuttler','pink_bud','cowboy','tumbleweed']
         historicalLang.each { key, value -> if (stage4Tokens.any { key.contains(it) }) currentLang[key] = value }
-        def stage5Tokens = ['swamp','willow','cypress','peat','reed','cattail','lily','buttonbush','marigold','decayed','dragonfly','lightning_bug']
+        def stage5Tokens = ['swamp','willow','cypress','peat','reed','cattail','lily','buttonbush','marigold','decayed','dragonfly','lightning_bug','magenta_bud']
         historicalLang.each { key, value -> if (stage5Tokens.any { key.contains(it) }) currentLang[key] = value }
         langOut.text = JsonOutput.prettyPrint(JsonOutput.toJson(currentLang)) + System.lineSeparator()
     }
@@ -497,6 +511,35 @@ processResources {
                 recipeFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(recipe)) + System.lineSeparator()
             }
         }
+        def lootRoot = destinationDir.toPath().resolve('data/biomemakeover/loot_table').toFile()
+        if (lootRoot.exists()) {
+            fileTree(lootRoot).matching { include '**/*.json' }.files.each { lootFile ->
+                def text=lootFile.text
+                if(text.contains('minecraft:looting_enchant')){
+                    def loot=new JsonSlurper().parseText(text)
+                    def walk
+                    walk={ node ->
+                        if(node instanceof Map){
+                            if(node.function=='minecraft:looting_enchant'){
+                                node.function='minecraft:enchanted_count_increase';node.enchantment='minecraft:looting'
+                            }
+                            node.values().each{walk(it)}
+                        } else if(node instanceof List) node.each{walk(it)}
+                    }
+                    walk(loot);lootFile.text=JsonOutput.prettyPrint(JsonOutput.toJson(loot))+System.lineSeparator()
+                }
+            }
+            def decayedLoot=new File(lootRoot,'entities/decayed.json')
+            if(decayedLoot.exists()){
+                def loot=new JsonSlurper().parse(decayedLoot)
+                def rarePool=loot.pools.find{pool->pool.conditions?.any{it.condition=='minecraft:random_chance_with_looting'}}
+                if(rarePool){
+                    def old=rarePool.conditions.find{it.condition=='minecraft:random_chance_with_looting'}
+                    old.clear();old.putAll([condition:'minecraft:random_chance_with_enchanted_bonus',enchantment:'minecraft:looting',unenchanted_chance:0.05,enchanted_chance:[type:'minecraft:linear',base:0.06,per_level_above_first:0.01]])
+                }
+                decayedLoot.text=JsonOutput.prettyPrint(JsonOutput.toJson(loot))+System.lineSeparator()
+            }
+        }
         def advancementRoot = destinationDir.toPath().resolve('data/biomemakeover/advancement').toFile()
         if (advancementRoot.exists()) {
             fileTree(advancementRoot).matching { include '**/*.json' }.files.each { advancementFile ->
@@ -510,6 +553,14 @@ processResources {
                         if (predicate.item instanceof List && predicate.item.size() == 1) {
                             predicate.items = predicate.item[0]
                             predicate.remove('item')
+                        }
+                    }
+                    criterion.conditions?.location?.each { term ->
+                        if(term instanceof Map && term.predicate?.block instanceof Map && term.predicate.block.block){
+                            term.predicate.block.blocks=term.predicate.block.remove('block')
+                        }
+                        if(term instanceof Map && term.condition=='minecraft:match_tool' && term.predicate?.tag){
+                            term.predicate.items="#${term.predicate.remove('tag')}"
                         }
                     }
                 }
@@ -548,6 +599,12 @@ processResources {
             def model = new JsonSlurper().parse(pinkBudModel)
             model.textures.layer1 = 'biomemakeover:item/pink_bud_overlay'
             pinkBudModel.text = JsonOutput.prettyPrint(JsonOutput.toJson(model)) + System.lineSeparator()
+        }
+        def magentaBudModel = new File(destinationDir, 'assets/biomemakeover/models/item/magenta_bud.json')
+        if (magentaBudModel.exists()) {
+            def model = new JsonSlurper().parse(magentaBudModel)
+            model.textures.layer1 = 'biomemakeover:item/magenta_bud_overlay'
+            magentaBudModel.text = JsonOutput.prettyPrint(JsonOutput.toJson(model)) + System.lineSeparator()
         }
         def contract = new JsonSlurper().parse(file('validation/foundations/stage_3_mushroom_fields_contract.json'))
         def stage4Contract = new JsonSlurper().parse(file('validation/foundations/stage_4_badlands_contract.json'))
