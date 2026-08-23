@@ -20,6 +20,9 @@ import net.minecraft.client.model.HorseModel;
 import party.lemons.biomemakeover.client.render.CowboyHatLayer;
 import party.lemons.biomemakeover.client.render.CowboyRenderer;
 import party.lemons.biomemakeover.client.render.CowboyHatArmorRenderer;
+import party.lemons.biomemakeover.client.render.DragonflyRenderer;
+import party.lemons.biomemakeover.client.render.LightningBugRenderer;
+import party.lemons.biomemakeover.client.render.DecayedRenderer;
 import party.lemons.biomemakeover.init.BMBlocks;
 import party.lemons.biomemakeover.init.BMEntities;
 import party.lemons.biomemakeover.init.BMItems;
@@ -38,6 +41,11 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
             BMBlocks.SAGUARO_CACTUS, BMBlocks.BARREL_CACTUS, BMBlocks.BARREL_CACTUS_FLOWERED,
             BMBlocks.TUMBLEWEED,
             BMBlocks.BLIGHTED_BALSA.get("blighted_balsa_door"), BMBlocks.BLIGHTED_BALSA.get("blighted_balsa_trapdoor"));
+        BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT,
+            BMBlocks.WILLOW_LEAVES, BMBlocks.SWAMP_CYPRESS_LEAVES, BMBlocks.WILLOW_SAPLING, BMBlocks.SWAMP_CYPRESS_SAPLING,
+            BMBlocks.WILLOWING_BRANCHES, BMBlocks.BUTTONBUSH, BMBlocks.MARIGOLD, BMBlocks.CATTAIL, BMBlocks.REED,
+            BMBlocks.SMALL_LILY_PAD, BMBlocks.WATER_LILY, BMBlocks.WILLOW.get("willow_door"), BMBlocks.WILLOW.get("willow_trapdoor"),
+            BMBlocks.SWAMP_CYPRESS.get("swamp_cypress_door"), BMBlocks.SWAMP_CYPRESS.get("swamp_cypress_trapdoor"));
         BMModelLayers.register();
         ArmorRenderer.register(context -> new CowboyHatArmorRenderer(context.getModelSet()),BMItems.COWBOY_HAT);
         EntityRenderers.register(BMEntities.OWL, OwlRenderer::new);
@@ -54,6 +62,10 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
             }
         });
         EntityRenderers.register(BMEntities.SCUTTLER, ScuttlerRenderer::new);
+        EntityRenderers.register(BMEntities.DRAGONFLY, DragonflyRenderer::new);
+        EntityRenderers.register(BMEntities.LIGHTNING_BUG, LightningBugRenderer::new);
+        EntityRenderers.register(BMEntities.LIGHTNING_BUG_ALTERNATE, LightningBugRenderer::new);
+        EntityRenderers.register(BMEntities.DECAYED, DecayedRenderer::new);
         BiomeMakeover.LOGGER.info("Biome Makeover client initialized.");
     }
 }

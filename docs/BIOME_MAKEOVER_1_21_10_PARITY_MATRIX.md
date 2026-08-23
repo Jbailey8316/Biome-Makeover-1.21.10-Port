@@ -45,7 +45,7 @@ historical families and eighteen current Mythas enhancement units.
 |---|---:|---|
 | Mushroom Fields | 6% | A wild-mushroom fragment exists, in the wrong theme/context |
 | Badlands | 88% static | Stage 4 restored core blocks, cactus ecology, four worldgen chains, Scuttler, Tumbleweed and Cowboy patrol plumbing; Ghost Town remains Stage 10C, while horse hats and runtime verification remain open |
-| Swamp | 5% | A few shared plants exist; biome replacement and ecology absent |
+| Swamp | 90% static | Stage 5 restores the released blocks, vegetation, peat, trees, biome injection and reachable mobs; functional Stage 9 and Sunken Ruins Stage 10B dependencies plus runtime verification remain |
 | Dark Forest | 48% | Useful blocks/Owl/worldgen slice, with major omissions and differences |
 | Beach ecology | 0% | Helmit Crab family absent |
 | Mansion / illager progression | 0% | Structure, boss, curses, quests, and functional systems absent |
@@ -91,12 +91,12 @@ and existing-world validation have not been executed.
 
 | Original released content | Current | Status | Restoration/dependencies |
 |---|---|---|---|
-| Replace vanilla swamp trees with Willow/Cypress | Ancient Oak machinery only | MISSING | Wood families, tree features, removal/replacement ordering, injection |
-| Peat, reeds, lily/flower/mushroom ecology and bonemeal behavior | Black Thistle, Foxglove and Wild Mushrooms exist but are not the swamp pipeline | PARTIAL | Restore exact flora IDs/behavior, tags and generation |
-| Itching Ivy environmental interaction | Block exists, but no complete original ecology proof | PRESENT-BUT-DIFFERENT | Verify collision/effect behavior and add original placement |
-| Thatch and swamp building families | None | MISSING | Blocks, recipes, loot and tags |
-| Decayed, Dragonfly, Lightning Bug | None | MISSING | Entities, effects/projectiles where applicable, renderers, loot, sounds |
-| Sunken Ruins structure | None | MISSING | Structure/templates/processors/loot after swamp registries |
+| Replace vanilla swamp trees with Willow/Cypress | Exact wood-family registrations, custom placers/decorators, checked/tree placements, vanilla-tree removal and Swamp/Mangrove injection | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Static chain complete; fresh-chunk shape/density and codecs require Prism |
+| Peat, reeds, lily/flower/mushroom ecology and bonemeal behavior | Peat chain, Reed/Cattail, pads/flowers and swamp-water bonemeal behavior restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Validate water placement, spread, tilling, crop ticking and density in Prism |
+| Itching Ivy environmental interaction | Existing implementation preserved; Stage 5 adds the released surrounding ecology without rewriting it | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Collision/effect and integration remain in the focused runtime checklist |
+| Thatch and swamp building families | Reed Thatch and all three exact peat masonry base/slab/stairs/wall families, recipes, loot, tags and assets restored | COMPATIBLE | Runtime geometry/recipe confirmation remains |
+| Decayed, Dragonfly, Lightning Bug | Four historical entity IDs, natural reachable spawns, attributes/AI, persistence, eggs, models/renderers and sounds restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Alternate Lightning Bug remains non-natural; capture bottle stays Stage 9 |
+| Sunken Ruins structure | Deliberately absent | MISSING (STAGE 10B) | Structure/templates/processors/loot retain Stage 10B ownership |
 
 The original Toad entity exists historically but its natural-spawn hook was
 commented. Tadpole acquisition/reachability needs runtime confirmation and is
@@ -154,7 +154,7 @@ Each unit is a meaningful behavior family rather than a raw file.
 |---|---:|---|---|
 | Mushroom Fields | 18 | PBD 1, PARTIAL 1, MISSING 16 | One generic mushroom fragment; no complete theme |
 | Badlands | 17 | MISSING 17 | No registrations, resources, entities or injection |
-| Swamp | 19 | PBD 1, PARTIAL 1, MISSING 17 | Shared plants do not reproduce swamp makeover |
+| Swamp | 19 | COMPATIBLE 16, PARTIAL 3 | Stage 5 restores the reachable ecology; Lightning Bug Bottle/Peat Composter, Sunken Ruins and historical boat infrastructure remain in their owning stages |
 | Dark Forest | 28 | EXACT 1, COMPATIBLE 4, PBD 5, PARTIAL 11, BROKEN 2, MISSING 4, NRV 1 | Only active theme; three injected placed features |
 | Beach ecology | 5 | MISSING 5 | No Helmit Crab implementation |
 | Mansion/illager | 22 | MISSING 22 | Entire released progression absent |

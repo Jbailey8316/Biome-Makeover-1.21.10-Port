@@ -40,6 +40,11 @@ import party.lemons.biomemakeover.block.MyceliumRootsBlock;
 import party.lemons.biomemakeover.block.TallMushroomBlock;
 import party.lemons.biomemakeover.block.BarrelCactusBlock;
 import party.lemons.biomemakeover.block.SaguaroCactusBlock;
+import party.lemons.biomemakeover.block.ReedBlock;
+import party.lemons.biomemakeover.block.SmallLilyPadBlock;
+import party.lemons.biomemakeover.block.WaterLilyBlock;
+import party.lemons.biomemakeover.block.WillowingBranchesBlock;
+import party.lemons.biomemakeover.block.PeatFarmlandBlock;
 
 public final class BMBlocks {
     public static final TagKey<Block> BARREL_CACTUS_PLANTABLE = blockTag("barrel_cactus_plantable_on");
@@ -58,6 +63,10 @@ public final class BMBlocks {
     private static final ResourceKey<ConfiguredFeature<?, ?>> BLIGHTED_BALSA_TREE = configured("mushroom_fields/blighted_balsa");
     private static final TreeGrower BLIGHTED_BALSA_GROWER = new TreeGrower(
         "biomemakeover:blighted_balsa", Optional.of(BLIGHTED_BALSA_TREE), Optional.empty(), Optional.empty());
+    private static final TreeGrower WILLOW_GROWER = new TreeGrower("biomemakeover:willow",
+        Optional.of(configured("swamp/willow")), Optional.empty(), Optional.empty());
+    private static final TreeGrower SWAMP_CYPRESS_GROWER = new TreeGrower("biomemakeover:swamp_cypress",
+        Optional.of(configured("swamp/swamp_cypress")), Optional.empty(), Optional.empty());
 
     private static BlockBehaviour.Properties stoneProps() {
         return BlockBehaviour.Properties.of().strength(1.5F).mapColor(MapColor.ICE).sound(SoundType.STONE);
@@ -143,6 +152,47 @@ public final class BMBlocks {
     public static final Block POTTED_FLOWERED_BARREL_CACTUS = potted("potted_flowered_barrel_cactus", BARREL_CACTUS_FLOWERED, 0);
     public static final Map<String, Block> TERRACOTTA_BRICKS = createTerracottaBricks();
     public static final Map<String, Block> CRACKED_BRICKS = createCrackedBricks();
+
+    // Stage 5: released Swamp ecosystem. Boats/chest boats remain deferred to the shared boat infrastructure stage.
+    public static final WoodType WILLOW_WOOD_TYPE = new WoodType("biomemakeover:willow", BlockSetType.OAK);
+    public static final WoodType SWAMP_CYPRESS_WOOD_TYPE = new WoodType("biomemakeover:swamp_cypress", BlockSetType.OAK);
+    public static final Map<String, Block> WILLOW = createSwampWood("willow", WILLOW_WOOD_TYPE,
+        MapColor.TERRACOTTA_GRAY, MapColor.SAND);
+    public static final Map<String, Block> SWAMP_CYPRESS = createSwampWood("swamp_cypress", SWAMP_CYPRESS_WOOD_TYPE,
+        MapColor.TERRACOTTA_BROWN, MapColor.TERRACOTTA_ORANGE);
+    public static final Block WILLOW_SIGN = registerNoItem("willow_sign", p -> new StandingSignBlock(WILLOW_WOOD_TYPE, p), signProperties());
+    public static final Block WILLOW_WALL_SIGN = registerNoItem("willow_wall_sign", p -> new WallSignBlock(WILLOW_WOOD_TYPE, p), signProperties());
+    public static final Block WILLOW_HANGING_SIGN = registerNoItem("willow_hanging_sign", p -> new CeilingHangingSignBlock(WILLOW_WOOD_TYPE, p), signProperties());
+    public static final Block WILLOW_WALL_HANGING_SIGN = registerNoItem("willow_wall_hanging_sign", p -> new WallHangingSignBlock(WILLOW_WOOD_TYPE, p), signProperties());
+    public static final Block SWAMP_CYPRESS_SIGN = registerNoItem("swamp_cypress_sign", p -> new StandingSignBlock(SWAMP_CYPRESS_WOOD_TYPE, p), signProperties());
+    public static final Block SWAMP_CYPRESS_WALL_SIGN = registerNoItem("swamp_cypress_wall_sign", p -> new WallSignBlock(SWAMP_CYPRESS_WOOD_TYPE, p), signProperties());
+    public static final Block SWAMP_CYPRESS_HANGING_SIGN = registerNoItem("swamp_cypress_hanging_sign", p -> new CeilingHangingSignBlock(SWAMP_CYPRESS_WOOD_TYPE, p), signProperties());
+    public static final Block SWAMP_CYPRESS_WALL_HANGING_SIGN = registerNoItem("swamp_cypress_wall_hanging_sign", p -> new WallHangingSignBlock(SWAMP_CYPRESS_WOOD_TYPE, p), signProperties());
+    public static final Block WILLOW_LEAVES = register("willow_leaves", p -> new TintedParticleLeavesBlock(0.01F, p), swampLeaves(MapColor.TERRACOTTA_LIGHT_GREEN));
+    public static final Block SWAMP_CYPRESS_LEAVES = register("swamp_cypress_leaves", p -> new TintedParticleLeavesBlock(0.01F, p), swampLeaves(MapColor.TERRACOTTA_GREEN));
+    public static final Block WILLOW_SAPLING = register("willow_sapling", p -> new SaplingBlock(WILLOW_GROWER, p), swampPlant(MapColor.PLANT).randomTicks());
+    public static final Block SWAMP_CYPRESS_SAPLING = register("swamp_cypress_sapling", p -> new SaplingBlock(SWAMP_CYPRESS_GROWER, p), swampPlant(MapColor.PLANT).randomTicks());
+    public static final Block POTTED_WILLOW_SAPLING = potted("potted_willow_sapling", WILLOW_SAPLING, 0);
+    public static final Block POTTED_SWAMP_CYPRESS_SAPLING = potted("potted_swamp_cypress_sapling", SWAMP_CYPRESS_SAPLING, 0);
+    public static final Block WILLOWING_BRANCHES = register("willowing_branches", WillowingBranchesBlock::new,
+        swampPlant(MapColor.PLANT).randomTicks().sound(SoundType.VINE).offsetType(BlockBehaviour.OffsetType.XZ).ignitedByLava());
+    public static final Block PEAT = register("peat", Block::new, BlockBehaviour.Properties.of().strength(0.5F).sound(SoundType.WET_GRASS).mapColor(MapColor.TERRACOTTA_GRAY));
+    public static final Block DRIED_PEAT = register("dried_peat", Block::new, BlockBehaviour.Properties.of().strength(1F).sound(SoundType.NETHERRACK).mapColor(MapColor.TERRACOTTA_BROWN));
+    public static final Block MOSSY_PEAT = register("mossy_peat", Block::new, BlockBehaviour.Properties.of().strength(0.5F).randomTicks().sound(SoundType.WET_GRASS).mapColor(MapColor.TERRACOTTA_GRAY));
+    public static final Block PEAT_FARMLAND = register("peat_farmland", PeatFarmlandBlock::new,
+        BlockBehaviour.Properties.of().strength(0.5F).randomTicks().sound(SoundType.WET_GRASS).mapColor(MapColor.COLOR_GREEN));
+    public static final Map<String, Block> PEAT_MASONRY = createPeatMasonry();
+    public static final Block BUTTONBUSH = register("buttonbush", TallFlowerBlock::new, swampPlant(MapColor.WOOL));
+    public static final Block MARIGOLD = register("marigold", TallFlowerBlock::new, swampPlant(MapColor.COLOR_ORANGE));
+    public static final Block CATTAIL = register("cattail", ReedBlock::new, swampPlant(MapColor.GLOW_LICHEN).offsetType(BlockBehaviour.OffsetType.XZ));
+    public static final Block REED = register("reed", ReedBlock::new, swampPlant(MapColor.GLOW_LICHEN).offsetType(BlockBehaviour.OffsetType.XZ));
+    public static final Block REED_THATCH = register("reed_thatch", Block::new, thatchProps());
+    public static final Block REED_THATCH_SLAB = register("reed_thatch_slab", SlabBlock::new, thatchProps());
+    public static final Block REED_THATCH_STAIRS = register("reed_thatch_stairs", p -> new StairBlock(REED_THATCH.defaultBlockState(), p), thatchProps());
+    public static final Block SMALL_LILY_PAD = register("small_lily_pad", SmallLilyPadBlock::new,
+        BlockBehaviour.Properties.of().instabreak().noCollision().sound(SoundType.LILY_PAD).mapColor(MapColor.PLANT).pushReaction(PushReaction.DESTROY));
+    public static final Block WATER_LILY = register("water_lily", WaterLilyBlock::new,
+        BlockBehaviour.Properties.of().instabreak().noCollision().sound(SoundType.LILY_PAD).mapColor(MapColor.COLOR_PINK).pushReaction(PushReaction.DESTROY));
 
     public static final Block ANCIENT_OAK_LOG = register("ancient_oak_log", RotatedPillarBlock::new, woodProps());
     public static final Block STRIPPED_ANCIENT_OAK_LOG = register("stripped_ancient_oak_log", RotatedPillarBlock::new, woodProps());
@@ -275,6 +325,47 @@ public final class BMBlocks {
         return Map.copyOf(blocks);
     }
 
+    private static Map<String, Block> createSwampWood(String base, WoodType woodType, MapColor bark, MapColor planksColor) {
+        Map<String, Block> blocks = new LinkedHashMap<>();
+        Block planks = register(base + "_planks", Block::new, swampWood(planksColor));
+        blocks.put(base + "_log", register(base + "_log", RotatedPillarBlock::new, swampWood(bark)));
+        blocks.put("stripped_" + base + "_log", register("stripped_" + base + "_log", RotatedPillarBlock::new, swampWood(planksColor)));
+        blocks.put(base + "_planks", planks);
+        blocks.put(base + "_wood", register(base + "_wood", RotatedPillarBlock::new, swampWood(bark)));
+        blocks.put("stripped_" + base + "_wood", register("stripped_" + base + "_wood", RotatedPillarBlock::new, swampWood(planksColor)));
+        blocks.put(base + "_slab", register(base + "_slab", SlabBlock::new, swampWood(planksColor)));
+        blocks.put(base + "_stairs", register(base + "_stairs", p -> new StairBlock(planks.defaultBlockState(), p), swampWood(planksColor)));
+        blocks.put(base + "_fence", register(base + "_fence", FenceBlock::new, swampWood(planksColor).forceSolidOn()));
+        blocks.put(base + "_fence_gate", register(base + "_fence_gate", p -> new FenceGateBlock(woodType, p), swampWood(planksColor).forceSolidOn()));
+        blocks.put(base + "_pressure_plate", register(base + "_pressure_plate", p -> new PressurePlateBlock(BlockSetType.OAK, p), swampWood(planksColor).noCollision().strength(0.5F)));
+        blocks.put(base + "_button", register(base + "_button", p -> new ButtonBlock(BlockSetType.OAK, 30, p), swampWood(planksColor).noCollision().strength(0.5F)));
+        blocks.put(base + "_trapdoor", register(base + "_trapdoor", p -> new TrapDoorBlock(BlockSetType.OAK, p), swampWood(planksColor).noOcclusion().strength(3F)));
+        blocks.put(base + "_door", register(base + "_door", p -> new DoorBlock(BlockSetType.OAK, p), swampWood(planksColor).noOcclusion().strength(3F)));
+        return Map.copyOf(blocks);
+    }
+
+    private static Map<String, Block> createPeatMasonry() {
+        Map<String, Block> result = new LinkedHashMap<>();
+        peatFamily(result, "dried_peat_bricks", "dried_peat_bricks");
+        peatFamily(result, "mossy_dried_peat_bricks", "mossy_dried_peat_brick");
+        peatFamily(result, "cracked_dried_peat_bricks", "cracked_dried_peat_brick");
+        return Map.copyOf(result);
+    }
+
+    private static void peatFamily(Map<String, Block> result, String baseName, String decorationName) {
+        Block base = register(baseName, Block::new, peatBrickProps());
+        result.put(baseName, base);
+        result.put(decorationName + "_slab", register(decorationName + "_slab", SlabBlock::new, peatBrickProps()));
+        result.put(decorationName + "_stairs", register(decorationName + "_stairs", p -> new StairBlock(base.defaultBlockState(), p), peatBrickProps()));
+        result.put(decorationName + "_wall", register(decorationName + "_wall", WallBlock::new, peatBrickProps()));
+    }
+
+    private static BlockBehaviour.Properties swampWood(MapColor color) { return woodProps().mapColor(color); }
+    private static BlockBehaviour.Properties swampLeaves(MapColor color) { return BlockBehaviour.Properties.of().mapColor(color).strength(0.2F).randomTicks().sound(SoundType.GRASS).noOcclusion().pushReaction(PushReaction.DESTROY).ignitedByLava(); }
+    private static BlockBehaviour.Properties swampPlant(MapColor color) { return BlockBehaviour.Properties.of().mapColor(color).replaceable().noCollision().noOcclusion().instabreak().pushReaction(PushReaction.DESTROY).sound(SoundType.GRASS); }
+    private static BlockBehaviour.Properties thatchProps() { return BlockBehaviour.Properties.of().strength(0.5F).instrument(NoteBlockInstrument.BANJO).mapColor(MapColor.PODZOL).sound(SoundType.GRASS).ignitedByLava(); }
+    private static BlockBehaviour.Properties peatBrickProps() { return BlockBehaviour.Properties.of().strength(2F).instrument(NoteBlockInstrument.BASEDRUM).mapColor(MapColor.TERRACOTTA_BROWN).requiresCorrectToolForDrops().sound(SoundType.STONE); }
+
     private static BlockBehaviour.Properties terracottaProps(MapColor color) {
         return BlockBehaviour.Properties.of().strength(2F).mapColor(color).instrument(NoteBlockInstrument.BASEDRUM)
             .requiresCorrectToolForDrops().sound(SoundType.STONE);
@@ -327,6 +418,15 @@ public final class BMBlocks {
         BLIGHTED_BALSA.values().forEach(block -> FlammableBlockRegistry.getDefaultInstance().add(block, 5, 20));
         FlammableBlockRegistry.getDefaultInstance().add(BLIGHTED_BALSA_LEAVES, 30, 60);
         FlammableBlockRegistry.getDefaultInstance().add(WILD_MUSHROOMS, 15, 100);
+        StrippableBlockRegistry.register(WILLOW.get("willow_log"), WILLOW.get("stripped_willow_log"));
+        StrippableBlockRegistry.register(WILLOW.get("willow_wood"), WILLOW.get("stripped_willow_wood"));
+        StrippableBlockRegistry.register(SWAMP_CYPRESS.get("swamp_cypress_log"), SWAMP_CYPRESS.get("stripped_swamp_cypress_log"));
+        StrippableBlockRegistry.register(SWAMP_CYPRESS.get("swamp_cypress_wood"), SWAMP_CYPRESS.get("stripped_swamp_cypress_wood"));
+        WILLOW.values().forEach(block -> FlammableBlockRegistry.getDefaultInstance().add(block, 5, 20));
+        SWAMP_CYPRESS.values().forEach(block -> FlammableBlockRegistry.getDefaultInstance().add(block, 5, 20));
+        FlammableBlockRegistry.getDefaultInstance().add(WILLOW_LEAVES, 30, 60);
+        FlammableBlockRegistry.getDefaultInstance().add(SWAMP_CYPRESS_LEAVES, 30, 60);
+        FlammableBlockRegistry.getDefaultInstance().add(WILLOWING_BRANCHES, 15, 100);
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.BUILDING_BLOCKS).register(entries -> {
             entries.accept(MESMERITE); entries.accept(MESMERITE_STAIRS); entries.accept(MESMERITE_SLAB); entries.accept(MESMERITE_WALL);
             entries.accept(POLISHED_MESMERITE); entries.accept(POLISHED_MESMERITE_STAIRS); entries.accept(POLISHED_MESMERITE_SLAB); entries.accept(POLISHED_MESMERITE_WALL);
@@ -352,6 +452,14 @@ public final class BMBlocks {
         });
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(entries -> {
             entries.accept(PAYDIRT); entries.accept(SAGUARO_CACTUS); entries.accept(BARREL_CACTUS); entries.accept(BARREL_CACTUS_FLOWERED);
+            entries.accept(WILLOW_LEAVES); entries.accept(WILLOW_SAPLING); entries.accept(SWAMP_CYPRESS_LEAVES); entries.accept(SWAMP_CYPRESS_SAPLING);
+            entries.accept(WILLOWING_BRANCHES); entries.accept(PEAT); entries.accept(MOSSY_PEAT); entries.accept(CATTAIL); entries.accept(REED);
+            entries.accept(BUTTONBUSH); entries.accept(MARIGOLD); entries.accept(SMALL_LILY_PAD); entries.accept(WATER_LILY);
+        });
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.BUILDING_BLOCKS).register(entries -> {
+            WILLOW.values().forEach(entries::accept); SWAMP_CYPRESS.values().forEach(entries::accept);
+            entries.accept(DRIED_PEAT); entries.accept(PEAT_FARMLAND); PEAT_MASONRY.values().forEach(entries::accept);
+            entries.accept(REED_THATCH); entries.accept(REED_THATCH_SLAB); entries.accept(REED_THATCH_STAIRS);
         });
     }
 }

@@ -47,6 +47,14 @@ public final class BMItems {
         BMBlocks.BLIGHTED_BALSA_SIGN, BMBlocks.BLIGHTED_BALSA_WALL_SIGN, p.stacksTo(16)));
     public static final Item BLIGHTED_BALSA_HANGING_SIGN = register("blighted_balsa_hanging_sign", p -> new HangingSignItem(
         BMBlocks.BLIGHTED_BALSA_HANGING_SIGN, BMBlocks.BLIGHTED_BALSA_WALL_HANGING_SIGN, p.stacksTo(16)));
+    public static final Item WILLOW_SIGN = register("willow_sign", p -> new SignItem(
+        BMBlocks.WILLOW_SIGN, BMBlocks.WILLOW_WALL_SIGN, p.stacksTo(16)));
+    public static final Item WILLOW_HANGING_SIGN = register("willow_hanging_sign", p -> new HangingSignItem(
+        BMBlocks.WILLOW_HANGING_SIGN, BMBlocks.WILLOW_WALL_HANGING_SIGN, p.stacksTo(16)));
+    public static final Item SWAMP_CYPRESS_SIGN = register("swamp_cypress_sign", p -> new SignItem(
+        BMBlocks.SWAMP_CYPRESS_SIGN, BMBlocks.SWAMP_CYPRESS_WALL_SIGN, p.stacksTo(16)));
+    public static final Item SWAMP_CYPRESS_HANGING_SIGN = register("swamp_cypress_hanging_sign", p -> new HangingSignItem(
+        BMBlocks.SWAMP_CYPRESS_HANGING_SIGN, BMBlocks.SWAMP_CYPRESS_WALL_HANGING_SIGN, p.stacksTo(16)));
     public static final Item SCUTTLER_TAIL = register("scuttler_tail");
     public static final Item PINK_BUD = register("pink_bud");
     public static final Item COWBOY_HAT = register("cowboy_hat", p -> new Item(p

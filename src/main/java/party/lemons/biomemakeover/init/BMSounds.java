@@ -21,6 +21,17 @@ public final class BMSounds {
     public static final SoundEvent SCUTTLER_DEATH = register("scuttler_death");
     public static final SoundEvent TUMBLEWEED_TUMBLE = register("tumbleweed_tumble");
     public static final SoundEvent TUMBLEWEED_BREAK = register("tumbleweed_break");
+    public static final SoundEvent DRAGONFLY_LOOP = register("entity.dragonfly.loop");
+    public static final SoundEvent DRAGONFLY_HURT = register("entity.dragonfly.hurt");
+    public static final SoundEvent DRAGONFLY_DEATH = register("entity.dragonfly.death");
+    public static final SoundEvent DECAYED_SWIM = register("entity.decayed.swim");
+    public static final SoundEvent DECAYED_STEP = register("entity.decayed.step");
+    public static final SoundEvent DECAYED_HURT_WATER = register("entity.decayed.hurt_water");
+    public static final SoundEvent DECAYED_HURT = register("entity.decayed.hurt");
+    public static final SoundEvent DECAYED_DEATH_WATER = register("entity.decayed.death_water");
+    public static final SoundEvent DECAYED_DEATH = register("entity.decayed.death");
+    public static final SoundEvent DECAYED_AMBIENT_WATER = register("entity.decayed.ambient_water");
+    public static final SoundEvent DECAYED_AMBIENT = register("entity.decayed.ambient");
 
     private BMSounds() {}
 

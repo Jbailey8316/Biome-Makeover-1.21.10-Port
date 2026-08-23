@@ -45,6 +45,12 @@
     {"name":"stage_3_mushroom_stem_brick_decoration","base":"mushroom_stem_brick","members":["mushroom_stem_brick","mushroom_stem_brick_slab","mushroom_stem_brick_stairs","mushroom_stem_brick_wall"]},
     {"name":"stage_3_orange_glowshroom_brick_decoration","base":"orange_glowshroom_brick","members":["orange_glowshroom_brick","orange_glowshroom_brick_slab","orange_glowshroom_brick_stairs","orange_glowshroom_brick_wall"]},
     {"name":"stage_3_purple_glowshroom_brick_decoration","base":"purple_glowshroom_brick","members":["purple_glowshroom_brick","purple_glowshroom_brick_slab","purple_glowshroom_brick_stairs","purple_glowshroom_brick_wall"]},
-    {"name":"stage_3_red_mushroom_brick_decoration","base":"red_mushroom_brick","members":["red_mushroom_brick","red_mushroom_brick_slab","red_mushroom_brick_stairs","red_mushroom_brick_wall"]}
+    {"name":"stage_3_red_mushroom_brick_decoration","base":"red_mushroom_brick","members":["red_mushroom_brick","red_mushroom_brick_slab","red_mushroom_brick_stairs","red_mushroom_brick_wall"]},
+    {"name":"stage_5_willow_wood_blocks","base":"willow","members":["stripped_willow_log","stripped_willow_wood","willow_button","willow_door","willow_fence","willow_fence_gate","willow_hanging_sign","willow_log","willow_planks","willow_pressure_plate","willow_sign","willow_slab","willow_stairs","willow_trapdoor","willow_wall_hanging_sign","willow_wall_sign","willow_wood"]},
+    {"name":"stage_5_swamp_cypress_wood_blocks","base":"swamp_cypress","members":["stripped_swamp_cypress_log","stripped_swamp_cypress_wood","swamp_cypress_button","swamp_cypress_door","swamp_cypress_fence","swamp_cypress_fence_gate","swamp_cypress_hanging_sign","swamp_cypress_log","swamp_cypress_planks","swamp_cypress_pressure_plate","swamp_cypress_sign","swamp_cypress_slab","swamp_cypress_stairs","swamp_cypress_trapdoor","swamp_cypress_wall_hanging_sign","swamp_cypress_wall_sign","swamp_cypress_wood"]},
+    {"name":"stage_5_dried_peat_bricks","base":"dried_peat_bricks","members":["dried_peat_bricks","dried_peat_bricks_slab","dried_peat_bricks_stairs","dried_peat_bricks_wall"]},
+    {"name":"stage_5_mossy_dried_peat_bricks","base":"mossy_dried_peat_bricks","members":["mossy_dried_peat_brick_slab","mossy_dried_peat_brick_stairs","mossy_dried_peat_brick_wall","mossy_dried_peat_bricks"]},
+    {"name":"stage_5_cracked_dried_peat_bricks","base":"cracked_dried_peat_bricks","members":["cracked_dried_peat_brick_slab","cracked_dried_peat_brick_stairs","cracked_dried_peat_brick_wall","cracked_dried_peat_bricks"]},
+    {"name":"stage_5_reed_thatch","base":"reed_thatch","members":["reed_thatch","reed_thatch_slab","reed_thatch_stairs"]}
   ]
 }

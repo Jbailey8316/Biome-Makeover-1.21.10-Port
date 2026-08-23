@@ -9,10 +9,14 @@ import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.data.worldgen.placement.VegetationPlacements;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.biome.Biome;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.init.BMEntities;
 
 public final class BMWorldgen {
+    private static final TagKey<Biome> SWAMPS = TagKey.create(Registries.BIOME, BiomeMakeover.id("swamps"));
     private static ResourceKey<PlacedFeature> mushroom(String path) {
         return ResourceKey.create(Registries.PLACED_FEATURE, BiomeMakeover.id("mushroom_fields/" + path));
     }
@@ -31,6 +35,13 @@ public final class BMWorldgen {
     public static final ResourceKey<PlacedFeature> BADLANDS_SAGUARO_CACTUS = badlands("saguaro_cactus");
     public static final ResourceKey<PlacedFeature> BADLANDS_PAYDIRT = badlands("paydirt");
     public static final ResourceKey<PlacedFeature> BADLANDS_SURFACE_FOSSIL = badlands("surface_fossil");
+    public static final ResourceKey<PlacedFeature> SWAMP_BIG_MUSHROOMS = swamp("big_mushrooms");
+    public static final ResourceKey<PlacedFeature> SWAMP_FLOWERS = swamp("flowers");
+    public static final ResourceKey<PlacedFeature> SWAMP_PADS = swamp("pads");
+    public static final ResourceKey<PlacedFeature> SWAMP_PEAT = swamp("peat");
+    public static final ResourceKey<PlacedFeature> SWAMP_REEDS = swamp("reeds");
+    public static final ResourceKey<PlacedFeature> SWAMP_CYPRESS_TREES = swamp("swamp_cypress_trees");
+    public static final ResourceKey<PlacedFeature> SWAMP_WILLOW_TREES = swamp("willow_trees");
     public static final ResourceKey<PlacedFeature> MESMERITE_UNDERGROUND = ResourceKey.create(
         Registries.PLACED_FEATURE,
         BiomeMakeover.id("dark_forest/mesmerite_underground")
@@ -69,6 +80,20 @@ public final class BMWorldgen {
         addBadlands(GenerationStep.Decoration.VEGETAL_DECORATION, BADLANDS_SAGUARO_CACTUS);
         addBadlands(GenerationStep.Decoration.UNDERGROUND_DECORATION, BADLANDS_PAYDIRT);
         addBadlands(GenerationStep.Decoration.SURFACE_STRUCTURES, BADLANDS_SURFACE_FOSSIL);
+        // Released order: remove vanilla swamp trees, then install the complete BM ecology.
+        BiomeModifications.create(BiomeMakeover.id("swamp/remove_vanilla_trees"))
+            .add(net.fabricmc.fabric.api.biome.v1.ModificationPhase.REMOVALS, BiomeSelectors.tag(SWAMPS),
+                context -> context.getGenerationSettings().removeFeature(VegetationPlacements.TREES_SWAMP));
+        addSwamp(GenerationStep.Decoration.VEGETAL_DECORATION, SWAMP_BIG_MUSHROOMS);
+        addSwamp(GenerationStep.Decoration.VEGETAL_DECORATION, SWAMP_FLOWERS);
+        addSwamp(GenerationStep.Decoration.VEGETAL_DECORATION, SWAMP_PADS);
+        addSwamp(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, SWAMP_PEAT);
+        addSwamp(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, SWAMP_REEDS);
+        addSwamp(GenerationStep.Decoration.VEGETAL_DECORATION, SWAMP_CYPRESS_TREES);
+        addSwamp(GenerationStep.Decoration.VEGETAL_DECORATION, SWAMP_WILLOW_TREES);
+        BiomeModifications.addSpawn(BiomeSelectors.tag(SWAMPS), MobCategory.MONSTER, BMEntities.DECAYED, 60, 1, 1);
+        BiomeModifications.addSpawn(BiomeSelectors.tag(SWAMPS), MobCategory.AMBIENT, BMEntities.DRAGONFLY, 20, 3, 8);
+        BiomeModifications.addSpawn(BiomeSelectors.tag(SWAMPS), MobCategory.AMBIENT, BMEntities.LIGHTNING_BUG, 20, 1, 1);
         BiomeModifications.addSpawn(
             BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
             MobCategory.CREATURE, BMEntities.OWL, 10, 1, 1
@@ -109,5 +134,9 @@ public final class BMWorldgen {
     private static ResourceKey<PlacedFeature> badlands(String path) { return ResourceKey.create(Registries.PLACED_FEATURE, BiomeMakeover.id("badlands/" + path)); }
     private static void addBadlands(GenerationStep.Decoration step, ResourceKey<PlacedFeature> feature) {
         BiomeModifications.addFeature(BiomeSelectors.tag(net.minecraft.tags.BiomeTags.IS_BADLANDS), step, feature);
+    }
+    private static ResourceKey<PlacedFeature> swamp(String path) { return ResourceKey.create(Registries.PLACED_FEATURE, BiomeMakeover.id("swamp/" + path)); }
+    private static void addSwamp(GenerationStep.Decoration step, ResourceKey<PlacedFeature> feature) {
+        BiomeModifications.addFeature(BiomeSelectors.tag(SWAMPS), step, feature);
     }
 }

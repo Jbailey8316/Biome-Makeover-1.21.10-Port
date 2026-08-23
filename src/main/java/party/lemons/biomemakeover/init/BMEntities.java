@@ -23,6 +23,9 @@ import party.lemons.biomemakeover.entity.GlowfishEntity;
 import party.lemons.biomemakeover.entity.ScuttlerEntity;
 import party.lemons.biomemakeover.entity.CowboyEntity;
 import party.lemons.biomemakeover.entity.TumbleweedEntity;
+import party.lemons.biomemakeover.entity.DecayedEntity;
+import party.lemons.biomemakeover.entity.DragonflyEntity;
+import party.lemons.biomemakeover.entity.LightningBugEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
@@ -53,6 +56,17 @@ public final class BMEntities {
     public static final Item COWBOY_SPAWN_EGG = registerSpawnEgg("cowboy_spawn_egg",COWBOY);
     public static final EntityType<TumbleweedEntity> TUMBLEWEED = registerEntity("tumbleweed",
         EntityType.Builder.<TumbleweedEntity>of(TumbleweedEntity::new,MobCategory.MISC).sized(.7F,.7F).clientTrackingRange(12));
+    public static final EntityType<DecayedEntity> DECAYED = registerEntity("decayed",
+        EntityType.Builder.<DecayedEntity>of(DecayedEntity::new, MobCategory.MONSTER).sized(.6F, 1.95F).clientTrackingRange(8));
+    public static final Item DECAYED_SPAWN_EGG = registerSpawnEgg("decayed_spawn_egg", DECAYED);
+    public static final EntityType<DragonflyEntity> DRAGONFLY = registerEntity("dragonfly",
+        EntityType.Builder.<DragonflyEntity>of(DragonflyEntity::new, MobCategory.AMBIENT).sized(.8F, .6F).clientTrackingRange(12));
+    public static final Item DRAGONFLY_SPAWN_EGG = registerSpawnEgg("dragonfly_spawn_egg", DRAGONFLY);
+    public static final EntityType<LightningBugEntity> LIGHTNING_BUG = registerEntity("lightning_bug",
+        EntityType.Builder.<LightningBugEntity>of(LightningBugEntity::new, MobCategory.AMBIENT).sized(.4F, .4F).clientTrackingRange(12));
+    public static final EntityType<LightningBugEntity> LIGHTNING_BUG_ALTERNATE = registerEntity("lightning_bug_alternate",
+        EntityType.Builder.<LightningBugEntity>of((type, level) -> new LightningBugEntity(type, level, true), MobCategory.AMBIENT).sized(.4F, .4F).clientTrackingRange(12));
+    public static final Item LIGHTNING_BUG_SPAWN_EGG = registerSpawnEgg("lightning_bug_spawn_egg", LIGHTNING_BUG_ALTERNATE);
 
     private BMEntities() {
     }
@@ -78,6 +92,10 @@ public final class BMEntities {
         FabricDefaultAttributeRegistry.register(GLOWFISH, GlowfishEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(SCUTTLER, ScuttlerEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(COWBOY, net.minecraft.world.entity.monster.Pillager.createAttributes());
+        FabricDefaultAttributeRegistry.register(DECAYED, DecayedEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(DRAGONFLY, DragonflyEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(LIGHTNING_BUG, DragonflyEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(LIGHTNING_BUG_ALTERNATE, DragonflyEntity.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,
@@ -90,5 +108,11 @@ public final class BMEntities {
             .register(entries -> { entries.accept(OWL_SPAWN_EGG); entries.accept(GLOWFISH_SPAWN_EGG); });
         SpawnPlacements.register(SCUTTLER,SpawnPlacementTypes.ON_GROUND,Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,ScuttlerEntity::checkSpawnRules);
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS).register(entries->{entries.accept(SCUTTLER_SPAWN_EGG);entries.accept(COWBOY_SPAWN_EGG);});
+        SpawnPlacements.register(DECAYED, SpawnPlacementTypes.IN_WATER, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, DecayedEntity::checkSpawnRules);
+        SpawnPlacements.register(DRAGONFLY, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, DragonflyEntity::checkSpawnRules);
+        SpawnPlacements.register(LIGHTNING_BUG, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, LightningBugEntity::checkLightningBugSpawn);
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS).register(entries -> {
+            entries.accept(DECAYED_SPAWN_EGG); entries.accept(DRAGONFLY_SPAWN_EGG); entries.accept(LIGHTNING_BUG_SPAWN_EGG);
+        });
     }
 }

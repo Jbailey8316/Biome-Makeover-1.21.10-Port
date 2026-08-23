@@ -16,6 +16,17 @@ import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacerType;
 import party.lemons.biomemakeover.worldgen.PaydirtFeature;
 import party.lemons.biomemakeover.worldgen.SaguaroCactusFeature;
 import party.lemons.biomemakeover.worldgen.SurfaceFossilFeature;
+import party.lemons.biomemakeover.level.feature.PeatFeature;
+import party.lemons.biomemakeover.level.feature.ReedFeature;
+import party.lemons.biomemakeover.level.feature.WaterTreeFeature;
+import party.lemons.biomemakeover.level.feature.foliage.CypressTrunkPlacer;
+import party.lemons.biomemakeover.level.feature.foliage.WillowTrunkPlacer;
+import party.lemons.biomemakeover.level.feature.foliage.WillowFoliagePlacer;
+import party.lemons.biomemakeover.level.feature.foliage.HangingLeavesDecorator;
+import party.lemons.biomemakeover.level.feature.foliage.WillowingBranchDecorator;
+import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType;
+import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
 
 public final class BMFeatures {
     public static final Feature<HugeMushroomFeatureConfiguration> HUGE_PURPLE_GLOWSHROOM = Registry.register(
@@ -40,6 +51,22 @@ public final class BMFeatures {
         BiomeMakeover.id("saguaro_cactus"), new SaguaroCactusFeature(NoneFeatureConfiguration.CODEC));
     public static final Feature<NoneFeatureConfiguration> SURFACE_FOSSIL = Registry.register(BuiltInRegistries.FEATURE,
         BiomeMakeover.id("surface_fossil"), new SurfaceFossilFeature(NoneFeatureConfiguration.CODEC));
+    public static final Feature<NoneFeatureConfiguration> PEAT = Registry.register(BuiltInRegistries.FEATURE,
+        BiomeMakeover.id("peat"), new PeatFeature(NoneFeatureConfiguration.CODEC));
+    public static final Feature<NoneFeatureConfiguration> REEDS = Registry.register(BuiltInRegistries.FEATURE,
+        BiomeMakeover.id("reeds"), new ReedFeature(NoneFeatureConfiguration.CODEC));
+    public static final Feature<TreeConfiguration> WATER_TREE = Registry.register(BuiltInRegistries.FEATURE,
+        BiomeMakeover.id("water_tree"), new WaterTreeFeature(TreeConfiguration.CODEC));
+    public static final TrunkPlacerType<CypressTrunkPlacer> CYPRESS_TRUNK = Registry.register(BuiltInRegistries.TRUNK_PLACER_TYPE,
+        BiomeMakeover.id("swamp_cypress"), new TrunkPlacerType<>(CypressTrunkPlacer.CODEC));
+    public static final TrunkPlacerType<WillowTrunkPlacer> WILLOW_TRUNK = Registry.register(BuiltInRegistries.TRUNK_PLACER_TYPE,
+        BiomeMakeover.id("willow"), new TrunkPlacerType<>(WillowTrunkPlacer.CODEC));
+    public static final FoliagePlacerType<WillowFoliagePlacer> WILLOW_FOLIAGE = Registry.register(BuiltInRegistries.FOLIAGE_PLACER_TYPE,
+        BiomeMakeover.id("willow_foliage"), new FoliagePlacerType<>(WillowFoliagePlacer.CODEC));
+    public static final TreeDecoratorType<HangingLeavesDecorator> HANGING_LEAVES_DECORATOR = Registry.register(BuiltInRegistries.TREE_DECORATOR_TYPE,
+        BiomeMakeover.id("hanging_leaves_decorator"), new TreeDecoratorType<>(HangingLeavesDecorator.CODEC));
+    public static final TreeDecoratorType<WillowingBranchDecorator> WILLOWING_BRANCH_DECORATOR = Registry.register(BuiltInRegistries.TREE_DECORATOR_TYPE,
+        BiomeMakeover.id("willowing_branch_decorator"), new TreeDecoratorType<>(WillowingBranchDecorator.CODEC));
 
     private BMFeatures() {}
     public static void initialize() {}

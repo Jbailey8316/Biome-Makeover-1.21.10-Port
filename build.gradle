@@ -40,6 +40,7 @@ dependencies {
 
 def stage3GeneratedResources = layout.buildDirectory.dir('generated/stage3Resources')
 def stage4GeneratedResources = layout.buildDirectory.dir('generated/stage4Resources')
+def stage5GeneratedResources = layout.buildDirectory.dir('generated/stage5Resources')
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
     outputs.dir(stage3GeneratedResources)
@@ -117,11 +118,47 @@ tasks.register('generateStage4ItemDefinitions') {
     }
 }
 
+tasks.register('generateStage5ItemDefinitions') {
+    inputs.file('validation/foundations/stage_5_swamp_contract.json')
+    outputs.dir(stage5GeneratedResources)
+    doLast {
+        def contract = new JsonSlurper().parse(file('validation/foundations/stage_5_swamp_contract.json'))
+        def ids = contract.blocks_with_items + contract.special_items + contract.spawn_eggs
+        def output = stage5GeneratedResources.get().dir('assets/biomemakeover/items').asFile
+        output.mkdirs()
+        ids.unique().sort().each { id ->
+            new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson(
+                [model: [type: 'minecraft:model', model: "biomemakeover:item/${id}"]])) + System.lineSeparator()
+        }
+        def clientJar = fileTree("${projectDir}/.gradle/loom-cache/minecraftMaven").matching { include '**/minecraft-clientOnly-*.jar' }.files.sort { it.absolutePath }.last()
+        def eggColors = [decayed_spawn_egg:[0x2e7068,0x4a4034],dragonfly_spawn_egg:[0xc7b634,0xf2ebb6],lightning_bug_spawn_egg:[0x62c961,0x96ebe1]]
+        def textureOutput=stage5GeneratedResources.get().dir('assets/biomemakeover/textures/item').asFile
+        def modelOutput=stage5GeneratedResources.get().dir('assets/biomemakeover/models/item').asFile
+        textureOutput.mkdirs();modelOutput.mkdirs()
+        new ZipFile(clientJar).withCloseable { zip ->
+            def template=ImageIO.read(zip.getInputStream(zip.getEntry('assets/minecraft/textures/item/pig_spawn_egg.png')))
+            eggColors.each { id,colors ->
+                def image=new BufferedImage(template.width,template.height,BufferedImage.TYPE_INT_ARGB)
+                for(int x=0;x<template.width;x++)for(int y=0;y<template.height;y++){
+                    int argb=template.getRGB(x,y),alpha=(argb>>>24)&255;if(alpha==0){image.setRGB(x,y,0);continue}
+                    int brightness=(((argb>>>16)&255)+((argb>>>8)&255)+(argb&255))/3,target=brightness<190?colors[1]:colors[0];float shade=brightness/220F
+                    int pixel=(alpha<<24)|(Math.min(255,Math.round(((target>>>16)&255)*shade))<<16)|(Math.min(255,Math.round(((target>>>8)&255)*shade))<<8)|Math.min(255,Math.round((target&255)*shade))
+                    image.setRGB(x,y,pixel)
+                }
+                ImageIO.write(image,'png',new File(textureOutput,"${id}.png"))
+                new File(modelOutput,"${id}.json").text=JsonOutput.prettyPrint(JsonOutput.toJson([parent:'minecraft:item/generated',textures:[layer0:"biomemakeover:item/${id}"]]))+System.lineSeparator()
+            }
+        }
+    }
+}
+
 processResources {
     dependsOn tasks.named('generateStage3ItemDefinitions')
     dependsOn tasks.named('generateStage4ItemDefinitions')
+    dependsOn tasks.named('generateStage5ItemDefinitions')
     from(stage3GeneratedResources)
     from(stage4GeneratedResources)
+    from(stage5GeneratedResources)
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
@@ -271,6 +308,56 @@ processResources {
         }
     }
 
+    // Stage 5 Swamp-owned released resources. Functional block entities,
+    // Sunken Ruins, witch progression, boats and unreachable Toad content are excluded.
+    from('reference/Biome-Makeover-1.20/common/src/main/resources') {
+        include 'assets/biomemakeover/blockstates/*willow*.json', 'assets/biomemakeover/blockstates/*swamp_cypress*.json'
+        include 'assets/biomemakeover/blockstates/*peat*.json'
+        include 'assets/biomemakeover/blockstates/buttonbush.json', 'assets/biomemakeover/blockstates/marigold.json', 'assets/biomemakeover/blockstates/cattail.json', 'assets/biomemakeover/blockstates/reed*.json', 'assets/biomemakeover/blockstates/small_lily_pad.json', 'assets/biomemakeover/blockstates/water_lily.json'
+        include 'assets/biomemakeover/models/block/*willow*.json', 'assets/biomemakeover/models/block/*swamp_cypress*.json'
+        include 'assets/biomemakeover/models/block/*peat*.json'
+        include 'assets/biomemakeover/models/block/buttonbush*.json', 'assets/biomemakeover/models/block/marigold*.json', 'assets/biomemakeover/models/block/cattail*.json', 'assets/biomemakeover/models/block/reed*.json', 'assets/biomemakeover/models/block/small_lily_pad*.json', 'assets/biomemakeover/models/block/water_lily*.json'
+        include 'assets/biomemakeover/models/block/tinted_crop.json'
+        include 'assets/biomemakeover/models/block/decoration/reed_thatch/**/*.json', 'assets/biomemakeover/models/block/decoration/dried_peat_bricks/**/*.json', 'assets/biomemakeover/models/block/decoration/mossy_dried_peat_bricks/**/*.json', 'assets/biomemakeover/models/block/decoration/cracked_dried_peat_bricks/**/*.json'
+        include 'assets/biomemakeover/models/item/*willow*.json', 'assets/biomemakeover/models/item/*swamp_cypress*.json'
+        exclude 'assets/biomemakeover/models/item/*_boat.json'
+        exclude 'assets/biomemakeover/models/item/*_chest_boat.json'
+        include 'assets/biomemakeover/models/item/*peat*.json'
+        include 'assets/biomemakeover/models/item/buttonbush.json', 'assets/biomemakeover/models/item/marigold.json', 'assets/biomemakeover/models/item/cattail.json', 'assets/biomemakeover/models/item/reed*.json', 'assets/biomemakeover/models/item/small_lily_pad.json', 'assets/biomemakeover/models/item/water_lily.json'
+        include 'assets/biomemakeover/textures/block/*willow*.png', 'assets/biomemakeover/textures/block/*swamp_cypress*.png'
+        include 'assets/biomemakeover/textures/block/*peat*.png'
+        include 'assets/biomemakeover/textures/block/buttonbush*.png', 'assets/biomemakeover/textures/block/marigold*.png', 'assets/biomemakeover/textures/block/cattail*.png', 'assets/biomemakeover/textures/block/reed*.png', 'assets/biomemakeover/textures/block/small_lily_pad*.png', 'assets/biomemakeover/textures/block/water_lily*.png'
+        include 'assets/biomemakeover/textures/item/*willow*.png', 'assets/biomemakeover/textures/item/*swamp_cypress*.png'
+        include 'assets/biomemakeover/textures/item/water_lily.png', 'assets/biomemakeover/textures/item/small_lily_pad.png', 'assets/biomemakeover/textures/item/buttonbush.png', 'assets/biomemakeover/textures/item/marigold.png', 'assets/biomemakeover/textures/item/cattail.png', 'assets/biomemakeover/textures/item/reed.png'
+        include 'assets/biomemakeover/textures/entity/decayed*.png', 'assets/biomemakeover/textures/entity/dragonfly/*.png', 'assets/biomemakeover/textures/entity/lightning_bug*.png'
+        include 'assets/biomemakeover/textures/entity/signs/willow.png', 'assets/biomemakeover/textures/entity/signs/swamp_cypress.png'
+        include 'assets/biomemakeover/textures/entity/signs/hanging/willow.png', 'assets/biomemakeover/textures/entity/signs/hanging/swamp_cypress.png'
+        include 'assets/biomemakeover/textures/gui/hanging_signs/willow.png', 'assets/biomemakeover/textures/gui/hanging_signs/swamp_cypress.png'
+        include 'assets/biomemakeover/sounds/decayed*.ogg', 'assets/biomemakeover/sounds/dragonfly*.ogg'
+        include 'data/biomemakeover/worldgen/configured_feature/swamp/*.json'
+        include 'data/biomemakeover/worldgen/placed_feature/swamp/*.json'
+        include 'data/biomemakeover/loot_tables/blocks/*willow*.json', 'data/biomemakeover/loot_tables/blocks/*swamp_cypress*.json'
+        include 'data/biomemakeover/loot_tables/blocks/*peat*.json'
+        include 'data/biomemakeover/loot_tables/blocks/buttonbush.json', 'data/biomemakeover/loot_tables/blocks/marigold.json', 'data/biomemakeover/loot_tables/blocks/cattail.json', 'data/biomemakeover/loot_tables/blocks/reed*.json', 'data/biomemakeover/loot_tables/blocks/small_lily_pad.json', 'data/biomemakeover/loot_tables/blocks/water_lily.json'
+        include 'data/biomemakeover/loot_tables/entities/decayed.json', 'data/biomemakeover/loot_tables/entities/dragonfly.json', 'data/biomemakeover/loot_tables/entities/lightning_bug*.json'
+        include 'data/biomemakeover/recipes/wood/willow/**/*.json', 'data/biomemakeover/recipes/wood/swamp_cypress/**/*.json'
+        exclude 'data/biomemakeover/recipes/wood/**/*_boat.json'
+        exclude 'data/biomemakeover/recipes/wood/**/*_chest_boat.json'
+        include 'data/biomemakeover/recipes/decoration/dried_peat_bricks/**/*.json', 'data/biomemakeover/recipes/decoration/mossy_dried_peat_bricks/**/*.json', 'data/biomemakeover/recipes/decoration/cracked_dried_peat_bricks/**/*.json', 'data/biomemakeover/recipes/decoration/reed_thatch/**/*.json'
+        include 'data/biomemakeover/recipes/dried_peat.json', 'data/biomemakeover/recipes/dried_peat_from_mossy.json', 'data/biomemakeover/recipes/mossy_peat.json'
+        include 'data/biomemakeover/recipes/dye/magenta_buds_from_water_lily.json', 'data/biomemakeover/recipes/dye/orange_dye_from_marigold.json'
+        include 'data/biomemakeover/advancements/biomemakeover/enter_swamp.json', 'data/biomemakeover/advancements/biomemakeover/create_peat*.json', 'data/biomemakeover/advancements/biomemakeover/obtain_peat.json', 'data/biomemakeover/advancements/biomemakeover/obtain_dried_peat.json'
+        include 'data/biomemakeover/tags/blocks/lily_pads.json', 'data/biomemakeover/tags/blocks/peat.json', 'data/biomemakeover/tags/blocks/reeds.json'
+        include 'data/biomemakeover/tags/items/peat.json', 'data/biomemakeover/tags/items/reeds.json'
+        include 'data/biomemakeover/tags/entity_types/lightning_bugs.json'
+        include 'data/biomemakeover/tags/worldgen/biome/swamps.json', 'data/biomemakeover/tags/worldgen/biome/swamp_bonemeal.json'
+        eachFile { details ->
+            details.path = details.path.replace('/loot_tables/','/loot_table/').replace('/recipes/','/recipe/')
+                .replace('/advancements/','/advancement/').replace('/tags/blocks/','/tags/block/')
+                .replace('/tags/items/','/tags/item/').replace('/tags/entity_types/','/tags/entity_type/')
+        }
+    }
+
     // Stage 4 Badlands-owned released resources. Ghost Town archaeology,
     // suspicious red sand, pottery sherds and the Badlands disc are excluded.
     from('reference/Biome-Makeover-1.20/common/src/main/resources') {
@@ -340,6 +427,12 @@ processResources {
     }
 
     doLast {
+        def swampBiomeTag = new File(destinationDir, 'data/biomemakeover/tags/worldgen/biome/swamps.json')
+        swampBiomeTag.parentFile.mkdirs()
+        swampBiomeTag.text = JsonOutput.prettyPrint(JsonOutput.toJson([replace:false, values:['minecraft:swamp','minecraft:mangrove_swamp']])) + System.lineSeparator()
+        def swampBonemealTag = new File(destinationDir, 'data/biomemakeover/tags/worldgen/biome/swamp_bonemeal.json')
+        swampBonemealTag.parentFile.mkdirs()
+        swampBonemealTag.text = JsonOutput.prettyPrint(JsonOutput.toJson([replace:false, values:['#biomemakeover:swamps']])) + System.lineSeparator()
         def historicalRoot = file('reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover')
         def soundOut = new File(destinationDir, 'assets/biomemakeover/sounds.json')
         def currentSounds = soundOut.exists() ? new JsonSlurper().parse(soundOut) : [:]
@@ -347,6 +440,9 @@ processResources {
         ['scuttler_rattle','scuttler_step','scuttler_hurt','scuttler_death','tumbleweed_tumble','tumbleweed_break'].each {
             currentSounds[it] = historicalSounds[it]
         }
+        ['entity.dragonfly.loop','entity.dragonfly.hurt','entity.dragonfly.death','entity.decayed.swim','entity.decayed.step',
+         'entity.decayed.hurt_water','entity.decayed.hurt','entity.decayed.death_water','entity.decayed.death',
+         'entity.decayed.ambient_water','entity.decayed.ambient'].each { if (historicalSounds[it] != null) currentSounds[it] = historicalSounds[it] }
         soundOut.text = JsonOutput.prettyPrint(JsonOutput.toJson(currentSounds)) + System.lineSeparator()
 
         def langOut = new File(destinationDir, 'assets/biomemakeover/lang/en_us.json')
@@ -354,6 +450,8 @@ processResources {
         def historicalLang = new JsonSlurper().parse(new File(historicalRoot, 'lang/en_us.json'))
         def stage4Tokens = ['badlands','terracotta_brick','cracked_brick','paydirt','saguaro','barrel_cactus','scuttler','pink_bud','cowboy','tumbleweed']
         historicalLang.each { key, value -> if (stage4Tokens.any { key.contains(it) }) currentLang[key] = value }
+        def stage5Tokens = ['swamp','willow','cypress','peat','reed','cattail','lily','buttonbush','marigold','decayed','dragonfly','lightning_bug']
+        historicalLang.each { key, value -> if (stage5Tokens.any { key.contains(it) }) currentLang[key] = value }
         langOut.text = JsonOutput.prettyPrint(JsonOutput.toJson(currentLang)) + System.lineSeparator()
     }
 
@@ -432,9 +530,10 @@ processResources {
                 ],
                 criteria: [
                     enter_badlands: [trigger: 'minecraft:location', conditions: [player: [[condition: 'minecraft:entity_properties', entity: 'this', predicate: [location: [biome: 'minecraft:badlands']]]]]],
-                    enter_mushroom_fields: [trigger: 'minecraft:location', conditions: [player: [[condition: 'minecraft:entity_properties', entity: 'this', predicate: [location: [biome: 'minecraft:mushroom_fields']]]]]]
+                    enter_mushroom_fields: [trigger: 'minecraft:location', conditions: [player: [[condition: 'minecraft:entity_properties', entity: 'this', predicate: [location: [biome: 'minecraft:mushroom_fields']]]]]],
+                    enter_swamp: [trigger: 'minecraft:location', conditions: [player: [[condition: 'minecraft:entity_properties', entity: 'this', predicate: [location: [biome: 'minecraft:swamp']]]]]]
                 ],
-                requirements: [['enter_badlands', 'enter_mushroom_fields']]
+                requirements: [['enter_badlands', 'enter_mushroom_fields', 'enter_swamp']]
             ]
             def rootFile = new File(advancementRoot, 'biomemakeover/root.json')
             rootFile.parentFile.mkdirs()
@@ -452,9 +551,11 @@ processResources {
         }
         def contract = new JsonSlurper().parse(file('validation/foundations/stage_3_mushroom_fields_contract.json'))
         def stage4Contract = new JsonSlurper().parse(file('validation/foundations/stage_4_badlands_contract.json'))
+        def stage5Contract = new JsonSlurper().parse(file('validation/foundations/stage_5_swamp_contract.json'))
         def allowed = (contract.blocks + contract.no_item_blocks + contract.standalone_items + contract.spawn_eggs + contract.entities +
             stage4Contract.registry.blocks_with_items + stage4Contract.registry.no_item_blocks + stage4Contract.registry.items +
-            stage4Contract.registry.spawn_eggs + stage4Contract.registry.entities) as Set
+            stage4Contract.registry.spawn_eggs + stage4Contract.registry.entities + stage5Contract.blocks_with_items +
+            stage5Contract.no_item_blocks + stage5Contract.special_items + stage5Contract.spawn_eggs + stage5Contract.entities) as Set
         def minecraftTags = destinationDir.toPath().resolve('data/minecraft/tags').toFile()
         if (minecraftTags.exists()) {
             fileTree(minecraftTags).matching { include '**/*.json' }.files.each { tagFile ->

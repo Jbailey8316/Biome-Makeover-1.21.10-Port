@@ -17,6 +17,14 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
 import party.lemons.biomemakeover.entity.TumbleweedEntity;
 import party.lemons.biomemakeover.init.BMEntities;
+import party.lemons.biomemakeover.init.BMBlocks;
+import party.lemons.biomemakeover.block.SmallLilyPadBlock;
+import net.minecraft.world.level.Level;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 public final class BMWorldEvents {
     private static final TagKey<Biome> SPAWNS_TUMBLEWEED = TagKey.create(Registries.BIOME,
@@ -53,5 +61,20 @@ public final class BMWorldEvents {
         if(!level.getBiome(pos).is(BiomeTags.IS_BADLANDS))return;
         TumbleweedEntity tumble=BMEntities.TUMBLEWEED.create(level,EntitySpawnReason.NATURAL);
         if(tumble!=null){tumble.setPos(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5);level.addFreshEntity(tumble);}
+    }
+
+    public static void handleSwampBoneMeal(Level level,BlockPos origin,RandomSource random){
+        start: for(int i=0;i<128;i++){
+            BlockPos pos=origin; BlockState state=Blocks.SEAGRASS.defaultBlockState(); boolean requireWater=true;
+            for(int j=0;j<i/16;j++){pos=pos.offset(random.nextInt(3)-1,(random.nextInt(3)-1)*random.nextInt(3)/2,random.nextInt(3)-1);if(level.getBlockState(pos).isCollisionShapeFullBlock(level,pos))continue start;}
+            if(level.getBlockState(pos.above()).isAir()&&random.nextInt(4)==0){
+                if(random.nextInt(5)>0)state=(random.nextInt(3)==0?BMBlocks.CATTAIL:BMBlocks.REED).defaultBlockState();
+                else{pos=pos.above();requireWater=false;if(random.nextBoolean())state=BMBlocks.SMALL_LILY_PAD.defaultBlockState().setValue(SmallLilyPadBlock.PADS,random.nextInt(4));else state=random.nextInt(4)==0?BMBlocks.WATER_LILY.defaultBlockState():Blocks.LILY_PAD.defaultBlockState();}
+            }
+            if(!state.canSurvive(level,pos))continue; BlockState current=level.getBlockState(pos);
+            if((!requireWater&&current.isAir())||(requireWater&&current.is(Blocks.WATER)&&level.getFluidState(pos).isSource())){
+                if(state.getBlock() instanceof DoublePlantBlock){if(level.isEmptyBlock(pos.above()))DoublePlantBlock.placeAt(level,state,pos,2);}else level.setBlock(pos,state,2);
+            }else if(current.is(Blocks.SEAGRASS)&&random.nextInt(10)==0)((BonemealableBlock)Blocks.SEAGRASS).performBonemeal((net.minecraft.server.level.ServerLevel)level,random,pos,current);
+        }
     }
 }

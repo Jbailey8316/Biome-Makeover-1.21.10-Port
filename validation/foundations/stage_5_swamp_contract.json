@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "stage": 5,
+  "theme": "swamp",
+  "historical_source": {
+    "repository": "Lemonszz/Biome-Makeover",
+    "commit": "2f314c0596af095a4890995a465f308f69476b4a",
+    "release": "1.20.1-1.11.4"
+  },
+  "wood_families": ["swamp_cypress", "willow"],
+  "decoration_families": [
+    "dried_peat_bricks",
+    "mossy_dried_peat_bricks",
+    "cracked_dried_peat_bricks"
+  ],
+  "blocks_with_items": [
+    "buttonbush", "cattail", "cracked_dried_peat_brick_slab", "cracked_dried_peat_brick_stairs",
+    "cracked_dried_peat_brick_wall", "cracked_dried_peat_bricks", "dried_peat", "dried_peat_bricks",
+    "dried_peat_bricks_slab", "dried_peat_bricks_stairs", "dried_peat_bricks_wall", "marigold",
+    "mossy_dried_peat_brick_slab", "mossy_dried_peat_brick_stairs", "mossy_dried_peat_brick_wall",
+    "mossy_dried_peat_bricks", "mossy_peat", "peat", "peat_farmland", "reed", "reed_thatch",
+    "reed_thatch_slab", "reed_thatch_stairs", "small_lily_pad", "stripped_swamp_cypress_log",
+    "stripped_swamp_cypress_wood", "stripped_willow_log", "stripped_willow_wood", "swamp_cypress_button",
+    "swamp_cypress_door", "swamp_cypress_fence", "swamp_cypress_fence_gate", "swamp_cypress_leaves",
+    "swamp_cypress_log", "swamp_cypress_planks", "swamp_cypress_pressure_plate", "swamp_cypress_sapling",
+    "swamp_cypress_slab", "swamp_cypress_stairs", "swamp_cypress_trapdoor", "swamp_cypress_wood",
+    "water_lily", "willow_button", "willow_door", "willow_fence", "willow_fence_gate", "willow_leaves",
+    "willow_log", "willow_planks", "willow_pressure_plate", "willow_sapling", "willow_slab", "willow_stairs",
+    "willow_trapdoor", "willow_wood", "willowing_branches"
+  ],
+  "no_item_blocks": [
+    "potted_swamp_cypress_sapling", "potted_willow_sapling", "swamp_cypress_hanging_sign",
+    "swamp_cypress_sign", "swamp_cypress_wall_hanging_sign", "swamp_cypress_wall_sign",
+    "willow_hanging_sign", "willow_sign", "willow_wall_hanging_sign", "willow_wall_sign"
+  ],
+  "special_items": ["swamp_cypress_hanging_sign", "swamp_cypress_sign", "willow_hanging_sign", "willow_sign"],
+  "entities": ["decayed", "dragonfly", "lightning_bug", "lightning_bug_alternate"],
+  "spawn_eggs": ["decayed_spawn_egg", "dragonfly_spawn_egg", "lightning_bug_spawn_egg"],
+  "sounds": [
+    "entity.decayed.ambient", "entity.decayed.ambient_water", "entity.decayed.death", "entity.decayed.death_water",
+    "entity.decayed.hurt", "entity.decayed.hurt_water", "entity.decayed.step", "entity.decayed.swim",
+    "entity.dragonfly.death", "entity.dragonfly.hurt", "entity.dragonfly.loop"
+  ],
+  "configured_features": [
+    "swamp/flowers", "swamp/pads", "swamp/peat", "swamp/reeds", "swamp/swamp_cypress",
+    "swamp/swamp_cypress_trees", "swamp/willow", "swamp/willow_trees"
+  ],
+  "placed_features": [
+    "swamp/big_mushrooms", "swamp/flowers", "swamp/pads", "swamp/peat", "swamp/reeds",
+    "swamp/swamp_cypress_checked", "swamp/swamp_cypress_trees", "swamp/willow_checked", "swamp/willow_trees"
+  ],
+  "deferred": {
+    "stage_9": ["lightning_bug_bottle", "peat_composter"],
+    "stage_10b": ["sunken_ruin", "music_disc_swamp_jives"],
+    "later_progression": ["witch_hat", "witch_quest"],
+    "shared_boat_infrastructure": ["swamp_cypress_boat", "swamp_cypress_chest_boat", "willow_boat", "willow_chest_boat"]
+  },
+  "registered_unreachable": ["toad", "tadpole", "toad_spawn_egg", "tadpole_spawn_egg", "tadpole_bucket", "raw_toad", "cooked_toad"],
+  "forbidden_stage_5": ["sunken_ruin", "witch_hat", "toad_natural_spawn", "tadpole_natural_spawn"]
+}
