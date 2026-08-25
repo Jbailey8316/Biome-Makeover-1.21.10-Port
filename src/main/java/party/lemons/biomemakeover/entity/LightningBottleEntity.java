@@ -80,12 +80,6 @@ public final class LightningBottleEntity extends ThrowableItemProjectile {
             var state = server.getBlockState(pos);
             if (state.is(Blocks.LIGHTNING_ROD)) ((LightningRodBlock) state.getBlock()).onLightningStrike(state, server, pos);
             LightningBoltInvoker.biomemakeover$clearCopper(server, pos);
-            LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(server, EntitySpawnReason.TRIGGERED);
-            if (bolt != null) {
-                bolt.setPos(net.minecraft.world.phys.Vec3.atBottomCenterOf(pos));
-                bolt.setVisualOnly(true);
-                server.addFreshEntity(bolt);
-            }
         }
         discard();
     }

@@ -155,3 +155,8 @@ Runtime Remediation 5 restores the released air-origin Willow and water-origin C
 restores Willowing Branch item tint, and completes the survival-reachable Bottle o' Lightning subsystem. The Mushroom
 Fields underground chain was revalidated against final source but remains runtime-open because one spectator sweep is
 insufficient evidence of a deterministic defect. See `STAGE_5_RUNTIME_REMEDIATION_5.md`.
+
+The subsequent Prism acceptance run passed sapling growth, tint, foliage stability, restored Swamp ecology, and
+natural Mushroom Fields underground generation. Bottle o' Lightning capture and transformations passed; its stacked
+item art and particle-only entity-impact presentation are source-confirmed. The non-historical block-impact visual
+bolt was removed pending one final focused confirmation.

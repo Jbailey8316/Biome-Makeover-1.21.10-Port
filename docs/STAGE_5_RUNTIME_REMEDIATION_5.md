@@ -40,3 +40,21 @@ repurposed. Sapling and tint fixes add no registry entries.
 
 Static/package validation is not runtime acceptance. Prism must verify the sapling matrix, Willowing Branch render
 paths, Mushroom underground placement/generation, and the full Lightning Bottle interaction before Stage 5 closes.
+
+## Runtime acceptance follow-up
+
+Prism runtime-confirmed Willow/Cypress land and underwater growth, Willowing Branch tint, stable foliage, Swamp
+ecology, Dragonfly, Decayed, Lightning Bug Bottle, and natural Mushroom Fields underground vegetation including a
+giant Glowshroom. Those findings are runtime PASS.
+
+The final Bottle o' Lightning source audit established that its 16x48 item texture intentionally depicts three
+vertically stacked bottles. Both entity and block impacts historically used bottle fragments, Lightning Spark
+particles, and thunder without adding a visible `LightningBolt` entity. A private dummy bolt was passed directly to
+`thunderHit` for transformations, with the target temporarily invulnerable and its fire ticks restored. Therefore
+Pig/Villager transformations, charged Creepers, no visible entity-impact bolt, and no ordinary lightning damage/fire
+are released behavior. The port's additional visual-only bolt on block impacts was removed; lightning-rod activation
+and copper clearing remain.
+
+`Shocked` remains 1000 ticks per hit. First application is amplifier 0; repeated hits refresh duration and increment
+through amplifier 3. Its released max-health modifier is -2 per effect level. Vanilla effect serialization and
+attribute removal handle save/reload and expiration, while impact clamps current health to the reduced maximum.

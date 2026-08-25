@@ -61,7 +61,7 @@ functional blocks/block entities, and the bulk of recipes/loot/advancements.
 
 | Original released content | Current 1.21.10 content | Status | Restoration/dependencies |
 |---|---|---|---|
-| Underground mycelium and mushroom vegetation pipeline | Released mycelium and huge-Glowshroom configured/placed chains are registered, packaged and injected at the correct decoration steps | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | One fresh-biome spectator sweep found no obvious huge cave Glowshrooms; source/data chain is exact, so controlled production `/place feature` checks and broader fresh-chunk sampling remain open |
+| Underground mycelium and mushroom vegetation pipeline | Released mycelium and huge-Glowshroom configured/placed chains are registered, packaged and injected at the correct decoration steps | COMPATIBLE / RUNTIME PASS | Fresh underground Mushroom Fields exploration confirmed smaller vegetation and a naturally generated giant Glowshroom |
 | Blighted Balsa wood set | None | MISSING | Foundational wood-family registration before trees/recipes/boats |
 | Glowshrooms, huge variants, sprouts, roots, tall mushrooms | One generic Wild Mushrooms block | PARTIAL | Plant behavior, huge-feature codecs, placement, loot and models |
 | Glowshroom/blighted masonry | None | MISSING | Block families, recipes, stonecutting, tags, loot |
@@ -91,11 +91,11 @@ and existing-world validation have not been executed.
 
 | Original released content | Current | Status | Restoration/dependencies |
 |---|---|---|---|
-| Replace vanilla swamp trees with Willow/Cypress | Exact wood-family registrations, custom placers/decorators, current log-tag leaf support, checked/tree placements, vanilla-tree removal and Swamp/Mangrove injection | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Fresh generation, canopy retention and item-entity/performance remediation are runtime-accepted; released Willow-air/Cypress-water sapling growth origin and depth matrix require Prism |
+| Replace vanilla swamp trees with Willow/Cypress | Exact wood-family registrations, custom placers/decorators, current log-tag leaf support, checked/tree placements, vanilla-tree removal and Swamp/Mangrove injection | COMPATIBLE / RUNTIME PASS | Fresh generation, canopy retention, item-entity/performance remediation, and land/underwater sapling growth are runtime-accepted |
 | Peat, reeds, lily/flower/mushroom ecology and bonemeal behavior | Peat chain, Reed/Cattail, pads/flowers and swamp-water bonemeal behavior restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Validate water placement, spread, tilling, crop ticking and density in Prism |
 | Itching Ivy environmental interaction | Existing implementation preserved; Stage 5 adds the released surrounding ecology without rewriting it | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Collision/effect and integration remain in the focused runtime checklist |
 | Thatch and swamp building families | Reed Thatch and all three exact peat masonry base/slab/stairs/wall families, recipes, loot, tags and assets restored | COMPATIBLE | Runtime geometry/recipe confirmation remains |
-| Decayed, Dragonfly, Lightning Bug | Natural reachability and Decayed water/baby behavior/progression are runtime-confirmed; exact layered full-bright Lightning Bug cube/pulse/color/sparks are source/showcase-verified; Dragonfly no-fall/pathing contract is restored; glass/experience-bottle capture restores both released bottle loops | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Decayed, Dragonfly and moving Lightning Bug behavior are runtime-accepted; placed Lightning Bug Bottle is runtime-accepted; restored throwable Bottle o' Lightning requires capture/projectile/effect/dispenser/save/reload verification |
+| Decayed, Dragonfly, Lightning Bug | Natural reachability and Decayed water/baby behavior/progression are runtime-confirmed; exact layered full-bright Lightning Bug cube/pulse/color/sparks are source/showcase-verified; glass/experience-bottle capture restores both released bottle loops | COMPATIBLE / RUNTIME PASS | Decayed, Dragonfly, moving Lightning Bugs, placed Lightning Bug Bottle, Bottle o' Lightning capture, transformations, particles and thunder are runtime-accepted; block-impact visual-bolt removal needs only focused regression confirmation |
 | Sunken Ruins structure | Deliberately absent | MISSING (STAGE 10B) | Structure/templates/processors/loot retain Stage 10B ownership |
 
 The original Toad entity exists historically but its natural-spawn hook was
