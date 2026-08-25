@@ -148,3 +148,10 @@ no moving-entity world-light implementation; the placed bottle emits level 15. T
 excluded because 1.20.1 comments out natural acquisition, hides/disables entry items, and gives Dragonflies empty
 loot. Older showcase behavior is version-evolution evidence, not merged parity. See
 `STAGE_5_RUNTIME_REMEDIATION_4.md`. Stage 5 remains runtime-open.
+
+## M. Runtime remediation 5
+
+Runtime Remediation 5 restores the released air-origin Willow and water-origin Cypress sapling growth contracts,
+restores Willowing Branch item tint, and completes the survival-reachable Bottle o' Lightning subsystem. The Mushroom
+Fields underground chain was revalidated against final source but remains runtime-open because one spectator sweep is
+insufficient evidence of a deterministic defect. See `STAGE_5_RUNTIME_REMEDIATION_5.md`.

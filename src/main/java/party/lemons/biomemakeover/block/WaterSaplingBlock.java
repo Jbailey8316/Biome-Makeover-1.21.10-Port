@@ -18,14 +18,23 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.block.Blocks;
 
 /** Released waterlogged Swamp sapling behavior without the historical Taniwha base class. */
 public final class WaterSaplingBlock extends SaplingBlock implements SimpleWaterloggedBlock {
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     private final int maxDepth;
+    private final ResourceKey<ConfiguredFeature<?, ?>> treeFeature;
+    private final boolean waterOrigin;
 
-    public WaterSaplingBlock(TreeGrower grower, int maxDepth, BlockBehaviour.Properties properties) {
+    public WaterSaplingBlock(TreeGrower grower, ResourceKey<ConfiguredFeature<?, ?>> treeFeature,
+                            boolean waterOrigin, int maxDepth, BlockBehaviour.Properties properties) {
         super(grower, properties);
+        this.treeFeature = treeFeature;
+        this.waterOrigin = waterOrigin;
         this.maxDepth = maxDepth;
         registerDefaultState(stateDefinition.any().setValue(STAGE, 0).setValue(WATERLOGGED, false));
     }
@@ -33,7 +42,18 @@ public final class WaterSaplingBlock extends SaplingBlock implements SimpleWater
     @Override
     public void advanceTree(ServerLevel level, BlockPos pos, BlockState state, RandomSource random) {
         if (state.getValue(WATERLOGGED) && level.getFluidState(pos.above(maxDepth)).is(Fluids.WATER)) return;
-        super.advanceTree(level, pos, state, random);
+        if (state.getValue(STAGE) == 0) {
+            level.setBlock(pos, state.cycle(STAGE), Block.UPDATE_CLIENTS);
+            return;
+        }
+
+        var configured = level.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(treeFeature);
+        if (configured.isEmpty()) return;
+        BlockState origin = waterOrigin ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
+        level.setBlock(pos, origin, Block.UPDATE_CLIENTS);
+        if (!configured.get().value().place(level, level.getChunkSource().getGenerator(), random, pos)) {
+            level.setBlock(pos, state, Block.UPDATE_CLIENTS);
+        }
     }
 
     @Override

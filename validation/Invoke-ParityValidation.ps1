@@ -456,14 +456,20 @@ foreach($padId in @('small_lily_pad','water_lily')){
     if(-not(Test-Path $padDefinition) -or (Get-Content $padDefinition -Raw) -notmatch '-13312764'){Add-Failure "$padId item definition omits the released green no-world tint"}
 }
 $waterSaplingSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/WaterSaplingBlock.java') -Raw
-if($blocksSource -notmatch 'WaterSaplingBlock\(WILLOW_GROWER, 1' -or $blocksSource -notmatch 'WaterSaplingBlock\(SWAMP_CYPRESS_GROWER, 3' -or $waterSaplingSource -notmatch 'WATERLOGGED' -or $waterSaplingSource -notmatch 'pos\.above\(maxDepth\)'){Add-Failure 'Willow/Cypress must retain released waterlogged sapling depth contracts (1/3)'}
+if($blocksSource -notmatch 'WaterSaplingBlock\(WILLOW_GROWER, WILLOW_TREE, false, 1' -or $blocksSource -notmatch 'WaterSaplingBlock\(SWAMP_CYPRESS_GROWER, SWAMP_CYPRESS_TREE, true, 3' -or $waterSaplingSource -notmatch 'pos\.above\(maxDepth\)' -or $waterSaplingSource -notmatch 'waterOrigin \? Blocks\.WATER\.defaultBlockState\(\) : Blocks\.AIR\.defaultBlockState\(\)'){Add-Failure 'Willow/Cypress must retain released depth (1/3) and distinct air/water feature-origin growth contracts'}
 $bottleBlockstate=Join-Path $builtAssets 'blockstates/lightning_bug_bottle.json'
 $bottleLoot=Join-Path $builtData 'biomemakeover/loot_table/blocks/lightning_bug_bottle.json'
 $bottleAdvancement=Join-Path $builtData 'biomemakeover/advancement/biomemakeover/lightning_bug_bottle.json'
 $bottleRenderer=Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/LightningBugBottleRenderer.java') -Raw
 $lightningInteractionSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/LightningBugEntity.java') -Raw
 if(-not(Test-Path $bottleBlockstate) -or -not(Test-Path $bottleLoot) -or -not(Test-Path $bottleAdvancement) -or $blocksSource -notmatch 'lightLevel\(state -> 15\)' -or $lightningInteractionSource -notmatch 'Items\.GLASS_BOTTLE' -or $bottleRenderer -notmatch 'LIGHTNING_BUG_INNER' -or $bottleRenderer -notmatch 'LIGHTNING_BUG_OUTER'){Add-Failure 'Released Lightning Bug glass-bottle capture, level-15 block, data, and contained-bug renderer chain is incomplete'}
+$lightningBottleEntity=Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/LightningBottleEntity.java'
+$lightningBottleItemDefinition=Join-Path $builtAssets 'items/lightning_bottle.json'
+$lightningBottleAdvancement=Join-Path $builtData 'biomemakeover/advancement/biomemakeover/bottle_o_lightning.json'
 $entitySource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java') -Raw
+if(-not(Test-Path $lightningBottleEntity) -or -not(Test-Path $lightningBottleItemDefinition) -or -not(Test-Path $lightningBottleAdvancement) -or $lightningInteractionSource -notmatch 'Items\.EXPERIENCE_BOTTLE' -or $entitySource -notmatch 'registerEntity\("lightning_bottle"' -or $entitySource -notmatch 'updateInterval\(4\)'){Add-Failure 'Released experience-bottle capture and throwable Lightning Bottle registry/resource chain is incomplete'}
+$branchItemDefinition=Join-Path $builtAssets 'items/willowing_branches.json'
+if(-not(Test-Path $branchItemDefinition) -or (Get-Content $branchItemDefinition -Raw) -notmatch '-12012264'){Add-Failure 'Willowing Branch item definition omits its released no-world foliage tint'}
 if($entitySource -match 'registerEntity\("toad"' -or $entitySource -match 'registerEntity\("tadpole"' -or $entitySource -match 'registerSpawnEgg\("toad_spawn_egg"'){Add-Failure 'Final 1.20.1-disabled Toad/Tadpole content was activated despite released reachability evidence'}
 foreach($leafId in @('willow_leaves','swamp_cypress_leaves')){
     $leafLootPath=Join-Path $builtData "biomemakeover/loot_table/blocks/$leafId.json"

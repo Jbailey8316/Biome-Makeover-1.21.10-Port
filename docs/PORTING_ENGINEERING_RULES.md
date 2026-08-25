@@ -322,3 +322,16 @@ disconnects every survival entry path.
 Full-bright models and particles do not update the world's light engine. A capturable entity may instead produce a
 placed light-emitting block. Trace light-level properties, world mutations, cleanup and integrations before adding
 temporary lighting; footage alone does not authorize a per-tick light-block system.
+
+## 50. Tree-grower origin replacement is part of the feature contract
+
+Modern `TreeGrower` may replace a sapling with its current fluid legacy block before invoking the configured feature.
+Historical custom growers may instead have forced air or water independently of the sapling's placed state. Audit the
+pre-placement origin state as well as survival and depth checks; a waterloggable sapling can place successfully while
+both land and submerged growth silently fail under the wrong origin contract.
+
+## 51. Prefer production feature commands over synthetic debug placement
+
+When a data-driven feature is probabilistic, first use `/place feature` on its registered configured and placed keys at
+a source-valid origin. This distinguishes implementation failure from sparse placement without adding a debug registry
+or duplicating production logic. Natural fresh-chunk sampling remains necessary for density and injection validation.

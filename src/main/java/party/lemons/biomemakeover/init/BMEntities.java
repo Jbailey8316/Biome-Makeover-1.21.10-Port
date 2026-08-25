@@ -26,6 +26,7 @@ import party.lemons.biomemakeover.entity.TumbleweedEntity;
 import party.lemons.biomemakeover.entity.DecayedEntity;
 import party.lemons.biomemakeover.entity.DragonflyEntity;
 import party.lemons.biomemakeover.entity.LightningBugEntity;
+import party.lemons.biomemakeover.entity.LightningBottleEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
@@ -67,6 +68,8 @@ public final class BMEntities {
     public static final EntityType<LightningBugEntity> LIGHTNING_BUG_ALTERNATE = registerEntity("lightning_bug_alternate",
         EntityType.Builder.<LightningBugEntity>of((type, level) -> new LightningBugEntity(type, level, true), MobCategory.AMBIENT).sized(.4F, .4F).clientTrackingRange(12));
     public static final Item LIGHTNING_BUG_SPAWN_EGG = registerSpawnEgg("lightning_bug_spawn_egg", LIGHTNING_BUG_ALTERNATE);
+    public static final EntityType<LightningBottleEntity> LIGHTNING_BOTTLE = registerEntity("lightning_bottle",
+        EntityType.Builder.<LightningBottleEntity>of(LightningBottleEntity::new, MobCategory.MISC).sized(.25F, .25F).clientTrackingRange(10).updateInterval(4));
 
     private BMEntities() {
     }

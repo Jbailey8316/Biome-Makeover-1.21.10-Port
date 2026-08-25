@@ -32,6 +32,8 @@ public final class BMSounds {
     public static final SoundEvent DECAYED_DEATH = register("entity.decayed.death");
     public static final SoundEvent DECAYED_AMBIENT_WATER = register("entity.decayed.ambient_water");
     public static final SoundEvent DECAYED_AMBIENT = register("entity.decayed.ambient");
+    public static final SoundEvent LIGHTNING_BOTTLE_THROW = register("entity.lightning_bottle.throw");
+    public static final SoundEvent LIGHTNING_BOTTLE_THUNDER = register("entity.lightning_bottle.thunder");
 
     private BMSounds() {}
 

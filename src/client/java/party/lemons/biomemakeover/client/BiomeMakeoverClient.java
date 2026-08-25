@@ -39,6 +39,7 @@ import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import party.lemons.biomemakeover.init.BMBlockEntities;
 import party.lemons.biomemakeover.client.render.LightningBugBottleRenderer;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 
 public final class BiomeMakeoverClient implements ClientModInitializer {
     private static final TagKey<Biome> SWAMPS = TagKey.create(Registries.BIOME, BiomeMakeover.id("swamps"));
@@ -79,6 +80,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         EntityRenderers.register(BMEntities.DRAGONFLY, DragonflyRenderer::new);
         EntityRenderers.register(BMEntities.LIGHTNING_BUG, LightningBugRenderer::new);
         EntityRenderers.register(BMEntities.LIGHTNING_BUG_ALTERNATE, LightningBugRenderer::new);
+        EntityRenderers.register(BMEntities.LIGHTNING_BOTTLE, ThrownItemRenderer::new);
         EntityRenderers.register(BMEntities.DECAYED, DecayedRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.LIGHTNING_BUG_BOTTLE,LightningBugBottleRenderer::new);
         ParticleFactoryRegistry.getInstance().register(BMParticles.LIGHTNING_SPARK,LightningSparkParticle.Provider::new);

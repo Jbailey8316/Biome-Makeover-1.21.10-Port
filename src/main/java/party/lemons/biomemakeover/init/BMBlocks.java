@@ -66,10 +66,12 @@ public final class BMBlocks {
     private static final ResourceKey<ConfiguredFeature<?, ?>> BLIGHTED_BALSA_TREE = configured("mushroom_fields/blighted_balsa");
     private static final TreeGrower BLIGHTED_BALSA_GROWER = new TreeGrower(
         "biomemakeover:blighted_balsa", Optional.of(BLIGHTED_BALSA_TREE), Optional.empty(), Optional.empty());
+    private static final ResourceKey<ConfiguredFeature<?, ?>> WILLOW_TREE = configured("swamp/willow");
+    private static final ResourceKey<ConfiguredFeature<?, ?>> SWAMP_CYPRESS_TREE = configured("swamp/swamp_cypress");
     private static final TreeGrower WILLOW_GROWER = new TreeGrower("biomemakeover:willow",
-        Optional.of(configured("swamp/willow")), Optional.empty(), Optional.empty());
+        Optional.of(WILLOW_TREE), Optional.empty(), Optional.empty());
     private static final TreeGrower SWAMP_CYPRESS_GROWER = new TreeGrower("biomemakeover:swamp_cypress",
-        Optional.of(configured("swamp/swamp_cypress")), Optional.empty(), Optional.empty());
+        Optional.of(SWAMP_CYPRESS_TREE), Optional.empty(), Optional.empty());
 
     private static BlockBehaviour.Properties stoneProps() {
         return BlockBehaviour.Properties.of().strength(1.5F).mapColor(MapColor.ICE).sound(SoundType.STONE);
@@ -173,8 +175,8 @@ public final class BMBlocks {
     public static final Block SWAMP_CYPRESS_WALL_HANGING_SIGN = registerNoItem("swamp_cypress_wall_hanging_sign", p -> new WallHangingSignBlock(SWAMP_CYPRESS_WOOD_TYPE, p), signProperties());
     public static final Block WILLOW_LEAVES = register("willow_leaves", p -> new TintedParticleLeavesBlock(0.01F, p), swampLeaves(MapColor.TERRACOTTA_LIGHT_GREEN));
     public static final Block SWAMP_CYPRESS_LEAVES = register("swamp_cypress_leaves", p -> new TintedParticleLeavesBlock(0.01F, p), swampLeaves(MapColor.TERRACOTTA_GREEN));
-    public static final Block WILLOW_SAPLING = register("willow_sapling", p -> new WaterSaplingBlock(WILLOW_GROWER, 1, p), swampPlant(MapColor.PLANT).randomTicks());
-    public static final Block SWAMP_CYPRESS_SAPLING = register("swamp_cypress_sapling", p -> new WaterSaplingBlock(SWAMP_CYPRESS_GROWER, 3, p), swampPlant(MapColor.PLANT).randomTicks());
+    public static final Block WILLOW_SAPLING = register("willow_sapling", p -> new WaterSaplingBlock(WILLOW_GROWER, WILLOW_TREE, false, 1, p), swampPlant(MapColor.PLANT).randomTicks());
+    public static final Block SWAMP_CYPRESS_SAPLING = register("swamp_cypress_sapling", p -> new WaterSaplingBlock(SWAMP_CYPRESS_GROWER, SWAMP_CYPRESS_TREE, true, 3, p), swampPlant(MapColor.PLANT).randomTicks());
     public static final Block POTTED_WILLOW_SAPLING = potted("potted_willow_sapling", WILLOW_SAPLING, 0);
     public static final Block POTTED_SWAMP_CYPRESS_SAPLING = potted("potted_swamp_cypress_sapling", SWAMP_CYPRESS_SAPLING, 0);
     public static final Block WILLOWING_BRANCHES = register("willowing_branches", WillowingBranchesBlock::new,

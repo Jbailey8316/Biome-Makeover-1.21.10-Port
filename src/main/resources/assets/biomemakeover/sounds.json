@@ -6,5 +6,7 @@
   "owl_contact": {"sounds":["biomemakeover:owl/owl_contact_1"],"subtitle":"subtitles.biomemakeover.owl_contact"},
   "owl_alert": {"sounds":["biomemakeover:owl/owl_alert_1"],"subtitle":"subtitles.biomemakeover.owl_alert"},
   "owl_baby": {"sounds":["biomemakeover:owl/owl_baby_1"],"subtitle":"subtitles.biomemakeover.owl_baby"},
-  "owl_takeoff": {"sounds":["biomemakeover:owl/owl_takeoff_1"],"subtitle":"subtitles.biomemakeover.owl_takeoff"}
+  "owl_takeoff": {"sounds":["biomemakeover:owl/owl_takeoff_1"],"subtitle":"subtitles.biomemakeover.owl_takeoff"},
+  "entity.lightning_bottle.throw": {"sounds":[{"name":"minecraft:entity.arrow.shoot","type":"event"}],"subtitle":"subtitles.entity.lightning_bottle.throw"},
+  "entity.lightning_bottle.thunder": {"sounds":[{"name":"minecraft:entity.lightning_bolt.thunder","type":"event"}],"subtitle":"subtitles.entity.lightning_bolt.thunder"}
 }

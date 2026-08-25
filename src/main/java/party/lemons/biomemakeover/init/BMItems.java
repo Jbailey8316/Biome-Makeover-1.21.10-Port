@@ -29,6 +29,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.sounds.SoundEvents;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.item.GlowfishBucketItem;
+import party.lemons.biomemakeover.item.LightningBottleItem;
 
 public final class BMItems {
     public static final Item LEAF_LITTER = register("leaf_litter");
@@ -67,6 +68,7 @@ public final class BMItems {
         .component(DataComponents.EQUIPPABLE,Equippable.builder(EquipmentSlot.HEAD)
             .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER).build())));
     public static final Item CRACKED_BRICK = register("cracked_brick");
+    public static final Item LIGHTNING_BOTTLE = register("lightning_bottle", LightningBottleItem::new);
 
     private BMItems() {}
 
@@ -93,7 +95,8 @@ public final class BMItems {
             entries.accept(LEAF_LITTER);
             entries.accept(OWL_EGG);
             entries.accept(GLOWSHROOM_STEW); entries.accept(GLOWFISH); entries.accept(COOKED_GLOWFISH); entries.accept(GLOWFISH_BUCKET);
-            entries.accept(SCUTTLER_TAIL); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(CRACKED_BRICK);
+            entries.accept(SCUTTLER_TAIL); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(CRACKED_BRICK); entries.accept(LIGHTNING_BOTTLE);
         });
+        LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }
 }

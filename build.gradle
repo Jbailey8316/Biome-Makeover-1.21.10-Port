@@ -140,6 +140,9 @@ tasks.register('generateStage5ItemDefinitions') {
                 model.model = 'biomemakeover:block/willow_leaves'
                 model.tints = [[type:'minecraft:constant', value:-12012264]]
             }
+            if (id == 'willowing_branches') {
+                model.tints = [[type:'minecraft:constant', value:-12012264]]
+            }
             if (id == 'swamp_cypress_leaves') {
                 model.model = 'biomemakeover:block/swamp_cypress_leaves'
                 model.tints = [[type:'minecraft:constant', value:-8082577]]
@@ -352,12 +355,13 @@ processResources {
         exclude 'assets/biomemakeover/models/item/*_chest_boat.json'
         include 'assets/biomemakeover/models/item/*peat*.json'
         include 'assets/biomemakeover/models/item/buttonbush.json', 'assets/biomemakeover/models/item/marigold.json', 'assets/biomemakeover/models/item/cattail.json', 'assets/biomemakeover/models/item/reed*.json', 'assets/biomemakeover/models/item/small_lily_pad.json', 'assets/biomemakeover/models/item/water_lily.json'
-        include 'assets/biomemakeover/models/item/lightning_bug_bottle.json'
+        include 'assets/biomemakeover/models/item/lightning_bug_bottle.json', 'assets/biomemakeover/models/item/lightning_bottle.json'
         include 'assets/biomemakeover/models/item/magenta_bud.json'
         include 'assets/biomemakeover/textures/block/*willow*.png', 'assets/biomemakeover/textures/block/*swamp_cypress*.png'
         include 'assets/biomemakeover/textures/block/*peat*.png'
         include 'assets/biomemakeover/textures/block/buttonbush*.png', 'assets/biomemakeover/textures/block/marigold*.png', 'assets/biomemakeover/textures/block/cattail*.png', 'assets/biomemakeover/textures/block/reed*.png', 'assets/biomemakeover/textures/block/small_lily_pad*.png', 'assets/biomemakeover/textures/block/water_lily*.png'
-        include 'assets/biomemakeover/textures/block/lightning_bug_bottle.png', 'assets/biomemakeover/textures/item/lightning_bug_in_a_bottle.png*'
+        include 'assets/biomemakeover/textures/block/lightning_bug_bottle.png', 'assets/biomemakeover/textures/item/lightning_bug_in_a_bottle.png*', 'assets/biomemakeover/textures/item/lightning_bottle.png'
+        include 'assets/biomemakeover/textures/mob_effect/shocked.png'
         include 'assets/biomemakeover/textures/item/*willow*.png', 'assets/biomemakeover/textures/item/*swamp_cypress*.png'
         include 'assets/biomemakeover/textures/item/water_lily.png', 'assets/biomemakeover/textures/item/small_lily_pad.png', 'assets/biomemakeover/textures/item/buttonbush.png', 'assets/biomemakeover/textures/item/marigold.png', 'assets/biomemakeover/textures/item/cattail.png', 'assets/biomemakeover/textures/item/reed.png'
         include 'assets/biomemakeover/textures/entity/decayed*.png', 'assets/biomemakeover/textures/entity/dragonfly/*.png', 'assets/biomemakeover/textures/entity/lightning_bug*.png'
@@ -381,6 +385,7 @@ processResources {
         include 'data/biomemakeover/recipes/dye/magenta_buds_from_water_lily.json', 'data/biomemakeover/recipes/dye/magenta_dye_from_magenta_bud.json', 'data/biomemakeover/recipes/dye/orange_dye_from_marigold.json'
         include 'data/biomemakeover/advancements/biomemakeover/enter_swamp.json', 'data/biomemakeover/advancements/biomemakeover/create_peat_farmland.json', 'data/biomemakeover/advancements/biomemakeover/obtain_peat.json', 'data/biomemakeover/advancements/biomemakeover/obtain_dried_peat.json'
         include 'data/biomemakeover/advancements/biomemakeover/lightning_bug_bottle.json'
+        include 'data/biomemakeover/advancements/biomemakeover/bottle_o_lightning.json'
         include 'data/biomemakeover/tags/blocks/lily_pads.json', 'data/biomemakeover/tags/blocks/peat.json', 'data/biomemakeover/tags/blocks/reeds.json'
         include 'data/biomemakeover/tags/items/peat.json', 'data/biomemakeover/tags/items/reeds.json'
         include 'data/biomemakeover/tags/entity_types/lightning_bugs.json'

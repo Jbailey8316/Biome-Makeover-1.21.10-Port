@@ -95,5 +95,11 @@
   "item.biomemakeover.glowfish": "Glowfish",
   "item.biomemakeover.glowfish_bucket": "Bucket of Glowfish",
   "item.biomemakeover.glowfish_spawn_egg": "Glowfish Spawn Egg",
-  "item.biomemakeover.glowshroom_stew": "Glowshroom Stew"
+  "item.biomemakeover.glowshroom_stew": "Glowshroom Stew",
+  "item.biomemakeover.lightning_bottle": "Bottle o' Lightning",
+  "entity.biomemakeover.lightning_bottle": "Bottle o' Lightning",
+  "effect.biomemakeover.shocked": "Shocked",
+  "subtitles.entity.lightning_bottle.throw": "Bottle o' Lightning thrown",
+  "advancements.biomemakeover.lightning_bottle.title": "Never Strikes Twice",
+  "advancements.biomemakeover.lightning_bottle.description": "Obtain a Bottle o' Lightning"
 }
