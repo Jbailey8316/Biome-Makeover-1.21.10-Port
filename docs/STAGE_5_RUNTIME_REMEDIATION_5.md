@@ -58,3 +58,19 @@ and copper clearing remain.
 `Shocked` remains 1000 ticks per hit. First application is amplifier 0; repeated hits refresh duration and increment
 through amplifier 3. Its released max-health modifier is -2 per effect level. Vanilla effect serialization and
 attribute removal handle save/reload and expiration, while impact clamps current health to the reduced maximum.
+
+## Final runtime acceptance
+
+The final Prism run passed the corrected block-impact presentation: no visible lightning-bolt entity is spawned on
+block or entity impact. Capture, throwing, consumption/cooldown, thunder/particles, Pig and Villager transformations,
+charged Creepers, and the historical absence of ordinary lightning damage/fire all passed. Shocked stacking through
+amplifier 3, duration refresh, maximum-health reduction/restoration, expiration, and save/reload persistence passed.
+
+The same acceptance cycle passed Willow/Cypress land and underwater growth, water plants, Willowing Branch tint and
+shearing, foliage stability, peat/ecology, Decayed, Dragonfly, both Lightning Bug bottle paths, and Mangrove Swamp
+integration. Natural Mushroom Fields underground vegetation and a naturally generated giant Glowshroom were observed,
+closing the prior distribution concern without changing frequency, cave generation, or terrain.
+
+**Stage 5 final state: static parity PASS; package validation PASS; runtime acceptance PASS; COMPLETE.** No mandatory
+final-release Stage 5 blocker remains. Historical/disabled Toad content and all documented Mythas candidates remain
+outside parity scope.

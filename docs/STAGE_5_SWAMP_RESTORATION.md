@@ -160,3 +160,25 @@ The subsequent Prism acceptance run passed sapling growth, tint, foliage stabili
 natural Mushroom Fields underground generation. Bottle o' Lightning capture and transformations passed; its stacked
 item art and particle-only entity-impact presentation are source-confirmed. The non-historical block-impact visual
 bolt was removed pending one final focused confirmation.
+
+## N. Stage 5 closure
+
+The final Prism acceptance run confirmed the corrected no-bolt block-impact presentation and the complete Shocked
+contract, including stacking, refresh, maximum-health reduction/restoration, expiration, and save/reload. It also
+accepted Swamp/Mangrove worldgen and vegetation, Willow/Cypress foliage and land/underwater saplings, water plants,
+Willowing Branches, peat, Decayed, Dragonfly, moving Lightning Bugs, Lightning Bug Bottle, and Bottle o' Lightning.
+Natural Mushroom Fields underground vegetation and a giant underground Glowshroom were observed and are accepted
+without any frequency or cave-generation change. Fence gates remain source-confirmed vanilla behavior.
+
+Final status:
+
+- Static parity: **PASS**
+- Package validation: **PASS**
+- Runtime acceptance: **PASS**
+- Stage 5: **COMPLETE**
+- Mandatory final-release Stage 5 blockers: **none known**
+- Stage 6: **NOT STARTED**
+
+Earlier `runtime-open` statements above are preserved as checkpoint history and are superseded by this closure.
+Disabled Toad/Tadpole/Dragonfly Wing content, later structures/progression/boats, and all documented Mythas ideas remain
+deferred; they are not Stage 5 blockers.

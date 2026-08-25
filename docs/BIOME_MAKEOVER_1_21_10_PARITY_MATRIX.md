@@ -92,15 +92,19 @@ and existing-world validation have not been executed.
 | Original released content | Current | Status | Restoration/dependencies |
 |---|---|---|---|
 | Replace vanilla swamp trees with Willow/Cypress | Exact wood-family registrations, custom placers/decorators, current log-tag leaf support, checked/tree placements, vanilla-tree removal and Swamp/Mangrove injection | COMPATIBLE / RUNTIME PASS | Fresh generation, canopy retention, item-entity/performance remediation, and land/underwater sapling growth are runtime-accepted |
-| Peat, reeds, lily/flower/mushroom ecology and bonemeal behavior | Peat chain, Reed/Cattail, pads/flowers and swamp-water bonemeal behavior restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Validate water placement, spread, tilling, crop ticking and density in Prism |
-| Itching Ivy environmental interaction | Existing implementation preserved; Stage 5 adds the released surrounding ecology without rewriting it | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Collision/effect and integration remain in the focused runtime checklist |
-| Thatch and swamp building families | Reed Thatch and all three exact peat masonry base/slab/stairs/wall families, recipes, loot, tags and assets restored | COMPATIBLE | Runtime geometry/recipe confirmation remains |
-| Decayed, Dragonfly, Lightning Bug | Natural reachability and Decayed water/baby behavior/progression are runtime-confirmed; exact layered full-bright Lightning Bug cube/pulse/color/sparks are source/showcase-verified; glass/experience-bottle capture restores both released bottle loops | COMPATIBLE / RUNTIME PASS | Decayed, Dragonfly, moving Lightning Bugs, placed Lightning Bug Bottle, Bottle o' Lightning capture, transformations, particles and thunder are runtime-accepted; block-impact visual-bolt removal needs only focused regression confirmation |
+| Peat, reeds, lily/flower/mushroom ecology and bonemeal behavior | Peat chain, Reed/Cattail, pads/flowers and swamp-water bonemeal behavior restored | COMPATIBLE / RUNTIME PASS | Placement, tint, tilling and restored ecology are runtime-accepted |
+| Itching Ivy environmental interaction | Existing implementation preserved; Stage 5 adds the released surrounding ecology without rewriting it | COMPATIBLE / RUNTIME PASS | Accepted with the completed Swamp ecosystem runtime pass |
+| Thatch and swamp building families | Reed Thatch and all three exact peat masonry base/slab/stairs/wall families, recipes, loot, tags and assets restored | COMPATIBLE / RUNTIME PASS | Accepted in the Stage 5 comprehensive runtime checkpoint |
+| Decayed, Dragonfly, Lightning Bug | Natural reachability and Decayed water/baby behavior/progression are runtime-confirmed; exact layered full-bright Lightning Bug cube/pulse/color/sparks are source/showcase-verified; glass/experience-bottle capture restores both released bottle loops | COMPATIBLE / RUNTIME PASS | Both bottle loops and final no-bolt impact presentation pass; Shocked stacking, expiration, health restoration and save/reload pass |
 | Sunken Ruins structure | Deliberately absent | MISSING (STAGE 10B) | Structure/templates/processors/loot retain Stage 10B ownership |
 
 The original Toad entity exists historically but its natural-spawn hook was
 commented. Tadpole acquisition/reachability needs runtime confirmation and is
 not silently counted as required natural ecology.
+
+Stage 5 Swamp is **COMPLETE**: static parity PASS, package validation PASS, and runtime acceptance PASS. There are no
+known mandatory final-release Stage 5 blockers. Historical/disabled content and later-stage structures, progression,
+boats, and Mythas candidates remain deferred and do not change this status. Stage 6 remains not started.
 
 ### Dark Forest
 
@@ -154,7 +158,7 @@ Each unit is a meaningful behavior family rather than a raw file.
 |---|---:|---|---|
 | Mushroom Fields | 18 | PBD 1, PARTIAL 1, MISSING 16 | One generic mushroom fragment; no complete theme |
 | Badlands | 17 | MISSING 17 | No registrations, resources, entities or injection |
-| Swamp | 19 | COMPATIBLE 16, PARTIAL 3 | Stage 5 restores the reachable ecology; Lightning Bug Bottle/Peat Composter, Sunken Ruins and historical boat infrastructure remain in their owning stages |
+| Swamp | 19 | STAGE 5 COMPLETE / RUNTIME PASS | Reachable released ecology and both Lightning Bug bottle loops are accepted; Peat Composter, Sunken Ruins, historical boats, disabled Toad content and Mythas ideas remain outside Stage 5 ownership |
 | Dark Forest | 28 | EXACT 1, COMPATIBLE 4, PBD 5, PARTIAL 11, BROKEN 2, MISSING 4, NRV 1 | Only active theme; three injected placed features |
 | Beach ecology | 5 | MISSING 5 | No Helmit Crab implementation |
 | Mansion/illager | 22 | MISSING 22 | Entire released progression absent |
