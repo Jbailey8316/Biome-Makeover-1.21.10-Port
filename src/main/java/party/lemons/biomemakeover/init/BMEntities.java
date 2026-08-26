@@ -30,13 +30,14 @@ import party.lemons.biomemakeover.entity.LightningBottleEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
+    public static final TagKey<EntityType<?>> OWL_TARGETS = TagKey.create(Registries.ENTITY_TYPE, BiomeMakeover.id("owl_targets"));
     public static final TagKey<DamageType> TUMBLEWEED_IMMUNE_DAMAGE = TagKey.create(Registries.DAMAGE_TYPE,
         BiomeMakeover.id("tumbleweed_immune_to"));
     public static final EntityType<OwlEntity> OWL = registerEntity(
         "owl",
         EntityType.Builder.<OwlEntity>of(OwlEntity::new, MobCategory.CREATURE)
-            .sized(0.7F, 1.4F)
-            .clientTrackingRange(8)
+            .sized(0.7F, 0.8F)
+            .clientTrackingRange(12)
     );
 
     public static final Item OWL_SPAWN_EGG = registerSpawnEgg("owl_spawn_egg", OWL);

@@ -89,7 +89,7 @@ public final class BMWorldgen {
         BiomeModifications.addSpawn(BiomeSelectors.tag(SWAMPS), MobCategory.AMBIENT, BMEntities.LIGHTNING_BUG, 20, 1, 1);
         BiomeModifications.addSpawn(
             BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
-            MobCategory.CREATURE, BMEntities.OWL, 10, 1, 1
+            MobCategory.CREATURE, BMEntities.OWL, 20, 1, 4
         );
 
         // Native Dark Forest wildlife additions

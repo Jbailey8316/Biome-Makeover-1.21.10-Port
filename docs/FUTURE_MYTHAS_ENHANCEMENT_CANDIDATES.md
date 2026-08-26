@@ -1,5 +1,15 @@
 # Future Mythas Enhancement Candidates
 
+## Owl post-preservation candidates
+
+- Owl nest/egg incubation and hatching using the preserved experimental IDs.
+- Owl blinking and richer resting/sleeping animation.
+- Cautious wild-Owl player fleeing and remembered-tree/roost behavior.
+- Expanded Owl vocal personality using the dormant hoot, alert, contact, baby
+  and takeoff sound IDs.
+- Explicit Mythas day/night Owl ecology.
+- Mythas Mobs Owl head integration.
+
 These ideas are explicitly outside released Biome Makeover parity and must not be implemented during Stages 0–13
 without separate approval.
 

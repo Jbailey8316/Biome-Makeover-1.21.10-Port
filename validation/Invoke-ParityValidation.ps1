@@ -555,6 +555,32 @@ foreach($leafId in @('willow_leaves','swamp_cypress_leaves')){
 }
 $lightningSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/LightningBugEntity.java') -Raw
 if($lightningSource -notmatch 'visualPhase' -or $lightningSource -notmatch 'advanceVisualColor' -or $lightningRendererSource.IndexOf('LIGHTNING_BUG_INNER') -gt $lightningRendererSource.IndexOf('LIGHTNING_BUG_OUTER')) { Add-Failure 'Lightning Bug must retain historical randomized pulse, interpolated position color, and inner/outer layer order' }
+
+# Stage 7 Owl: validate the released behavior/resource contracts rather than
+# accepting an entity registration with experimental or incomplete gameplay.
+$owlSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/OwlEntity.java') -Raw
+$owlRendererSource=Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/OwlRenderer.java') -Raw
+$owlModelSource=Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/model/OwlModel.java') -Raw
+$owlWorldgenSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMWorldgen.java') -Raw
+$owlEntitiesSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java') -Raw
+if($owlEntitiesSource -notmatch '(?s)OWL\s*=.*?\.sized\(0\.7F,\s*0\.8F\).*?\.clientTrackingRange\(12\)' -or
+   $owlWorldgenSource -notmatch 'BMEntities\.OWL,\s*20,\s*1,\s*4') { Add-Failure 'Owl released dimensions/tracking/spawn weight-group contract is incomplete' }
+if($owlSource -notmatch 'support\.is\(Blocks\.GRASS_BLOCK\)' -or $owlSource -notmatch 'support\.is\(BlockTags\.LEAVES\)' -or
+   $owlSource -notmatch 'getRawBrightness\(pos,\s*0\)\s*>\s*2' -or $owlSource -match 'isNightTime|removeWhenFarAway') { Add-Failure 'Owl must retain released grass/leaves brightness spawn contract without port-only day/night culling' }
+foreach($goalContract in @('addGoal\(3, new MeleeAttackGoal\(this, 1\.0D, true\)','addGoal\(4, new FollowOwnerGoal\(this, 1\.2D, 10\.0F, 2\.0F\)','addGoal\(5, new TemptGoal','addGoal\(9, new ExtendedFlyOntoTree\(this, 1\.0D, 0\.5F\)','NonTameRandomTargetGoal')) { if($owlSource -notmatch $goalContract){Add-Failure "Owl released goal contract missing: $goalContract"} }
+if($owlSource -notmatch 'ItemTags\.WOLF_FOOD' -or $owlSource -notmatch 'Attributes\.TEMPT_RANGE, 10\.0D' -or
+   $owlSource -match 'Items\.RABBIT|Items\.CHICKEN|WildPlayerCautionGoal|NightChickenHuntGoal|OwlNestBlock') { Add-Failure 'Owl released broad-meat contract or removal of experimental Owl AI is incomplete' }
+$owlItemsSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw
+$owlBlocksSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java') -Raw
+if($owlItemsSource -match 'entries\.accept\(OWL_EGG\)' -or $owlBlocksSource -match 'entries\.accept\(OWL_NEST\)' -or
+   (Test-Path (Join-Path $builtData 'biomemakeover/recipe/owl_nest.json'))) { Add-Failure 'Nonreleased Owl nest/egg acquisition must remain inactive while preserving registry IDs' }
+if($owlRendererSource -notmatch 'RenderType\.eyes\(EYES_TEXTURE\)' -or $owlRendererSource -notmatch 'equalsIgnoreCase\("Hedwig"\)' -or
+   $owlRendererSource -match 'nightEyes|blinking|isOwlSleeping' -or $owlModelSource -match 'eyelids|blinking|sleeping') { Add-Failure 'Owl released unconditional eyes/Hedwig/no-blink renderer contract is incomplete' }
+$owlTargetTag=Join-Path $builtData 'biomemakeover/tags/entity_type/owl_targets.json'
+$owlLoot=Join-Path $builtData 'biomemakeover/loot_table/entities/owl.json'
+if(-not(Test-Path $owlTargetTag)){Add-Failure 'Owl released prey entity-type tag is not packaged'}
+if(-not(Test-Path $owlLoot)){Add-Failure 'Owl released entity loot table is not packaged'}else{$owlLootText=Get-Content $owlLoot -Raw;if($owlLootText -notmatch 'minecraft:feather' -or $owlLootText -notmatch 'minecraft:enchanted_count_increase' -or $owlLootText -notmatch 'minecraft:looting'){Add-Failure 'Owl feather/Looting loot contract is incomplete'}}
+foreach($owlTexture in @('owl.png','owl_2.png','owl_eyes.png')){if(-not(Test-Path (Join-Path $builtAssets "textures/entity/$owlTexture"))){Add-Failure "Owl released texture missing: $owlTexture"}}
 $clientMixinConfig = Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.client.mixins.json') -Raw | ConvertFrom-Json
 if ('HorseRenderStateMixin' -notin @($clientMixinConfig.client) -or 'HorseRendererMixin' -notin @($clientMixinConfig.client)) {
     Add-Failure 'Cowboy horse rendering mixins are not isolated and registered in the client-only mixin list'
@@ -569,11 +595,12 @@ Get-ChildItem $builtData -Recurse -File -Filter '*.json' | Where-Object { $_.Ful
     $tag = Get-Content $tagFile.FullName -Raw | ConvertFrom-Json
     foreach ($entry in @($tag.values)) {
         $id = if ($entry -is [string]) { $entry } else { [string]$entry.id }
+        $required = $entry -is [string] -or $null -eq $entry.required -or [bool]$entry.required
         if ($id -like '#biomemakeover:*') {
             $target = $id.Substring('#biomemakeover:'.Length)
             $targetFile = Join-Path $builtData ("biomemakeover/tags/$tagDirectory/$target.json")
             if (-not (Test-Path $targetFile)) { Add-Failure "Missing internal tag reference $id from $($tagFile.FullName.Substring($RepositoryRoot.Length + 1))" }
-        } elseif ($id -like 'biomemakeover:*' -and $registryByTagDirectory.ContainsKey($tagDirectory)) {
+        } elseif ($required -and $id -like 'biomemakeover:*' -and $registryByTagDirectory.ContainsKey($tagDirectory)) {
             $target = $id.Substring('biomemakeover:'.Length)
             if ($target -notin @($registryByTagDirectory[$tagDirectory])) { Add-Failure "Tag references missing BM $tagDirectory ID $id from $($tagFile.FullName.Substring($RepositoryRoot.Length + 1))" }
         }

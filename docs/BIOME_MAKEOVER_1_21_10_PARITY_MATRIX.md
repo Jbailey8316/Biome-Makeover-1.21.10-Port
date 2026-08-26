@@ -221,17 +221,17 @@ from the current Owl.
 | Capability | Original released behavior | Current behavior | Status |
 |---|---|---|---|
 | Biome spawn | Dark Forest modifier | Dark Forest modifier | EXACT |
-| Weight/group | Weight 20, group 1–4 | Weight 10, group 1 | PRESENT-BUT-DIFFERENT |
-| Spawn predicate | Grass/leaves below and brightness >2; no time gate | Logs/leaves, two air blocks, nighttime only | PRESENT-BUT-DIFFERENT |
-| Despawn | Normal persistence behavior | Wild distance despawn permitted only in daylight | MYTHAS-ENHANCEMENT / PBD |
+| Weight/group | Weight 20, group 1–4 | Weight 20, group 1–4 | STATIC-EXACT / RUNTIME-OPEN |
+| Spawn predicate | Grass/leaves below and brightness >2; no time gate | Restored final predicate | STATIC-EXACT / RUNTIME-OPEN |
+| Despawn | Normal persistence behavior | Restored inherited behavior | STATIC-EXACT / RUNTIME-OPEN |
 | Attributes | fly .8, health 6, movement .4, attack 2; tame health 20/attack 4 | Same core values; adds tempt range | COMPATIBLE |
 | Navigation | FlyingMoveControl/FlyingPathNavigation | Modern equivalents | COMPATIBLE |
 | Flight/landing | Original random tree-flight and slow-fall/no fall damage | Extended exposed-canopy selection, lift/descent/hover corrections | PRESENT-BUT-DIFFERENT |
 | Perching/tree use | Tree-directed flying goal | Return-to-tree and tree scoring/memory behavior | MYTHAS-ENHANCEMENT / PBD |
-| Targeting | Owner defense plus all `owl_targets` tag members | Owner defense plus night chicken goal only | PARTIAL |
+| Targeting | Owner defense plus all `owl_targets` tag members | Restored tag-driven target goal | STATIC-EXACT / RUNTIME-OPEN |
 | Original prey | Rabbit, chicken, silverfish, endermite, bat, toad, Blight Bat, Dragonfly, both bugs | Chicken at night; rabbit helper says true but no target goal | PARTIAL |
-| Taming | Any edible meat; 1-in-3 chance | Raw rabbit only; 1-in-3 | PRESENT-BUT-DIFFERENT |
-| Healing | Any edible meat, nutrition-based | Rabbit heals 4, chicken heals 3 | PRESENT-BUT-DIFFERENT |
+| Taming | Any edible meat; 1-in-3 chance | `minecraft:wolf_food` equivalent; 1-in-3 | STATIC-COMPATIBLE / RUNTIME-OPEN |
+| Healing | Any edible meat, nutrition-based | Restored nutrition-based meat healing | STATIC-COMPATIBLE / RUNTIME-OPEN |
 | Temptation | Any meat | Raw rabbit only | PRESENT-BUT-DIFFERENT |
 | Breeding/food | Any meat and original breeding goal | Rabbit only; child ownership plumbing | PARTIAL |
 | Sit/owner behavior | Tameable/shoulder base behavior | Explicit synced sitting toggle and owner behavior | COMPATIBLE plus enhancement |
@@ -239,8 +239,8 @@ from the current Owl.
 | Sounds | Idle, hurt, death | Original three plus five custom events | COMPATIBLE plus enhancement |
 | Model/animation | Historical geometry and movement | Geometry adapted to render-state API; custom flying/sitting/sleep/blink | PARTIAL / enhancement |
 | Emissive eyes | Always emissive eyes layer | Layer always registered, but `nightEyes` state is not visibly consumed by layer | NEEDS-RUNTIME-VERIFICATION |
-| Texture variant | Includes Hedwig variant selection | Single `owl.png`; no selection | MISSING |
-| Drops | 1–2 feathers plus looting | No Owl entity loot table/override found | MISSING |
+| Texture variant | Includes Hedwig variant selection | Restored case-insensitive Hedwig selection | STATIC-EXACT / RUNTIME-OPEN |
+| Drops | 1–2 feathers plus looting | Restored modern loot schema | STATIC-EXACT / RUNTIME-OPEN |
 | State/NBT | `OwlState` and `StandingState` | Same plus sitting, sleeping and nest position state | COMPATIBLE plus enhancement |
 | Persistence | Original tameable-entity behavior | Additional daytime/despawn/nest persistence decisions | PRESENT-BUT-DIFFERENT |
 | Baby behavior | Vanilla age/breeding path | Scale/state hooks and baby sound; final geometry noted as unfinished | PARTIAL / enhancement |
