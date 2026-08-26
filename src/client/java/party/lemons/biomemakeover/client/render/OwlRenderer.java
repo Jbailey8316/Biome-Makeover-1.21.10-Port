@@ -2,6 +2,9 @@ package party.lemons.biomemakeover.client.render;
 
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.model.AdultAndBabyModelPair;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.layers.EyesLayer;
@@ -19,9 +22,13 @@ public final class OwlRenderer extends MobRenderer<OwlEntity, OwlRenderState, Ow
     private static final ResourceLocation TEXTURE = BiomeMakeover.id("textures/entity/owl.png");
     private static final ResourceLocation HEDWIG_TEXTURE = BiomeMakeover.id("textures/entity/owl_2.png");
     private static final ResourceLocation EYES_TEXTURE = BiomeMakeover.id("textures/entity/owl_eyes.png");
+    private final AdultAndBabyModelPair<OwlModel> models;
 
     public OwlRenderer(EntityRendererProvider.Context context) {
         super(context, new OwlModel(context.bakeLayer(BMModelLayers.OWL)), 0.45F);
+        this.models = new AdultAndBabyModelPair<>(
+            this.model,
+            new OwlModel(context.bakeLayer(BMModelLayers.OWL_BABY)));
         this.addLayer(new EyesLayer<OwlRenderState, OwlModel>(this) {
             @Override
             public RenderType renderType() {
@@ -40,9 +47,16 @@ public final class OwlRenderer extends MobRenderer<OwlEntity, OwlRenderState, Ow
         super.extractRenderState(entity, state, tickProgress);
         state.flying = entity.isOwlFlying();
         state.sitting = entity.isInSittingPose();
+        state.isBaby = entity.isBaby();
         state.lean = entity.getLeanAmount(tickProgress);
         String name = ChatFormatting.stripFormatting(entity.getName().getString());
         state.hedwig = name != null && name.equalsIgnoreCase("Hedwig");
+    }
+
+    @Override
+    public void submit(OwlRenderState state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
+        this.model = this.models.getModel(state.isBaby);
+        super.submit(state, pose, collector, camera);
     }
 
     @Override

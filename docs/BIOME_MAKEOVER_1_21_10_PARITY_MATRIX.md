@@ -233,7 +233,7 @@ from the current Owl.
 | Taming | Any edible meat; 1-in-3 chance | `minecraft:wolf_food` equivalent; 1-in-3 | STATIC-COMPATIBLE / RUNTIME-OPEN |
 | Healing | Any edible meat, nutrition-based | Restored nutrition-based meat healing | STATIC-COMPATIBLE / RUNTIME-OPEN |
 | Temptation | Any meat | Raw rabbit only | PRESENT-BUT-DIFFERENT |
-| Breeding/food | Any meat and original breeding goal | Rabbit only; child ownership plumbing | PARTIAL |
+| Breeding/food | Any meat and original breeding goal | Meat breeding and owner inheritance runtime-confirmed; crash fixed | RUNTIME-PASS |
 | Sit/owner behavior | Tameable/shoulder base behavior | Explicit synced sitting toggle and owner behavior | COMPATIBLE plus enhancement |
 | Shoulder behavior | Inherited shoulder riding | Goal exists; renderer has explicit shoulder-perch TODO | BROKEN / NEEDS-RUNTIME-VERIFICATION |
 | Sounds | Idle, hurt, death | Original three plus five custom events | COMPATIBLE plus enhancement |
@@ -243,7 +243,7 @@ from the current Owl.
 | Drops | 1–2 feathers plus looting | Restored modern loot schema | STATIC-EXACT / RUNTIME-OPEN |
 | State/NBT | `OwlState` and `StandingState` | Same plus sitting, sleeping and nest position state | COMPATIBLE plus enhancement |
 | Persistence | Original tameable-entity behavior | Additional daytime/despawn/nest persistence decisions | PRESENT-BUT-DIFFERENT |
-| Baby behavior | Vanilla age/breeding path | Scale/state hooks and baby sound; final geometry noted as unfinished | PARTIAL / enhancement |
+| Baby behavior | Vanilla age/breeding path with released ageable model transform | Server age path confirmed; modern dedicated baby model/state selection restored | STATIC-COMPATIBLE / RUNTIME-OPEN |
 
 To restore released parity while retaining optional work, isolate rules into
 two layers. Restore the original spawn weight/predicate, meat ingredient,

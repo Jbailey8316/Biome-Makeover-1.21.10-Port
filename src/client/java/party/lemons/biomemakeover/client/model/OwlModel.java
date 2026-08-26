@@ -1,6 +1,7 @@
 package party.lemons.biomemakeover.client.model;
 
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.BabyModelTransform;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
@@ -10,6 +11,7 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import party.lemons.biomemakeover.client.render.state.OwlRenderState;
 import net.minecraft.util.Mth;
+import java.util.Set;
 
 /** Original Biome Makeover owl geometry, adapted to the 1.21.10 render-state API. */
 public final class OwlModel extends EntityModel<OwlRenderState> {
@@ -85,6 +87,12 @@ public final class OwlModel extends EntityModel<OwlRenderState> {
         head.addOrReplaceChild("brow_left", CubeListBuilder.create().texOffs(11, 28).addBox(0.0F, -0.5F, -0.5F, 4.0F, 1.0F, 1.0F), PartPose.offset(1.0F, -4.5F, -3.5F));
         head.addOrReplaceChild("brow_right", CubeListBuilder.create().texOffs(11, 30).addBox(-4.0F, -0.5F, -0.5F, 4.0F, 1.0F, 1.0F), PartPose.offset(-1.0F, -4.5F, -3.5F));
         return LayerDefinition.create(mesh, 64, 64);
+    }
+
+    /** Modern equivalent of the released AgeableListModel(true, 14, 0, 2, 2, 24) contract. */
+    public static LayerDefinition createBabyLayer() {
+        return createBodyLayer().apply(new BabyModelTransform(
+            true, 14.0F, 0.0F, 2.0F, 2.0F, 24.0F, Set.of("head_connection")));
     }
 
     @Override

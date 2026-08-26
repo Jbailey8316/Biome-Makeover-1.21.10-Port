@@ -578,6 +578,12 @@ if($owlItemsSource -match 'entries\.accept\(OWL_EGG\)' -or $owlBlocksSource -mat
    (Test-Path (Join-Path $builtData 'biomemakeover/recipe/owl_nest.json'))) { Add-Failure 'Nonreleased Owl nest/egg acquisition must remain inactive while preserving registry IDs' }
 if($owlRendererSource -notmatch 'RenderType\.eyes\(EYES_TEXTURE\)' -or $owlRendererSource -notmatch 'equalsIgnoreCase\("Hedwig"\)' -or
    $owlRendererSource -match 'nightEyes|blinking|isOwlSleeping' -or $owlModelSource -match 'eyelids|blinking|sleeping') { Add-Failure 'Owl released unconditional eyes/Hedwig/no-blink renderer contract is incomplete' }
+$owlLayersSource=Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/model/BMModelLayers.java') -Raw
+if($owlSource -notmatch 'getBreedOffspring\s*\(' -or $owlSource -match 'getBreedOffspring[\s\S]{0,600}setAge\s*\(\s*0\s*\)' -or
+   $owlRendererSource -notmatch 'state\.isBaby\s*=\s*entity\.isBaby\(\)' -or
+   $owlRendererSource -notmatch 'models\.getModel\(state\.isBaby\)' -or
+   $owlLayersSource -notmatch 'OWL_BABY' -or
+   $owlModelSource -notmatch 'BabyModelTransform' -or $owlModelSource -notmatch 'Set\.of\("head_connection"\)') { Add-Failure 'Owl offspring must retain vanilla baby age and select the released modern baby model transform' }
 $owlTargetTag=Join-Path $builtData 'biomemakeover/tags/entity_type/owl_targets.json'
 $owlLoot=Join-Path $builtData 'biomemakeover/loot_table/entities/owl.json'
 if(-not(Test-Path $owlTargetTag)){Add-Failure 'Owl released prey entity-type tag is not packaged'}
