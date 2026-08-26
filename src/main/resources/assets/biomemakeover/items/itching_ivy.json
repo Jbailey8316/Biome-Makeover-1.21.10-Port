@@ -1,1 +1,1 @@
-{"model":{"type":"minecraft:model","model":"biomemakeover:item/itching_ivy"}}
+{"model":{"type":"minecraft:model","model":"biomemakeover:item/itching_ivy","tints":[{"type":"minecraft:constant","value":-9721069},{"type":"minecraft:constant","value":-9721069}]}}

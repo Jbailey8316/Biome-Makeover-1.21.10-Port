@@ -98,6 +98,10 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):0x84AB6F,BMBlocks.SWAMP_CYPRESS_LEAVES);
         ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):FoliageColor.FOLIAGE_DEFAULT,
             BMBlocks.ANCIENT_OAK_LEAVES,BMBlocks.IVY);
+        ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->{
+            int color=world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):FoliageColor.FOLIAGE_DEFAULT;
+            return shiftColor(color,35,-10,-5);
+        },BMBlocks.ITCHING_IVY,BMBlocks.MOTH_BLOSSOM);
         BiomeMakeover.LOGGER.info("Biome Makeover client initialized.");
     }
 

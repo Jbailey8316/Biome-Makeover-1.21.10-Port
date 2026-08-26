@@ -513,6 +513,17 @@ $willowItemDefinition=Join-Path $builtAssets 'items/willow_leaves.json'
 $cypressItemDefinition=Join-Path $builtAssets 'items/swamp_cypress_leaves.json'
 if(-not(Test-Path $willowItemDefinition) -or (Get-Content $willowItemDefinition -Raw) -notmatch 'biomemakeover:block/willow_leaves' -or (Get-Content $willowItemDefinition -Raw) -notmatch 'minecraft:constant' -or (Get-Content $willowItemDefinition -Raw) -notmatch '-12012264') { Add-Failure 'Willow Leaves item definition must tint the block model with its historical no-world foliage color' }
 if(-not(Test-Path $cypressItemDefinition) -or (Get-Content $cypressItemDefinition -Raw) -notmatch 'biomemakeover:block/swamp_cypress_leaves' -or (Get-Content $cypressItemDefinition -Raw) -notmatch 'minecraft:constant' -or (Get-Content $cypressItemDefinition -Raw) -notmatch '-8082577') { Add-Failure 'Swamp Cypress Leaves item definition must tint the block model with its historical no-world foliage color' }
+$clientInitializer=Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/BiomeMakeoverClient.java') -Raw
+if($clientInitializer -notmatch 'shiftColor\(color,35,-10,-5\)[\s\S]{0,100}BMBlocks\.ITCHING_IVY,BMBlocks\.MOTH_BLOSSOM') { Add-Failure 'Itching Ivy and Moth Blossom omit the released shifted-foliage world tint provider' }
+foreach($ivyId in @('itching_ivy','moth_blossom')) {
+    $ivyDefinition=Join-Path $builtAssets "items/$ivyId.json"
+    if(-not(Test-Path $ivyDefinition)) { Add-Failure "Missing $ivyId item definition"; continue }
+    $ivyTints=@(((Get-Content $ivyDefinition -Raw|ConvertFrom-Json).model.tints))
+    $expectedTintCount=if($ivyId -eq 'moth_blossom'){3}else{2}
+    if($ivyTints.Count -ne $expectedTintCount -or @($ivyTints|Where-Object{$_.type -ne 'minecraft:constant' -or $_.value -ne -9721069}).Count) {
+        Add-Failure "$ivyId item definition omits its released shifted-foliage tint contract"
+    }
+}
 $blocksSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java') -Raw
 if($blocksSource -notmatch 'registerOnWater\("small_lily_pad"' -or $blocksSource -notmatch 'registerOnWater\("water_lily"' -or $blocksSource -notmatch 'new PlaceOnWaterBlockItem') { Add-Failure 'Released Small Lily Pad and Water Lily items must retain their source-water placement item contract' }
 foreach($padId in @('small_lily_pad','water_lily')){

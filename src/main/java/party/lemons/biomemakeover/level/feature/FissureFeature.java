@@ -55,6 +55,7 @@ public final class FissureFeature extends Feature<FissureFeature.Config> {
                 if(water&&fill.hasProperty(BlockStateProperties.WATERLOGGED)) fill=fill.setValue(BlockStateProperties.WATERLOGGED,true);
                 else if(water&&fill.isAir()) fill=Blocks.WATER.defaultBlockState();
                 level.setBlock(cursor,fill,Block.UPDATE_CLIENTS);
+                level.scheduleTick(cursor,fill.getFluidState().getType(),0);
                 float chance=.1F+(y/5F);
                 if(chance>1||random.nextFloat()<chance) setAround(cfg,alternates,fill,cursor,level,random);
                 cursor.move(Direction.DOWN);

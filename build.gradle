@@ -195,6 +195,7 @@ tasks.register('generateStage6ItemDefinitions') {
         newStage6Ids.each { id ->
             def model=[type:'minecraft:model',model:"biomemakeover:item/${id}"]
             if(id=='ivy') model.tints=[[type:'minecraft:constant',value:-12012264]]
+            if(id=='moth_blossom') model.tints=(0..<3).collect { [type:'minecraft:constant',value:-9721069] }
             new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson([model:model])) + System.lineSeparator()
         }
     }
