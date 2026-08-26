@@ -1,45 +1,40 @@
 package party.lemons.biomemakeover.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.TallFlowerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.phys.Vec3;
+import party.lemons.biomemakeover.BiomeMakeover;
+import party.lemons.biomemakeover.init.BMEntities;
 
-/**
- * Tall thorn plant with sweet-berry-bush style slowdown and contact damage.
- */
+/** Released Black Thistle contact effect translated to the 1.21.10 inside-block callback. */
 public class BlackThistleBlock extends TallFlowerBlock {
     public BlackThistleBlock(Properties properties) {
         super(properties);
     }
 
-    protected void entityInside(Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects) {
-        if (entity.getType() == EntityType.BEE || entity.getType() == EntityType.FOX) {
+    @Override
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
+                                InsideBlockEffectApplier effects, boolean isEntityInside) {
+        if (!(entity instanceof LivingEntity living)
+            || entity.getType() == BMEntities.OWL
+            || entity.getType() == EntityType.BEE
+            || BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).equals(BiomeMakeover.id("rootling"))
+            || state.getValue(HALF) != DoubleBlockHalf.UPPER
+            || !(level instanceof ServerLevel serverLevel)
+            || living.isInvulnerableTo(serverLevel, level.damageSources().wither())) {
             return;
         }
 
-        entity.makeStuckInBlock(level.getBlockState(pos), new Vec3(0.8D, 0.75D, 0.8D));
-
-        BlockState state = level.getBlockState(pos);
-        Vec3 movement = entity.getDeltaMovement();
-        boolean movingHorizontally =
-            Math.abs(movement.x) >= 0.003D || Math.abs(movement.z) >= 0.003D;
-
-        if (state.hasProperty(HALF)
-            && state.getValue(HALF) == DoubleBlockHalf.LOWER
-            && movingHorizontally
-            && level instanceof ServerLevel serverLevel) {
-            entity.hurtServer(
-                serverLevel,
-                level.damageSources().sweetBerryBush(),
-                1.0F
-            );
-        }
+        living.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 110, 0));
     }
 }

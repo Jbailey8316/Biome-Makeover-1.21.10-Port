@@ -570,6 +570,8 @@ if($owlSource -notmatch 'support\.is\(Blocks\.GRASS_BLOCK\)' -or $owlSource -not
 foreach($goalContract in @('addGoal\(3, new MeleeAttackGoal\(this, 1\.0D, true\)','addGoal\(4, new FollowOwnerGoal\(this, 1\.2D, 10\.0F, 2\.0F\)','addGoal\(5, new TemptGoal','addGoal\(9, new ExtendedFlyOntoTree\(this, 1\.0D, 0\.5F\)','NonTameRandomTargetGoal')) { if($owlSource -notmatch $goalContract){Add-Failure "Owl released goal contract missing: $goalContract"} }
 if($owlSource -notmatch 'ItemTags\.WOLF_FOOD' -or $owlSource -notmatch 'Attributes\.TEMPT_RANGE, 10\.0D' -or
    $owlSource -match 'Items\.RABBIT|Items\.CHICKEN|WildPlayerCautionGoal|NightChickenHuntGoal|OwlNestBlock') { Add-Failure 'Owl released broad-meat contract or removal of experimental Owl AI is incomplete' }
+if($owlSource -match 'getDefaultDimensions\s*\([^)]*\)[\s\S]{0,250}super\.getDimensions\s*\(' -or
+   $owlSource -notmatch 'super\.getDefaultDimensions\s*\(pose\)') { Add-Failure 'Owl dynamic dimensions recurse through final LivingEntity.getDimensions instead of delegating to getDefaultDimensions' }
 $owlItemsSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw
 $owlBlocksSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java') -Raw
 if($owlItemsSource -match 'entries\.accept\(OWL_EGG\)' -or $owlBlocksSource -match 'entries\.accept\(OWL_NEST\)' -or
@@ -581,6 +583,10 @@ $owlLoot=Join-Path $builtData 'biomemakeover/loot_table/entities/owl.json'
 if(-not(Test-Path $owlTargetTag)){Add-Failure 'Owl released prey entity-type tag is not packaged'}
 if(-not(Test-Path $owlLoot)){Add-Failure 'Owl released entity loot table is not packaged'}else{$owlLootText=Get-Content $owlLoot -Raw;if($owlLootText -notmatch 'minecraft:feather' -or $owlLootText -notmatch 'minecraft:enchanted_count_increase' -or $owlLootText -notmatch 'minecraft:looting'){Add-Failure 'Owl feather/Looting loot contract is incomplete'}}
 foreach($owlTexture in @('owl.png','owl_2.png','owl_eyes.png')){if(-not(Test-Path (Join-Path $builtAssets "textures/entity/$owlTexture"))){Add-Failure "Owl released texture missing: $owlTexture"}}
+$blackThistleSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/BlackThistleBlock.java') -Raw
+if($blackThistleSource -notmatch '(?s)entityInside\(BlockState\s+state,\s*Level\s+level,\s*BlockPos\s+pos,\s*Entity\s+entity,\s*InsideBlockEffectApplier\s+effects,\s*boolean' -or
+   $blackThistleSource -notmatch 'DoubleBlockHalf\.UPPER' -or $blackThistleSource -notmatch 'MobEffects\.WEAKNESS,\s*110,\s*0' -or
+   $blackThistleSource -notmatch 'entity\.getType\(\)\s*==\s*BMEntities\.OWL' -or $blackThistleSource -notmatch 'entity\.getType\(\)\s*==\s*EntityType\.BEE') { Add-Failure 'Black Thistle must retain its 1.21.10 inside-block callback and released upper-half Weakness/exclusion contract' }
 $clientMixinConfig = Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.client.mixins.json') -Raw | ConvertFrom-Json
 if ('HorseRenderStateMixin' -notin @($clientMixinConfig.client) -or 'HorseRendererMixin' -notin @($clientMixinConfig.client)) {
     Add-Failure 'Cowboy horse rendering mixins are not isolated and registered in the client-only mixin list'

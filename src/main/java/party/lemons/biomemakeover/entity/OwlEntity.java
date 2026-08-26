@@ -241,7 +241,7 @@ public class OwlEntity extends ShoulderRidingEntity {
 
     @Override
     protected EntityDimensions getDefaultDimensions(Pose pose) {
-        return this.getStandingState() == StandingState.STANDING ? super.getDimensions(pose) : FLYING_DIMENSIONS;
+        return this.getStandingState() == StandingState.STANDING ? super.getDefaultDimensions(pose) : FLYING_DIMENSIONS;
     }
 
     @Override

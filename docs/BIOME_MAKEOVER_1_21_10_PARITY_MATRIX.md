@@ -112,7 +112,7 @@ boats, and Mythas candidates remain deferred and do not change this status. Stag
 |---|---|---|---|
 | Forest floor, flowers, ivy, trees and wild-mushroom makeover | Exact seven-feature pipeline packaged at released steps and modifiers | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Fresh-chunk density, support and performance checks |
 | Ancient Oak complete wood set, tree and sapling | Physical family including signs plus 1x1/2x2 growth and exact selector configs restored; boats deferred | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Tree geometry, ratios, leaf/drop and persistence checks |
-| Black Thistle, Foxglove, Itching Ivy, Moth Blossom | Physical blocks, flower mixture, six-face ivy, slowdown/particles/spread and bonemeal conversion restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Moth-dependent attraction remains Stage 8 |
+| Black Thistle, Foxglove, Itching Ivy, Moth Blossom | Physical blocks and generation runtime-confirmed; Black Thistle upper-half Weakness callback restored; ivy slowdown/particles/spread and bonemeal conversion restored | STATIC-COMPATIBLE / BLACK THISTLE RUNTIME-OPEN | Moth-dependent attraction remains Stage 8 |
 | Mesmerite/Illunite fissure, blocks and crystals | Complete physical families, four-stage growth, light/sound/loot and released fissure algorithm restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Fissure distribution/geometry and crystal presentation checks |
 | Owl core entity | Modern Owl exists | PRESENT-BUT-DIFFERENT | See dedicated matrix; preserve enhancements separately |
 | Rootling and Moth | None | MISSING | Flora/tags first, then AI/render/loot/sounds/spawn |
