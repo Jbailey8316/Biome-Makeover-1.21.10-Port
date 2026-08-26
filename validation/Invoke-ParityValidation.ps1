@@ -62,7 +62,7 @@ foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','spa
     $values = @($stage5.$setName)
     if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in Stage 5 contract set $setName" }
 }
-foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','items','configured_features','placed_features')) {
+foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','items','features','configured_features','placed_features')) {
     $values = @($stage6.$setName)
     if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in Stage 6 contract set $setName" }
 }
@@ -247,10 +247,57 @@ if (Test-Path $builtAssets) {
 
 $configuredRoot = Join-Path $builtData 'biomemakeover/worldgen/configured_feature'
 if (Test-Path $configuredRoot) {
+    $featureSource = Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMFeatures.java') -Raw
+    $registeredBmFeatures = Sorted ([regex]::Matches($featureSource,
+        'Registry\.register\(\s*BuiltInRegistries\.FEATURE\s*,\s*BiomeMakeover\.id\("([a-z0-9_./-]+)"\)') |
+        ForEach-Object { $_.Groups[1].Value })
+    Assert-EqualSet 'Stage 6 custom Feature registry IDs' @($stage6.features) @($stage6.features | Where-Object { $_ -in $registeredBmFeatures })
+    $validVanillaFeatureTypes = @(
+        'random_boolean_selector', 'random_patch', 'random_selector', 'simple_block',
+        'simple_random_selector', 'tree'
+    )
     Get-ChildItem $configuredRoot -Recurse -File -Filter '*.json' | ForEach-Object {
         $raw = Get-Content $_.FullName -Raw
+        $configuredJson = $raw | ConvertFrom-Json
+        $relative = $_.FullName.Substring($configuredRoot.Length + 1).Replace('\', '/').Replace('.json', '')
+        $type = [string]$configuredJson.type
+        if ($type -like 'biomemakeover:*') {
+            $featureId = $type.Substring('biomemakeover:'.Length)
+            if ($featureId -notin $registeredBmFeatures) {
+                Add-Failure "Configured feature $relative references unregistered BM Feature type $type"
+            }
+        } elseif ($type -like 'minecraft:*') {
+            $featureId = $type.Substring('minecraft:'.Length)
+            if ($featureId -notin $validVanillaFeatureTypes) {
+                Add-Failure "Configured feature $relative uses unvalidated Minecraft 1.21.10 Feature type $type"
+            }
+        } else {
+            Add-Failure "Configured feature $relative has invalid/unqualified Feature type $type"
+        }
         if ($raw -match '"type"\s*:\s*"minecraft:uniform"\s*,\s*"value"\s*:') {
             Add-Failure "Obsolete nested uniform IntProvider in $($_.FullName.Substring($RepositoryRoot.Length + 1))"
+        }
+    }
+}
+
+$placedRoot = Join-Path $builtData 'biomemakeover/worldgen/placed_feature'
+if (Test-Path $placedRoot) {
+    $packagedConfiguredIds = Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/configured_feature'
+    Get-ChildItem $placedRoot -Recurse -File -Filter '*.json' | ForEach-Object {
+        $placedJson = Get-Content $_.FullName -Raw | ConvertFrom-Json
+        $relative = $_.FullName.Substring($placedRoot.Length + 1).Replace('\', '/').Replace('.json', '')
+        if ($placedJson.feature -isnot [string]) {
+            Add-Failure "Placed feature $relative does not use a resolvable configured-feature registry key"
+        } elseif ([string]$placedJson.feature -like 'biomemakeover:*') {
+            $configuredId = ([string]$placedJson.feature).Substring('biomemakeover:'.Length)
+            if ($configuredId -notin $packagedConfiguredIds) {
+                Add-Failure "Placed feature $relative references missing BM configured feature $($placedJson.feature)"
+            }
+        }
+    }
+    foreach ($injection in @($stage6.biome_injections)) {
+        if ([string]$injection[1] -notin @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/placed_feature')) {
+            Add-Failure "Stage 6 biome injection references missing packaged placed feature biomemakeover:$($injection[1])"
         }
     }
 }

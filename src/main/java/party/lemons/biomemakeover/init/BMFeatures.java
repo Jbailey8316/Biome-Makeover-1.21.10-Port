@@ -28,6 +28,10 @@ import party.lemons.biomemakeover.level.feature.foliage.AncientOakTrunkPlacer;
 import party.lemons.biomemakeover.level.feature.foliage.IvyDecorator;
 import party.lemons.biomemakeover.level.feature.FissureFeature;
 import party.lemons.biomemakeover.level.feature.ItchingIvyFeature;
+import party.lemons.biomemakeover.level.feature.MesmeriteBoulderFeature;
+import party.lemons.biomemakeover.level.feature.MesmermiteUndergroundFeature;
+import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
@@ -77,6 +81,10 @@ public final class BMFeatures {
         BiomeMakeover.id("fissure"), new FissureFeature(FissureFeature.Config.CODEC));
     public static final Feature<NoneFeatureConfiguration> ITCHING_IVY = Registry.register(BuiltInRegistries.FEATURE,
         BiomeMakeover.id("itching_ivy"), new ItchingIvyFeature(NoneFeatureConfiguration.CODEC));
+    public static final Feature<BlockStateConfiguration> MESMERITE_BOULDER = Registry.register(BuiltInRegistries.FEATURE,
+        BiomeMakeover.id("mesmerite_boulder"), new MesmeriteBoulderFeature(BlockStateConfiguration.CODEC));
+    public static final Feature<OreConfiguration> MESMERITE_UNDERGROUND = Registry.register(BuiltInRegistries.FEATURE,
+        BiomeMakeover.id("mesmerite_underground"), new MesmermiteUndergroundFeature(OreConfiguration.CODEC));
     public static final TreeDecoratorType<IvyDecorator> IVY_DECORATOR = Registry.register(BuiltInRegistries.TREE_DECORATOR_TYPE,
         BiomeMakeover.id("ivy"), new TreeDecoratorType<>(IvyDecorator.CODEC));
 

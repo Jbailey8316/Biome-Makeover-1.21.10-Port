@@ -19,6 +19,7 @@
   ],
   "items": ["illunite_shard"],
   "particles": ["blossom"],
+  "features": ["fissure", "itching_ivy", "mesmerite_boulder", "mesmerite_underground"],
   "no_item_blocks": ["ancient_oak_sign", "ancient_oak_wall_sign", "ancient_oak_hanging_sign", "ancient_oak_wall_hanging_sign"],
   "special_items": ["ancient_oak_sign", "ancient_oak_hanging_sign", "illunite_shard"],
   "configured_features": [

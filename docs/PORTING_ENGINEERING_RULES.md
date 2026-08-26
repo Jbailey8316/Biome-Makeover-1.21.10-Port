@@ -349,3 +349,9 @@ A final-release worldgen family may ship configured definitions, checked placed 
 dormant component placements while injecting only a smaller top-level set. Count and validate each layer separately.
 Do not inject every shipped placed feature, and do not replace a selector chain with direct leaf features merely to
 make registered resources visible.
+
+## 54. Resolve configured-feature types, not only resource filenames
+
+A packaged configured feature can exist and still make every world unloadable when its `type` names an unregistered
+custom `Feature<?>`. Validate injection → placed feature → configured feature → Feature registry type, including
+dormant packaged configurations that are not biome-injected.

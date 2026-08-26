@@ -2,7 +2,7 @@
 
 Date: 2026-08-25  
 Authority: released BM 1.20.1 source at `2f314c0596af095a4890995a465f308f69476b4a`  
-Status: **STATIC/PACKAGE PASS — RUNTIME OPEN**
+Status: **STATIC/PACKAGE PASS — RUNTIME OPEN AFTER REGISTRY REMEDIATION #1**
 
 ## Scope and boundary
 
@@ -64,6 +64,8 @@ Registry inventory moved from 247 blocks / 248 items / 10 entities / 1 block ent
 The packaged JAR contains 320 recipes, 267 loot tables, 27 advancements, 277 blockstates, 595 block models, 261 item models, 259 item definitions, 260 textures, 75 tags, 38 configured features and 37 placed features. Compared with the starting checkpoint this is 0 recipes, +15 loot tables, +3 advancements, +8 blockstates, +17 block models, +9 item models, +11 item definitions, +28 textures and +2 tags. The global configured/placed totals decrease by 2/1 because noncanonical placeholder Dark Forest definitions were removed; the authoritative Dark Forest inventory is 11 configured and 12 placed resources.
 
 ## Runtime-open risks
+
+Runtime Remediation #1 restored the released `biomemakeover:mesmerite_boulder` and `biomemakeover:mesmerite_underground` `Feature<?>` implementations and registrations. The initial Stage 6 JAR packaged their authoritative configured-feature resources without binding those two feature-type IDs, which prevented datapack/registry loading before world creation. The validator now resolves every packaged configured feature type, every BM placed-to-configured reference, and every Stage 6 injection-to-placed reference. Fresh-world registry loading remains the first required Prism gate.
 
 - Natural ratios and geometry for all four selector outcomes.
 - Ancient Oak leaf retention/decay and sapling/Fortune/Silk Touch behavior.
