@@ -137,7 +137,7 @@ historical source.
 
 | Original released system | Current | Status |
 |---|---|---|
-| Custom mansion structure/layout, processors and 228-template library | None | MISSING |
+| Custom mansion structure/layout, processors and template library | None | MISSING; pinned tree currently inventories 168 Mansion NBT files, while the older roadmap shorthand says 228 |
 | Adjudicator boss and phase/mimic support | None | MISSING |
 | Mimic and Stone Golem | None | MISSING |
 | Witch quests/trades/progression | None | MISSING |

@@ -4,6 +4,18 @@ Audit date: 2026-08-23
 Scope: historical/original Biome Makeover only  
 Status: Step 2 audit; no comparison with the 1.21.10 port
 
+Showcase-informed follow-up audits that compare these final-source findings
+with the current port are maintained separately:
+
+- `docs/SHOWCASE_INFORMED_MUSHROOM_BADLANDS_AUDIT.md`
+- `docs/SHOWCASE_INFORMED_DARK_FOREST_AUDIT.md`
+- `docs/SHOWCASE_INFORMED_WOODLAND_MANSION_AUDIT.md`
+
+The Dark Forest/Mansion follow-up directly inventories the pinned Mansion
+resource tree at 168 NBT files and records the older `228` description as a
+count discrepancy to resolve before Stage 11, not as permission to omit or
+invent templates.
+
 This manifest independently describes the original Lemonszz implementation. It does not use the current port as a feature checklist, and it makes no parity judgment about that port. “Implemented” means a registration and reachable execution/data path was found in the pinned original source. Resource-only, commented-out, developer-only, and divergent-development content is explicitly separated.
 
 ## A. Historical source benchmark
