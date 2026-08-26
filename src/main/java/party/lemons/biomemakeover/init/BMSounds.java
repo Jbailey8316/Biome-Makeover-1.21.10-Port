@@ -34,6 +34,10 @@ public final class BMSounds {
     public static final SoundEvent DECAYED_AMBIENT = register("entity.decayed.ambient");
     public static final SoundEvent LIGHTNING_BOTTLE_THROW = register("entity.lightning_bottle.throw");
     public static final SoundEvent LIGHTNING_BOTTLE_THUNDER = register("entity.lightning_bottle.thunder");
+    public static final SoundEvent ILLUNITE_BREAK = register("illunite_break");
+    public static final SoundEvent ILLUNITE_HIT = register("illunite_hit");
+    public static final SoundEvent ILLUNITE_PLACE = register("illunite_place");
+    public static final SoundEvent ILLUNITE_STEP = register("illunite_step");
 
     private BMSounds() {}
 

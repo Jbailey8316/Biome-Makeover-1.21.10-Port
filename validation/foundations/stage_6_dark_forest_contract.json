@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "stage": 6,
+  "theme": "dark_forest_physical",
+  "historical_source": {
+    "repository": "Lemonszz/Biome-Makeover",
+    "commit": "2f314c0596af095a4890995a465f308f69476b4a",
+    "release": "1.20.1-1.11.4"
+  },
+  "blocks_with_items": [
+    "ancient_oak_log", "ancient_oak_wood", "stripped_ancient_oak_log", "stripped_ancient_oak_wood",
+    "ancient_oak_planks", "ancient_oak_leaves", "ancient_oak_sapling", "ancient_oak_slab",
+    "ancient_oak_stairs", "ancient_oak_fence", "ancient_oak_fence_gate", "ancient_oak_door",
+    "ancient_oak_trapdoor", "ancient_oak_button", "ancient_oak_pressure_plate", "ivy", "itching_ivy",
+    "moth_blossom", "foxglove", "black_thistle", "wild_mushrooms", "mesmerite", "mesmerite_slab",
+    "mesmerite_stairs", "mesmerite_wall", "polished_mesmerite", "polished_mesmerite_slab",
+    "polished_mesmerite_stairs", "polished_mesmerite_wall", "illunite_block", "budding_illunite",
+    "small_illunite_bud", "medium_illunite_bud", "large_illunite_bud", "illunite_cluster"
+  ],
+  "items": ["illunite_shard"],
+  "particles": ["blossom"],
+  "no_item_blocks": ["ancient_oak_sign", "ancient_oak_wall_sign", "ancient_oak_hanging_sign", "ancient_oak_wall_hanging_sign"],
+  "special_items": ["ancient_oak_sign", "ancient_oak_hanging_sign", "illunite_shard"],
+  "configured_features": [
+    "dark_forest/ancient_oak", "dark_forest/ancient_oak_small", "dark_forest/dark_oak_small",
+    "dark_forest/flowers", "dark_forest/itching_ivy", "dark_forest/mesmerite_boulder",
+    "dark_forest/mesmerite_fissure", "dark_forest/mesmerite_underground", "dark_forest/tall_grass",
+    "dark_forest/trees", "dark_forest/wild_mushrooms"
+  ],
+  "placed_features": [
+    "dark_forest/ancient_oak_checked", "dark_forest/ancient_oak_small_checked", "dark_forest/dark_oak_small_checked",
+    "dark_forest/flowers", "dark_forest/grass", "dark_forest/itching_ivy", "dark_forest/mesmerite_boulder",
+    "dark_forest/mesmerite_fissure", "dark_forest/mesmerite_underground", "dark_forest/tall_grass",
+    "dark_forest/trees", "dark_forest/wild_mushrooms"
+  ],
+  "biome_injections": [
+    ["vegetal_decoration", "dark_forest/grass"], ["vegetal_decoration", "dark_forest/tall_grass"],
+    ["vegetal_decoration", "dark_forest/flowers"], ["top_layer_modification", "dark_forest/itching_ivy"],
+    ["underground_ores", "dark_forest/trees"], ["underground_ores", "dark_forest/wild_mushrooms"],
+    ["local_modifications", "dark_forest/mesmerite_fissure"]
+  ],
+  "deferred": ["owl_reconciliation", "rootling", "moth", "altar", "curses", "woodland_mansion", "ancient_oak_boat", "ancient_oak_chest_boat"]
+}

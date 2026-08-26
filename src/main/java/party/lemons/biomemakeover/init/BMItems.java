@@ -56,6 +56,10 @@ public final class BMItems {
         BMBlocks.SWAMP_CYPRESS_SIGN, BMBlocks.SWAMP_CYPRESS_WALL_SIGN, p.stacksTo(16)));
     public static final Item SWAMP_CYPRESS_HANGING_SIGN = register("swamp_cypress_hanging_sign", p -> new HangingSignItem(
         BMBlocks.SWAMP_CYPRESS_HANGING_SIGN, BMBlocks.SWAMP_CYPRESS_WALL_HANGING_SIGN, p.stacksTo(16)));
+    public static final Item ANCIENT_OAK_SIGN = register("ancient_oak_sign", p -> new SignItem(
+        BMBlocks.ANCIENT_OAK_SIGN, BMBlocks.ANCIENT_OAK_WALL_SIGN, p.stacksTo(16)));
+    public static final Item ANCIENT_OAK_HANGING_SIGN = register("ancient_oak_hanging_sign", p -> new HangingSignItem(
+        BMBlocks.ANCIENT_OAK_HANGING_SIGN, BMBlocks.ANCIENT_OAK_WALL_HANGING_SIGN, p.stacksTo(16)));
     public static final Item SCUTTLER_TAIL = register("scuttler_tail");
     public static final Item PINK_BUD = register("pink_bud");
     public static final Item MAGENTA_BUD = register("magenta_bud");
@@ -69,6 +73,7 @@ public final class BMItems {
             .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER).build())));
     public static final Item CRACKED_BRICK = register("cracked_brick");
     public static final Item LIGHTNING_BOTTLE = register("lightning_bottle", LightningBottleItem::new);
+    public static final Item ILLUNITE_SHARD = register("illunite_shard");
 
     private BMItems() {}
 
@@ -95,7 +100,8 @@ public final class BMItems {
             entries.accept(LEAF_LITTER);
             entries.accept(OWL_EGG);
             entries.accept(GLOWSHROOM_STEW); entries.accept(GLOWFISH); entries.accept(COOKED_GLOWFISH); entries.accept(GLOWFISH_BUCKET);
-            entries.accept(SCUTTLER_TAIL); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(CRACKED_BRICK); entries.accept(LIGHTNING_BOTTLE);
+            entries.accept(SCUTTLER_TAIL); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(CRACKED_BRICK); entries.accept(LIGHTNING_BOTTLE); entries.accept(ILLUNITE_SHARD);
+            entries.accept(ANCIENT_OAK_SIGN); entries.accept(ANCIENT_OAK_HANGING_SIGN);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

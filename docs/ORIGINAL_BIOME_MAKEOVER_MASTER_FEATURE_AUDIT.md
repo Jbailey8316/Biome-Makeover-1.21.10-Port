@@ -398,7 +398,7 @@ Data resources:
 - Mushroom Fields: 15 configured/13 placed resources, with 11 direct injections
 - Badlands: 4 configured/4 placed, all injected
 - Swamp: 8 configured/9 placed, 7 direct injections after removal of vanilla swamp trees
-- Dark Forest: 11 configured/11 placed, 7 direct injections; fissure composes Mesmerite components
+- Dark Forest: 11 configured/12 placed, 7 direct injections; the three checked tree wrappers account for the placed-resource count, and the shipped but uninjected boulder/underground definitions remain dormant fissure components
 - Four structures/four structure sets, three processor lists and five jigsaw template pools
 
 Injection evidence: `init/BMFeatures.java`; JSON: `data/biomemakeover/worldgen/{configured_feature,placed_feature}/`; special algorithms: `level/feature/` and `level/feature/foliage/`.

@@ -33,6 +33,10 @@ import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.block.OwlNestBlock;
 import party.lemons.biomemakeover.block.BlackThistleBlock;
 import party.lemons.biomemakeover.block.ItchingIvyBlock;
+import party.lemons.biomemakeover.block.IvyBlock;
+import party.lemons.biomemakeover.block.MothBlossomBlock;
+import party.lemons.biomemakeover.block.BuddingIlluniteBlock;
+import party.lemons.biomemakeover.block.IlluniteClusterBlock;
 import party.lemons.biomemakeover.block.WildMushroomBlock;
 import party.lemons.biomemakeover.block.GlowshroomPlantBlock;
 import party.lemons.biomemakeover.block.UnderwaterGlowshroomBlock;
@@ -52,8 +56,12 @@ import party.lemons.biomemakeover.block.PeatFarmlandBlock;
 public final class BMBlocks {
     public static final TagKey<Block> BARREL_CACTUS_PLANTABLE = blockTag("barrel_cactus_plantable_on");
     public static final TagKey<Block> SAGUARO_CACTUS_PLANTABLE = blockTag("saguaro_cactus_plantable_on");
+    public static final TagKey<Block> FISSURE_NO_REPLACE = blockTag("fissure_no_replace");
     public static final TagKey<Item> BARREL_CACTUS_IMMUNE = TagKey.create(Registries.ITEM, BiomeMakeover.id("barrel_cactus_immune"));
     public static final WoodType BLIGHTED_BALSA_WOOD_TYPE = new WoodType("biomemakeover:blighted_balsa", BlockSetType.OAK);
+    public static final WoodType ANCIENT_OAK_WOOD_TYPE = new WoodType("biomemakeover:ancient_oak", BlockSetType.OAK);
+    private static final SoundType ILLUNITE_SOUND = new SoundType(1F, 1F, BMSounds.ILLUNITE_BREAK,
+        BMSounds.ILLUNITE_STEP, BMSounds.ILLUNITE_PLACE, BMSounds.ILLUNITE_HIT, BMSounds.ILLUNITE_STEP);
     private static final ResourceKey<ConfiguredFeature<?, ?>> ANCIENT_OAK_TREE = ResourceKey.create(
         Registries.CONFIGURED_FEATURE, BiomeMakeover.id("dark_forest/ancient_oak"));
     private static final ResourceKey<ConfiguredFeature<?, ?>> ANCIENT_OAK_SMALL_TREE = ResourceKey.create(
@@ -88,11 +96,27 @@ public final class BMBlocks {
     public static final Block POLISHED_MESMERITE_STAIRS = register("polished_mesmerite_stairs", p -> new StairBlock(POLISHED_MESMERITE.defaultBlockState(), p), stoneProps());
     public static final Block POLISHED_MESMERITE_SLAB = register("polished_mesmerite_slab", SlabBlock::new, stoneProps());
     public static final Block POLISHED_MESMERITE_WALL = register("polished_mesmerite_wall", WallBlock::new, stoneProps());
+    public static final Block ILLUNITE_BLOCK = register("illunite_block", Block::new,
+        BlockBehaviour.Properties.of().strength(1.5F).requiresCorrectToolForDrops().mapColor(MapColor.LAPIS).sound(ILLUNITE_SOUND));
+    public static final Block BUDDING_ILLUNITE = register("budding_illunite", BuddingIlluniteBlock::new,
+        BlockBehaviour.Properties.of().strength(1.5F).mapColor(MapColor.LAPIS).sound(ILLUNITE_SOUND).randomTicks());
+    public static final Block SMALL_ILLUNITE_BUD = register("small_illunite_bud", p -> new IlluniteClusterBlock(3, 4, p),
+        illuniteCluster(5));
+    public static final Block MEDIUM_ILLUNITE_BUD = register("medium_illunite_bud", p -> new IlluniteClusterBlock(4, 3, p),
+        illuniteCluster(7));
+    public static final Block LARGE_ILLUNITE_BUD = register("large_illunite_bud", p -> new IlluniteClusterBlock(5, 3, p),
+        illuniteCluster(13));
+    public static final Block ILLUNITE_CLUSTER = register("illunite_cluster", p -> new IlluniteClusterBlock(7, 3, p),
+        illuniteCluster(15));
 
     public static final Block BLACK_THISTLE = register("black_thistle", BlackThistleBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
+    public static final Block IVY = register("ivy", IvyBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().noOcclusion().randomTicks().strength(0.15F).sound(SoundType.VINE));
     public static final Block ITCHING_IVY = register("itching_ivy", ItchingIvyBlock::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().noOcclusion().randomTicks().strength(0.2F).sound(SoundType.VINE));
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().noOcclusion().randomTicks().strength(0.15F).speedFactor(0.5F).sound(SoundType.VINE));
+    public static final Block MOTH_BLOSSOM = register("moth_blossom", MothBlossomBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().noOcclusion().randomTicks().strength(0.25F).speedFactor(0.5F).sound(SoundType.VINE));
     public static final Block FOXGLOVE = register("foxglove", TallFlowerBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
     public static final Block OWL_NEST = register("owl_nest", OwlNestBlock::new,
@@ -218,9 +242,14 @@ public final class BMBlocks {
         woodProps().noCollision().strength(0.5F));
     public static final Block ANCIENT_OAK_BUTTON = register("ancient_oak_button", p -> new ButtonBlock(BlockSetType.OAK, 30, p),
         woodProps().noCollision().strength(0.5F));
+    public static final Block ANCIENT_OAK_SIGN = registerNoItem("ancient_oak_sign", p -> new StandingSignBlock(ANCIENT_OAK_WOOD_TYPE, p), signProperties());
+    public static final Block ANCIENT_OAK_WALL_SIGN = registerNoItem("ancient_oak_wall_sign", p -> new WallSignBlock(ANCIENT_OAK_WOOD_TYPE, p), signProperties());
+    public static final Block ANCIENT_OAK_HANGING_SIGN = registerNoItem("ancient_oak_hanging_sign", p -> new CeilingHangingSignBlock(ANCIENT_OAK_WOOD_TYPE, p), signProperties());
+    public static final Block ANCIENT_OAK_WALL_HANGING_SIGN = registerNoItem("ancient_oak_wall_hanging_sign", p -> new WallHangingSignBlock(ANCIENT_OAK_WOOD_TYPE, p), signProperties());
 
-    public static final Block ANCIENT_OAK_LEAVES = register("ancient_oak_leaves", Block::new,
-        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).strength(0.2F).sound(SoundType.GRASS).noOcclusion());
+    public static final Block ANCIENT_OAK_LEAVES = register("ancient_oak_leaves", p -> new TintedParticleLeavesBlock(0.01F, p),
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).strength(0.2F).randomTicks().sound(SoundType.GRASS)
+            .noOcclusion().pushReaction(PushReaction.DESTROY).ignitedByLava());
     public static final Block ANCIENT_OAK_SAPLING = register("ancient_oak_sapling", p -> new SaplingBlock(ANCIENT_OAK_GROWER, p),
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().noOcclusion().randomTicks().instabreak().sound(SoundType.GRASS));
 
@@ -237,6 +266,13 @@ public final class BMBlocks {
 
     private static BlockBehaviour.Properties mushroomCap(MapColor color) {
         return BlockBehaviour.Properties.of().mapColor(color).strength(0.2F).instrument(NoteBlockInstrument.BASS).lightLevel(s -> 15).sound(SoundType.FUNGUS);
+    }
+
+    private static BlockBehaviour.Properties illuniteCluster(int light) {
+        return BlockBehaviour.Properties.of().strength(0.5F).mapColor(MapColor.LAPIS).sound(ILLUNITE_SOUND)
+            .noOcclusion().randomTicks().pushReaction(PushReaction.DESTROY)
+            .emissiveRendering((state, level, pos) -> true).hasPostProcess((state, level, pos) -> true)
+            .lightLevel(state -> state.getValue(IlluniteClusterBlock.TYPE) == IlluniteClusterBlock.Type.NIGHT ? light : 2);
     }
 
     private static Map<String, Block> createMushroomDecoration() {
@@ -455,7 +491,8 @@ public final class BMBlocks {
             entries.accept(ANCIENT_OAK_PRESSURE_PLATE); entries.accept(ANCIENT_OAK_BUTTON);
         });
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(entries -> {
-            entries.accept(WILD_MUSHROOMS); entries.accept(BLACK_THISTLE); entries.accept(FOXGLOVE); entries.accept(ITCHING_IVY); entries.accept(OWL_NEST);
+            entries.accept(WILD_MUSHROOMS); entries.accept(BLACK_THISTLE); entries.accept(FOXGLOVE); entries.accept(IVY); entries.accept(ITCHING_IVY); entries.accept(MOTH_BLOSSOM); entries.accept(OWL_NEST);
+            entries.accept(ILLUNITE_BLOCK); entries.accept(BUDDING_ILLUNITE); entries.accept(SMALL_ILLUNITE_BUD); entries.accept(MEDIUM_ILLUNITE_BUD); entries.accept(LARGE_ILLUNITE_BUD); entries.accept(ILLUNITE_CLUSTER);
             entries.accept(ANCIENT_OAK_LEAVES); entries.accept(ANCIENT_OAK_SAPLING);
             entries.accept(PURPLE_GLOWSHROOM); entries.accept(GREEN_GLOWSHROOM); entries.accept(ORANGE_GLOWSHROOM);
             entries.accept(MYCELIUM_SPROUTS); entries.accept(MYCELIUM_ROOTS); entries.accept(TALL_BROWN_MUSHROOM); entries.accept(TALL_RED_MUSHROOM);

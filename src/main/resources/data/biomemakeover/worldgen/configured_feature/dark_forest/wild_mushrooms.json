@@ -1,8 +1,8 @@
 {
   "config": {
-    "tries": 5,
-    "xz_spread": 4,
-    "y_spread": 1,
+    "tries": 8,
+    "xz_spread": 6,
+    "y_spread": 3,
     "feature": {
       "feature": {
         "config": {
@@ -18,38 +18,10 @@
       "placement": [
         {
           "predicate": {
-            "predicates": [
-              {
-                "blocks": [
-                  "minecraft:air"
-                ],
-                "type": "minecraft:matching_blocks"
-              },
-              {
-                "state": {
-                  "Name": "biomemakeover:wild_mushrooms"
-                },
-                "type": "minecraft:would_survive"
-              },
-              {
-                "type": "minecraft:matching_blocks",
-                "blocks": [
-                  "minecraft:grass_block",
-                  "minecraft:dirt",
-                  "minecraft:coarse_dirt",
-                  "minecraft:podzol",
-                  "minecraft:rooted_dirt",
-                  "minecraft:moss_block",
-                  "minecraft:mycelium"
-                ],
-                "offset": [
-                  0,
-                  -1,
-                  0
-                ]
-              }
+            "blocks": [
+              "minecraft:air"
             ],
-            "type": "minecraft:all_of"
+            "type": "minecraft:matching_blocks"
           },
           "type": "minecraft:block_predicate_filter"
         }

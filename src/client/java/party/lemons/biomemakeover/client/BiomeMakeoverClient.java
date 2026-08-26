@@ -35,6 +35,7 @@ import party.lemons.biomemakeover.init.BMEntities;
 import party.lemons.biomemakeover.init.BMItems;
 import party.lemons.biomemakeover.init.BMParticles;
 import party.lemons.biomemakeover.client.particle.LightningSparkParticle;
+import party.lemons.biomemakeover.client.particle.BlossomParticle;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import party.lemons.biomemakeover.init.BMBlockEntities;
@@ -46,9 +47,10 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT,
-            BMBlocks.WILD_MUSHROOMS, BMBlocks.ITCHING_IVY, BMBlocks.BLACK_THISTLE, BMBlocks.FOXGLOVE,
+            BMBlocks.WILD_MUSHROOMS, BMBlocks.IVY, BMBlocks.ITCHING_IVY, BMBlocks.MOTH_BLOSSOM, BMBlocks.BLACK_THISTLE, BMBlocks.FOXGLOVE,
             BMBlocks.ANCIENT_OAK_LEAVES, BMBlocks.ANCIENT_OAK_SAPLING,
-            BMBlocks.ANCIENT_OAK_DOOR, BMBlocks.ANCIENT_OAK_TRAPDOOR);
+            BMBlocks.ANCIENT_OAK_DOOR, BMBlocks.ANCIENT_OAK_TRAPDOOR,
+            BMBlocks.SMALL_ILLUNITE_BUD, BMBlocks.MEDIUM_ILLUNITE_BUD, BMBlocks.LARGE_ILLUNITE_BUD, BMBlocks.ILLUNITE_CLUSTER);
         BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT,
             BMBlocks.PURPLE_GLOWSHROOM, BMBlocks.GREEN_GLOWSHROOM, BMBlocks.ORANGE_GLOWSHROOM,
             BMBlocks.MYCELIUM_SPROUTS, BMBlocks.MYCELIUM_ROOTS, BMBlocks.TALL_BROWN_MUSHROOM,
@@ -84,6 +86,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         EntityRenderers.register(BMEntities.DECAYED, DecayedRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.LIGHTNING_BUG_BOTTLE,LightningBugBottleRenderer::new);
         ParticleFactoryRegistry.getInstance().register(BMParticles.LIGHTNING_SPARK,LightningSparkParticle.Provider::new);
+        ParticleFactoryRegistry.getInstance().register(BMParticles.BLOSSOM,BlossomParticle.Provider::new);
         ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->{
             int color=world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):FoliageColor.FOLIAGE_DEFAULT;
             return shiftColor(color,-20,40,-20);
@@ -93,6 +96,8 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
             return world instanceof ClientLevel level&&pos!=null&&level.getBiome(pos).is(SWAMPS)?shiftColor(color,-10,15,-10):color;
         },BMBlocks.WILLOW_LEAVES,BMBlocks.WILLOWING_BRANCHES);
         ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):0x84AB6F,BMBlocks.SWAMP_CYPRESS_LEAVES);
+        ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):FoliageColor.FOLIAGE_DEFAULT,
+            BMBlocks.ANCIENT_OAK_LEAVES,BMBlocks.IVY);
         BiomeMakeover.LOGGER.info("Biome Makeover client initialized.");
     }
 

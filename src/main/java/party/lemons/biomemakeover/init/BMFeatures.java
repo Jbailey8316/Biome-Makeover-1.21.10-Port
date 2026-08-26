@@ -24,6 +24,10 @@ import party.lemons.biomemakeover.level.feature.foliage.WillowTrunkPlacer;
 import party.lemons.biomemakeover.level.feature.foliage.WillowFoliagePlacer;
 import party.lemons.biomemakeover.level.feature.foliage.HangingLeavesDecorator;
 import party.lemons.biomemakeover.level.feature.foliage.WillowingBranchDecorator;
+import party.lemons.biomemakeover.level.feature.foliage.AncientOakTrunkPlacer;
+import party.lemons.biomemakeover.level.feature.foliage.IvyDecorator;
+import party.lemons.biomemakeover.level.feature.FissureFeature;
+import party.lemons.biomemakeover.level.feature.ItchingIvyFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
@@ -67,6 +71,14 @@ public final class BMFeatures {
         BiomeMakeover.id("hanging_leaves_decorator"), new TreeDecoratorType<>(HangingLeavesDecorator.CODEC));
     public static final TreeDecoratorType<WillowingBranchDecorator> WILLOWING_BRANCH_DECORATOR = Registry.register(BuiltInRegistries.TREE_DECORATOR_TYPE,
         BiomeMakeover.id("willowing_branch_decorator"), new TreeDecoratorType<>(WillowingBranchDecorator.CODEC));
+    public static final TrunkPlacerType<AncientOakTrunkPlacer> ANCIENT_OAK_TRUNK = Registry.register(BuiltInRegistries.TRUNK_PLACER_TYPE,
+        BiomeMakeover.id("ancient_oak"), new TrunkPlacerType<>(AncientOakTrunkPlacer.CODEC));
+    public static final Feature<FissureFeature.Config> FISSURE = Registry.register(BuiltInRegistries.FEATURE,
+        BiomeMakeover.id("fissure"), new FissureFeature(FissureFeature.Config.CODEC));
+    public static final Feature<NoneFeatureConfiguration> ITCHING_IVY = Registry.register(BuiltInRegistries.FEATURE,
+        BiomeMakeover.id("itching_ivy"), new ItchingIvyFeature(NoneFeatureConfiguration.CODEC));
+    public static final TreeDecoratorType<IvyDecorator> IVY_DECORATOR = Registry.register(BuiltInRegistries.TREE_DECORATOR_TYPE,
+        BiomeMakeover.id("ivy"), new TreeDecoratorType<>(IvyDecorator.CODEC));
 
     private BMFeatures() {}
     public static void initialize() {}

@@ -335,3 +335,17 @@ both land and submerged growth silently fail under the wrong origin contract.
 When a data-driven feature is probabilistic, first use `/place feature` on its registered configured and placed keys at
 a source-valid origin. This distinguishes implementation failure from sparse placement without adding a debug registry
 or duplicating production logic. Natural fresh-chunk sampling remains necessary for density and injection validation.
+
+## 52. Normalize provider codecs structurally across custom feature configs
+
+Custom features often embed `IntProvider` values below fields that vanilla data generators never exercise. The 1.20
+shape `{type: uniform, value: {min_inclusive, max_inclusive}}` no longer matches the 1.21.10 flattened provider
+contract. Walk complete configured-feature documents by structure, not by a known field name, and validate the
+packaged form. A feature codec can compile while every configured instance fails dynamic-registry loading.
+
+## 53. Distinguish configured, checked and injected feature inventories
+
+A final-release worldgen family may ship configured definitions, checked placed wrappers, selector placements and
+dormant component placements while injecting only a smaller top-level set. Count and validate each layer separately.
+Do not inject every shipped placed feature, and do not replace a selector chain with direct leaf features merely to
+make registered resources visible.

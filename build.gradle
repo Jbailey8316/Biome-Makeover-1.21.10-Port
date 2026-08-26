@@ -41,6 +41,7 @@ dependencies {
 def stage3GeneratedResources = layout.buildDirectory.dir('generated/stage3Resources')
 def stage4GeneratedResources = layout.buildDirectory.dir('generated/stage4Resources')
 def stage5GeneratedResources = layout.buildDirectory.dir('generated/stage5Resources')
+def stage6GeneratedResources = layout.buildDirectory.dir('generated/stage6Resources')
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
     outputs.dir(stage3GeneratedResources)
@@ -181,13 +182,37 @@ tasks.register('generateStage5ItemDefinitions') {
     }
 }
 
+tasks.register('generateStage6ItemDefinitions') {
+    inputs.file('validation/foundations/stage_6_dark_forest_contract.json')
+    outputs.dir(stage6GeneratedResources)
+    doLast {
+        def contract = new JsonSlurper().parse(file('validation/foundations/stage_6_dark_forest_contract.json'))
+        def output = stage6GeneratedResources.get().dir('assets/biomemakeover/items').asFile
+        output.mkdirs()
+        def newStage6Ids = ['ivy','moth_blossom','illunite_block','budding_illunite','small_illunite_bud',
+                            'medium_illunite_bud','large_illunite_bud','illunite_cluster','illunite_shard',
+                            'ancient_oak_sign','ancient_oak_hanging_sign']
+        newStage6Ids.each { id ->
+            def model=[type:'minecraft:model',model:"biomemakeover:item/${id}"]
+            if(id=='ivy') model.tints=[[type:'minecraft:constant',value:-12012264]]
+            new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson([model:model])) + System.lineSeparator()
+        }
+    }
+}
+
 processResources {
+    // Preserve the pre-Stage-6 source audit artifacts without packaging them as
+    // released worldgen: final BM 1.20.1 has no owl_nest feature resources.
+    exclude 'data/biomemakeover/worldgen/configured_feature/dark_forest/owl_nest.json'
+    exclude 'data/biomemakeover/worldgen/placed_feature/dark_forest/owl_nest.json'
     dependsOn tasks.named('generateStage3ItemDefinitions')
     dependsOn tasks.named('generateStage4ItemDefinitions')
     dependsOn tasks.named('generateStage5ItemDefinitions')
+    dependsOn tasks.named('generateStage6ItemDefinitions')
     from(stage3GeneratedResources)
     from(stage4GeneratedResources)
     from(stage5GeneratedResources)
+    from(stage6GeneratedResources)
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
@@ -337,6 +362,32 @@ processResources {
         }
     }
 
+    // Stage 6 Dark Forest physical resources. Entity gameplay, Altar/curses,
+    // Mansion content, music, boats and later-stage progression stay excluded.
+    from('reference/Biome-Makeover-1.20/common/src/main/resources') {
+        include 'data/biomemakeover/loot_tables/blocks/ivy.json'
+        include 'data/biomemakeover/loot_tables/blocks/itching_ivy.json'
+        include 'data/biomemakeover/loot_tables/blocks/moth_blossom.json'
+        include 'data/biomemakeover/loot_tables/blocks/*illunite*.json'
+        include 'data/biomemakeover/loot_tables/blocks/ancient_oak_leaves.json'
+        include 'data/biomemakeover/loot_tables/blocks/*ancient_oak*sign.json'
+        include 'data/biomemakeover/loot_tables/blocks/foxglove.json'
+        include 'data/biomemakeover/advancements/biomemakeover/enter_dark_forest.json'
+        include 'data/biomemakeover/advancements/biomemakeover/ancient_oak_sapling.json'
+        include 'data/biomemakeover/advancements/biomemakeover/illunite_shard.json'
+        include 'data/biomemakeover/tags/blocks/ivy.json'
+        include 'data/biomemakeover/tags/blocks/fissure_no_replace.json'
+        include 'assets/biomemakeover/sounds/illunite_*.ogg'
+        include 'assets/biomemakeover/textures/entity/signs/ancient_oak.png'
+        include 'assets/biomemakeover/textures/entity/signs/hanging/ancient_oak.png'
+        include 'assets/biomemakeover/textures/gui/hanging_signs/ancient_oak.png'
+        include 'data/biomemakeover/recipes/wood/ancient_oak/ancient_oak_sign.json'
+        include 'data/biomemakeover/recipes/wood/ancient_oak/ancient_oak_hanging_sign.json'
+        eachFile { details ->
+            details.path = details.path.replace('/loot_tables/','/loot_table/').replace('/advancements/','/advancement/').replace('/tags/blocks/','/tags/block/')
+        }
+    }
+
     // Stage 5 Swamp-owned released resources. Functional block entities,
     // Sunken Ruins, witch progression, boats and unreachable Toad content are excluded.
     from('reference/Biome-Makeover-1.20/common/src/main/resources') {
@@ -481,6 +532,14 @@ processResources {
             tag.values = ((tag.values ?: []) + swampLogs).unique()
             tagFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(tag)) + System.lineSeparator()
         }
+        def ancientLogs = ['biomemakeover:ancient_oak_log','biomemakeover:stripped_ancient_oak_log','biomemakeover:ancient_oak_wood','biomemakeover:stripped_ancient_oak_wood']
+        ['block/logs.json','block/logs_that_burn.json','item/logs.json','item/logs_that_burn.json'].each { path ->
+            def tagFile = new File(destinationDir, "data/minecraft/tags/${path}")
+            tagFile.parentFile.mkdirs()
+            def tag = tagFile.exists() ? new JsonSlurper().parse(tagFile) : [replace:false,values:[]]
+            tag.values = ((tag.values ?: []) + ancientLogs).unique()
+            tagFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(tag)) + System.lineSeparator()
+        }
         def historicalRoot = file('reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover')
         def soundOut = new File(destinationDir, 'assets/biomemakeover/sounds.json')
         def currentSounds = soundOut.exists() ? new JsonSlurper().parse(soundOut) : [:]
@@ -491,6 +550,7 @@ processResources {
         ['entity.dragonfly.loop','entity.dragonfly.hurt','entity.dragonfly.death','entity.decayed.swim','entity.decayed.step',
          'entity.decayed.hurt_water','entity.decayed.hurt','entity.decayed.death_water','entity.decayed.death',
          'entity.decayed.ambient_water','entity.decayed.ambient'].each { if (historicalSounds[it] != null) currentSounds[it] = historicalSounds[it] }
+        ['illunite_break','illunite_hit','illunite_place','illunite_step'].each { currentSounds[it] = historicalSounds[it] }
         soundOut.text = JsonOutput.prettyPrint(JsonOutput.toJson(currentSounds)) + System.lineSeparator()
 
         def langOut = new File(destinationDir, 'assets/biomemakeover/lang/en_us.json')
@@ -500,6 +560,8 @@ processResources {
         historicalLang.each { key, value -> if (stage4Tokens.any { key.contains(it) }) currentLang[key] = value }
         def stage5Tokens = ['swamp','willow','cypress','peat','reed','cattail','lily','buttonbush','marigold','decayed','dragonfly','lightning_bug','magenta_bud']
         historicalLang.each { key, value -> if (stage5Tokens.any { key.contains(it) }) currentLang[key] = value }
+        def stage6Tokens = ['dark_forest','ancient_oak','mesmerite','illunite','foxglove','black_thistle','itching_ivy','moth_blossom','wild_mushroom']
+        historicalLang.each { key, value -> if (stage6Tokens.any { key.contains(it) }) currentLang[key] = value }
         langOut.text = JsonOutput.prettyPrint(JsonOutput.toJson(currentLang)) + System.lineSeparator()
     }
 
@@ -508,11 +570,18 @@ processResources {
         if (configuredRoot.exists()) {
             fileTree(configuredRoot).matching { include '**/*.json' }.files.each { configuredFile ->
                 def configured = new JsonSlurper().parse(configuredFile)
-                def radius = configured.config?.xz_radius
-                if (radius instanceof Map && radius.type == 'minecraft:uniform' && radius.value instanceof Map) {
-                    radius.putAll(radius.remove('value'))
-                    configuredFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(configured)) + System.lineSeparator()
+                def modernizeUniform
+                modernizeUniform = { node ->
+                    if (node instanceof Map) {
+                        if (node.type == 'minecraft:uniform' && node.value instanceof Map &&
+                            node.value.containsKey('min_inclusive') && node.value.containsKey('max_inclusive')) {
+                            node.putAll(node.remove('value'))
+                        }
+                        node.values().each { modernizeUniform(it) }
+                    } else if (node instanceof List) node.each { modernizeUniform(it) }
                 }
+                modernizeUniform(configured)
+                configuredFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(configured)) + System.lineSeparator()
             }
         }
         def recipeRoot = destinationDir.toPath().resolve('data/biomemakeover/recipe').toFile()
@@ -573,12 +642,12 @@ processResources {
                 }
                 decayedLoot.text=JsonOutput.prettyPrint(JsonOutput.toJson(loot))+System.lineSeparator()
             }
-            // Released Willow/Cypress tables match vanilla leaf behavior, but their 1.20
-            // tool predicates must use the 1.21.10 item/component predicate schema.
-            ['willow_leaves.json', 'swamp_cypress_leaves.json'].each { leafName ->
-                def leafLoot = new File(lootRoot, "blocks/${leafName}")
-                if (leafLoot.exists()) {
-                    def loot = new JsonSlurper().parse(leafLoot)
+            // Every historical tool predicate uses the 1.20 item/enchantment layout.
+            // Modernize structurally across packaged loot so later physical families
+            // cannot silently retain an obsolete Silk Touch/Fortune contract.
+            fileTree(lootRoot).matching { include '**/*.json' }.files.each { lootFile ->
+                if (lootFile.exists()) {
+                    def loot = new JsonSlurper().parse(lootFile)
                     def modernizePredicate
                     modernizePredicate = { node ->
                         if (node instanceof Map) {
@@ -601,7 +670,7 @@ processResources {
                         } else if (node instanceof List) node.each { modernizePredicate(it) }
                     }
                     modernizePredicate(loot)
-                    leafLoot.text = JsonOutput.prettyPrint(JsonOutput.toJson(loot)) + System.lineSeparator()
+                    lootFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(loot)) + System.lineSeparator()
                 }
             }
         }

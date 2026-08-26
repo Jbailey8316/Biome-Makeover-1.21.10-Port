@@ -42,20 +42,13 @@ public final class BMWorldgen {
     public static final ResourceKey<PlacedFeature> SWAMP_REEDS = swamp("reeds");
     public static final ResourceKey<PlacedFeature> SWAMP_CYPRESS_TREES = swamp("swamp_cypress_trees");
     public static final ResourceKey<PlacedFeature> SWAMP_WILLOW_TREES = swamp("willow_trees");
-    public static final ResourceKey<PlacedFeature> MESMERITE_UNDERGROUND = ResourceKey.create(
-        Registries.PLACED_FEATURE,
-        BiomeMakeover.id("dark_forest/mesmerite_underground")
-    );
-
-    public static final ResourceKey<PlacedFeature> WILD_MUSHROOMS = ResourceKey.create(
-        Registries.PLACED_FEATURE,
-        BiomeMakeover.id("dark_forest/wild_mushrooms")
-    );
-
-    public static final ResourceKey<PlacedFeature> BLACK_THISTLE = ResourceKey.create(
-        Registries.PLACED_FEATURE,
-        BiomeMakeover.id("dark_forest/black_thistle")
-    );
+    public static final ResourceKey<PlacedFeature> DARK_FOREST_GRASS = darkForest("grass");
+    public static final ResourceKey<PlacedFeature> DARK_FOREST_TALL_GRASS = darkForest("tall_grass");
+    public static final ResourceKey<PlacedFeature> DARK_FOREST_FLOWERS = darkForest("flowers");
+    public static final ResourceKey<PlacedFeature> DARK_FOREST_ITCHING_IVY = darkForest("itching_ivy");
+    public static final ResourceKey<PlacedFeature> DARK_FOREST_TREES = darkForest("trees");
+    public static final ResourceKey<PlacedFeature> DARK_FOREST_WILD_MUSHROOMS = darkForest("wild_mushrooms");
+    public static final ResourceKey<PlacedFeature> DARK_FOREST_FISSURE = darkForest("mesmerite_fissure");
 
     private BMWorldgen() {
     }
@@ -109,23 +102,14 @@ public final class BMWorldgen {
             BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
             MobCategory.CREATURE, EntityType.RABBIT, 8, 1, 3
         );
-        BiomeModifications.addFeature(
-            BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
-            GenerationStep.Decoration.UNDERGROUND_ORES,
-            MESMERITE_UNDERGROUND
-        );
-
-        BiomeModifications.addFeature(
-            BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
-            GenerationStep.Decoration.VEGETAL_DECORATION,
-            WILD_MUSHROOMS
-        );
-
-        BiomeModifications.addFeature(
-            BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
-            GenerationStep.Decoration.VEGETAL_DECORATION,
-            BLACK_THISTLE
-        );
+        addDarkForest(GenerationStep.Decoration.VEGETAL_DECORATION, DARK_FOREST_GRASS);
+        addDarkForest(GenerationStep.Decoration.VEGETAL_DECORATION, DARK_FOREST_TALL_GRASS);
+        addDarkForest(GenerationStep.Decoration.VEGETAL_DECORATION, DARK_FOREST_FLOWERS);
+        addDarkForest(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, DARK_FOREST_ITCHING_IVY);
+        // These apparently unusual steps are the released 1.20.1 ordering contract.
+        addDarkForest(GenerationStep.Decoration.UNDERGROUND_ORES, DARK_FOREST_TREES);
+        addDarkForest(GenerationStep.Decoration.UNDERGROUND_ORES, DARK_FOREST_WILD_MUSHROOMS);
+        addDarkForest(GenerationStep.Decoration.LOCAL_MODIFICATIONS, DARK_FOREST_FISSURE);
     }
 
     private static void addMushroom(GenerationStep.Decoration step, ResourceKey<PlacedFeature> feature) {
@@ -138,5 +122,9 @@ public final class BMWorldgen {
     private static ResourceKey<PlacedFeature> swamp(String path) { return ResourceKey.create(Registries.PLACED_FEATURE, BiomeMakeover.id("swamp/" + path)); }
     private static void addSwamp(GenerationStep.Decoration step, ResourceKey<PlacedFeature> feature) {
         BiomeModifications.addFeature(BiomeSelectors.tag(SWAMPS), step, feature);
+    }
+    private static ResourceKey<PlacedFeature> darkForest(String path) { return ResourceKey.create(Registries.PLACED_FEATURE, BiomeMakeover.id("dark_forest/" + path)); }
+    private static void addDarkForest(GenerationStep.Decoration step, ResourceKey<PlacedFeature> feature) {
+        BiomeModifications.addFeature(BiomeSelectors.includeByKey(Biomes.DARK_FOREST), step, feature);
     }
 }

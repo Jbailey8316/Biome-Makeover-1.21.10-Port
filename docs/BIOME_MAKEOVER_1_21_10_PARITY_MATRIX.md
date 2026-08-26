@@ -46,7 +46,7 @@ historical families and eighteen current Mythas enhancement units.
 | Mushroom Fields | 6% | A wild-mushroom fragment exists, in the wrong theme/context |
 | Badlands | 88% static | Stage 4 restored core blocks, cactus ecology, four worldgen chains, Scuttler, Tumbleweed and Cowboy patrol plumbing; Ghost Town remains Stage 10C, while horse hats and runtime verification remain open |
 | Swamp | 98% static / runtime partial | Fresh Swamp/Mangrove generation, flora, Decayed behavior, peat, canopy/leaf contracts, pads/lilies, accepted Lightning Bug visuals, waterlogged saplings, and the reachable glass-bottle capture/light block are restored. Final Prism, soak/save/server and existing-world checks remain; Peat Composter and Sunken Ruins stay Stage 9/10B. Final-release-disabled Toad/Tadpole/Wings are excluded. |
-| Dark Forest | 48% | Useful blocks/Owl/worldgen slice, with major omissions and differences |
+| Dark Forest | Stage 6 static/package PASS; runtime open | Physical flora, Ancient Oak, Illunite/Mesmerite and the exact seven-feature pipeline restored; Owl/ecology/progression/Mansion remain later stages |
 | Beach ecology | 0% | Helmit Crab family absent |
 | Mansion / illager progression | 0% | Structure, boss, curses, quests, and functional systems absent |
 | Shared/global systems | 6% | Basic modern bootstrap exists; content systems largely absent |
@@ -104,16 +104,16 @@ not silently counted as required natural ecology.
 
 Stage 5 Swamp is **COMPLETE**: static parity PASS, package validation PASS, and runtime acceptance PASS. There are no
 known mandatory final-release Stage 5 blockers. Historical/disabled content and later-stage structures, progression,
-boats, and Mythas candidates remain deferred and do not change this status. Stage 6 remains not started.
+boats, and Mythas candidates remain deferred and do not change this status. Stage 6 is now static/package complete and runtime-open.
 
 ### Dark Forest
 
 | Original released content | Current | Status | Restoration/dependencies |
 |---|---|---|---|
-| Forest floor, flowers, ivy, trees and wild-mushroom makeover | Black Thistle and Wild Mushrooms are injected; ten other data features are dormant | PARTIAL | Restore the exact biome modification list and placement order |
-| Ancient Oak complete wood set, tree and sapling | 15 blocks plus sapling/tree data; signs and boats are assets only | PARTIAL | Add missing registered family members and prove sapling/tree generation |
-| Black Thistle, Foxglove, Itching Ivy, Moth Blossom | First three registered; Moth Blossom absent | PARTIAL | Match original behaviors/loot/generation; add Moth Blossom |
-| Mesmerite fissure, blocks, items and processing | Eight block variants and underground ore injection; full system absent | PARTIAL | Match fissure placement, item/conversion/recipe and loot behavior |
+| Forest floor, flowers, ivy, trees and wild-mushroom makeover | Exact seven-feature pipeline packaged at released steps and modifiers | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Fresh-chunk density, support and performance checks |
+| Ancient Oak complete wood set, tree and sapling | Physical family including signs plus 1x1/2x2 growth and exact selector configs restored; boats deferred | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Tree geometry, ratios, leaf/drop and persistence checks |
+| Black Thistle, Foxglove, Itching Ivy, Moth Blossom | Physical blocks, flower mixture, six-face ivy, slowdown/particles/spread and bonemeal conversion restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Moth-dependent attraction remains Stage 8 |
+| Mesmerite/Illunite fissure, blocks and crystals | Complete physical families, four-stage growth, light/sound/loot and released fissure algorithm restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Fissure distribution/geometry and crystal presentation checks |
 | Owl core entity | Modern Owl exists | PRESENT-BUT-DIFFERENT | See dedicated matrix; preserve enhancements separately |
 | Rootling and Moth | None | MISSING | Flora/tags first, then AI/render/loot/sounds/spawn |
 | Dark Forest fox/rabbit additions | Both injected with custom weights/groups | PRESENT-BUT-DIFFERENT | Restore released weights/groups and full biome modifier semantics |
@@ -159,7 +159,7 @@ Each unit is a meaningful behavior family rather than a raw file.
 | Mushroom Fields | 18 | PBD 1, PARTIAL 1, MISSING 16 | One generic mushroom fragment; no complete theme |
 | Badlands | 17 | MISSING 17 | No registrations, resources, entities or injection |
 | Swamp | 19 | STAGE 5 COMPLETE / RUNTIME PASS | Reachable released ecology and both Lightning Bug bottle loops are accepted; Peat Composter, Sunken Ruins, historical boats, disabled Toad content and Mythas ideas remain outside Stage 5 ownership |
-| Dark Forest | 28 | EXACT 1, COMPATIBLE 4, PBD 5, PARTIAL 11, BROKEN 2, MISSING 4, NRV 1 | Only active theme; three injected placed features |
+| Dark Forest | 28 | STAGE 6 PHYSICAL STATIC/PACKAGE PASS; LATER SYSTEMS OPEN | Eleven configured, twelve placed resources and seven exact injections; Owl/Rootling/Moth/progression/Mansion retain later ownership |
 | Beach ecology | 5 | MISSING 5 | No Helmit Crab implementation |
 | Mansion/illager | 22 | MISSING 22 | Entire released progression absent |
 | Shared/global | 16 | PBD 1, PARTIAL 1, MISSING 10, NRV 4 | Bootstrap/resources exist; systems below mostly absent |
@@ -169,8 +169,8 @@ Each unit is a meaningful behavior family rather than a raw file.
 
 | Historical system | Current inspection result | Primary status |
 |---|---|---|
-| Biome modifications | Dark Forest only; Owl/Fox/Rabbit and three features | PARTIAL |
-| Configured/placed features | 13/13 JSONs, only three placed keys injected | PARTIAL |
+| Biome modifications | Mushroom, Badlands, Swamp and exact seven-feature Dark Forest physical pipeline | PARTIAL GLOBALLY / STAGE 6 STATIC PASS |
+| Configured/placed features | Dark Forest final inventory is 11 configured/12 placed with seven injections | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION |
 | Structures/pieces/processors/templates | No code; no historical structure pipeline | MISSING |
 | Blocks/block entities | 28 blocks; no block entities | PARTIAL / MISSING |
 | Items | Two standalone items plus block/spawn items | PARTIAL |

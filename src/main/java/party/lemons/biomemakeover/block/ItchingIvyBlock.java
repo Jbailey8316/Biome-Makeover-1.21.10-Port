@@ -1,39 +1,38 @@
 package party.lemons.biomemakeover.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.BonemealableBlock;
+import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import party.lemons.biomemakeover.init.BMBlocks;
 
-/**
- * Wall-clinging, climbable ivy with sweet-berry-bush style slowdown and damage.
- */
-public class ItchingIvyBlock extends VineBlock {
-    public ItchingIvyBlock(Properties properties) {
-        super(properties);
+/** Released Itching Ivy: six-face ivy, half-speed contact, and downward-face blossom conversion. */
+public final class ItchingIvyBlock extends IvyBlock implements BonemealableBlock {
+    public ItchingIvyBlock(Properties properties) { super(properties); }
+
+    @Override
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean intersects) {
+        entity.makeStuckInBlock(state, new Vec3(0.5D, 0.5D, 0.5D));
     }
 
-    protected void entityInside(Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects) {
-        if (entity.getType() == EntityType.BEE || entity.getType() == EntityType.FOX) {
-            return;
+    @Override public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
+        return state.getValue(MultifaceBlock.getFaceProperty(Direction.DOWN));
+    }
+    @Override public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) { return true; }
+    @Override public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+        BlockState blossom = BMBlocks.MOTH_BLOSSOM.defaultBlockState();
+        for (Direction direction : Direction.values()) {
+            if (state.hasProperty(MultifaceBlock.getFaceProperty(direction)))
+                blossom = blossom.setValue(MultifaceBlock.getFaceProperty(direction), state.getValue(MultifaceBlock.getFaceProperty(direction)));
         }
-
-        entity.makeStuckInBlock(level.getBlockState(pos), new Vec3(0.8D, 0.75D, 0.8D));
-
-        Vec3 movement = entity.getDeltaMovement();
-        boolean movingHorizontally =
-            Math.abs(movement.x) >= 0.003D || Math.abs(movement.z) >= 0.003D;
-
-        if (movingHorizontally && level instanceof ServerLevel serverLevel) {
-            entity.hurtServer(
-                serverLevel,
-                level.damageSources().sweetBerryBush(),
-                1.0F
-            );
-        }
+        level.setBlock(pos, blossom.setValue(MothBlossomBlock.BLOSSOM, Direction.DOWN), 3);
     }
 }

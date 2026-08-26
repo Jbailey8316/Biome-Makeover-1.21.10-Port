@@ -1,23 +1,5 @@
 {
-  "type":"minecraft:random_patch",
-  "config":{
-    "tries":18,
-    "xz_spread":7,
-    "y_spread":10,
-    "feature":{
-      "feature":{
-        "type":"minecraft:simple_block",
-        "config":{"to_place":{"type":"minecraft:simple_state_provider","state":{"Name":"biomemakeover:itching_ivy","Properties":{"north":"true","east":"false","south":"false","west":"false","up":"false"}}}}
-      },
-      "placement":[
-        {"type":"minecraft:block_predicate_filter","predicate":{
-          "type":"minecraft:all_of",
-          "predicates":[
-            {"type":"minecraft:matching_blocks","blocks":["minecraft:air"]},
-            {"type":"minecraft:has_sturdy_face","offset":[0,0,-1],"direction":"south"}
-          ]
-        }}
-      ]
-    }
+  "type": "biomemakeover:itching_ivy",
+  "config": {
   }
 }

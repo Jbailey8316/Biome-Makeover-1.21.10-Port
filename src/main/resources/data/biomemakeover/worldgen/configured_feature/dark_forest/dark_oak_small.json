@@ -1,50 +1,56 @@
 {
-  "type": "minecraft:tree",
   "config": {
-    "ignore_vines": false,
-    "force_dirt": false,
-    "minimum_size": {
-      "type": "minecraft:two_layers_feature_size",
-      "limit": 1,
-      "lower_size": 0,
-      "upper_size": 1
-    },
+    "decorators": [
+      {
+        "probability": 0.002,
+        "type": "minecraft:beehive"
+      }
+    ],
+    "ignore_vines": true,
+    "force_dirt": true,
     "dirt_provider": {
-      "type": "minecraft:simple_state_provider",
       "state": {
         "Name": "minecraft:dirt"
-      }
+      },
+      "type": "minecraft:simple_state_provider"
+    },
+    "minimum_size": {
+      "limit": 2,
+      "lower_size": 0,
+      "upper_size": 0,
+      "type": "minecraft:two_layers_feature_size"
     },
     "trunk_provider": {
-      "type": "minecraft:simple_state_provider",
       "state": {
+        "Properties": {
+          "axis": "y"
+        },
         "Name": "minecraft:dark_oak_log"
-      }
+      },
+      "type": "minecraft:simple_state_provider"
     },
     "trunk_placer": {
-      "type": "minecraft:straight_trunk_placer",
-      "base_height": 4,
-      "height_rand_a": 2,
-      "height_rand_b": 1
+      "base_height": 7,
+      "height_rand_a": 8,
+      "height_rand_b": 2,
+      "type": "minecraft:fancy_trunk_placer"
     },
     "foliage_provider": {
-      "type": "minecraft:simple_state_provider",
       "state": {
+        "Properties": {
+          "persistent": "false",
+          "distance": "7"
+        },
         "Name": "minecraft:dark_oak_leaves"
-      }
+      },
+      "type": "minecraft:simple_state_provider"
     },
     "foliage_placer": {
-      "type": "minecraft:blob_foliage_placer",
-      "radius": {
-        "type": "minecraft:constant",
-        "value": 2
-      },
-      "offset": {
-        "type": "minecraft:constant",
-        "value": 0
-      },
-      "height": 3
-    },
-    "decorators": []
-  }
+      "radius": 2,
+      "offset": 2,
+      "height": 2,
+      "type": "minecraft:fancy_foliage_placer"
+    }
+  },
+  "type": "minecraft:tree"
 }
