@@ -10,13 +10,13 @@ Dark Forest Port
 - Fabric project structure
 - Documentation framework
 - Owl design planning
+- Stage 7 original Owl parity restoration — runtime accepted
 
 ## In Progress
 
 - Dark Forest feature port
-- Owl ecosystem implementation
+- Remaining Dark Forest ecosystem restoration
 
 ## Next
 
-- Restore Dark Forest world generation
-- Port original features
+- Stage 8 Rootling and Moth ecosystem restoration

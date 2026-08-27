@@ -380,6 +380,7 @@ This section is derived only from the pinned original `OwlEntity.java`, `BMEntit
 
 - `OwlState.ATTACKING` exists but is not set by the pinned Owl class: implemented data shape, effectively unused state.
 - Shoulder storage partly resides in vanilla `ShoulderRidingEntity`, but transfer is unreachable because the final Owl omits the explicit landing goal. Runtime failure to shoulder-mount is source-confirmed, not a 1.21.10 regression.
+- Stage 7 final status: the released Owl contract, including tree landing, leaf-supported owner follow, taming, breeding, genuine babies/save-load/aging, hunting, emissive eyes and Hedwig, is runtime accepted. Shoulder mounting remains intentionally absent.
 - Emissive eyes are unconditional at render-layer level; actual visibility under all render states is **NEEDS HISTORICAL RUNTIME VERIFICATION**.
 
 ## I. World-generation catalog

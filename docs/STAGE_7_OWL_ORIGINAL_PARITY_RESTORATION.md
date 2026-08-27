@@ -88,4 +88,5 @@ excluded from the jar. No registry ID was removed, renamed or repurposed.
 9. Save/reload and restart with wild, tame and baby Owls.
 10. Dedicated-server boot/join, natural spawn, tame/breed/save/rejoin.
 
-Stage 7 remains runtime-open until this checklist passes.
+The complete checklist, including the focused breeding/baby and tree-follow
+remediations, passed in Prism. Stage 7 is **COMPLETE / RUNTIME ACCEPTED**.

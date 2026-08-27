@@ -46,7 +46,7 @@ historical families and eighteen current Mythas enhancement units.
 | Mushroom Fields | 6% | A wild-mushroom fragment exists, in the wrong theme/context |
 | Badlands | 88% static | Stage 4 restored core blocks, cactus ecology, four worldgen chains, Scuttler, Tumbleweed and Cowboy patrol plumbing; Ghost Town remains Stage 10C, while horse hats and runtime verification remain open |
 | Swamp | 98% static / runtime partial | Fresh Swamp/Mangrove generation, flora, Decayed behavior, peat, canopy/leaf contracts, pads/lilies, accepted Lightning Bug visuals, waterlogged saplings, and the reachable glass-bottle capture/light block are restored. Final Prism, soak/save/server and existing-world checks remain; Peat Composter and Sunken Ruins stay Stage 9/10B. Final-release-disabled Toad/Tadpole/Wings are excluded. |
-| Dark Forest | Stage 6 static/package PASS; runtime open | Physical flora, Ancient Oak, Illunite/Mesmerite and the exact seven-feature pipeline restored; Owl/ecology/progression/Mansion remain later stages |
+| Dark Forest | Stage 6 physical static/package PASS; Stage 7 Owl runtime PASS | Physical flora, Ancient Oak, Illunite/Mesmerite and exact worldgen restored; Owl accepted; Rootling/Moth/progression/Mansion remain later stages |
 | Beach ecology | 0% | Helmit Crab family absent |
 | Mansion / illager progression | 0% | Structure, boss, curses, quests, and functional systems absent |
 | Shared/global systems | 6% | Basic modern bootstrap exists; content systems largely absent |
@@ -114,7 +114,7 @@ boats, and Mythas candidates remain deferred and do not change this status. Stag
 | Ancient Oak complete wood set, tree and sapling | Physical family including signs plus 1x1/2x2 growth and exact selector configs restored; boats deferred | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Tree geometry, ratios, leaf/drop and persistence checks |
 | Black Thistle, Foxglove, Itching Ivy, Moth Blossom | Physical blocks and generation runtime-confirmed; Black Thistle upper-half Weakness callback restored; ivy slowdown/particles/spread and bonemeal conversion restored | STATIC-COMPATIBLE / BLACK THISTLE RUNTIME-OPEN | Moth-dependent attraction remains Stage 8 |
 | Mesmerite/Illunite fissure, blocks and crystals | Complete physical families, four-stage growth, light/sound/loot and released fissure algorithm restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Fissure distribution/geometry and crystal presentation checks |
-| Owl core entity | Released behavior restored; breeding/baby/flight/hunting/eyes/Hedwig runtime-pass, tree-selection remediation runtime-open | STATIC/PACKAGE PASS; RUNTIME PARTIAL | See dedicated matrix; shoulder transition is source-confirmed unreachable |
+| Owl core entity | Released behavior restored and accepted across spawn/general AI, flight/tree landing, follow, tame/breed/baby aging, hunting, eyes and Hedwig | COMPATIBLE / RUNTIME PASS | Shoulder transition is source-confirmed unreachable in final 1.20.1 |
 | Rootling and Moth | None | MISSING | Flora/tags first, then AI/render/loot/sounds/spawn |
 | Dark Forest fox/rabbit additions | Both injected with custom weights/groups | PRESENT-BUT-DIFFERENT | Restore released weights/groups and full biome modifier semantics |
 | Mansion integration | No custom mansion | MISSING | Depends on complete illager/functional systems and templates |
@@ -221,28 +221,28 @@ from the current Owl.
 | Capability | Original released behavior | Current behavior | Status |
 |---|---|---|---|
 | Biome spawn | Dark Forest modifier | Dark Forest modifier | EXACT |
-| Weight/group | Weight 20, group 1–4 | Weight 20, group 1–4 | STATIC-EXACT / RUNTIME-OPEN |
-| Spawn predicate | Grass/leaves below and brightness >2; no time gate | Restored final predicate | STATIC-EXACT / RUNTIME-OPEN |
-| Despawn | Normal persistence behavior | Restored inherited behavior | STATIC-EXACT / RUNTIME-OPEN |
+| Weight/group | Weight 20, group 1–4 | Weight 20, group 1–4 | RUNTIME-PASS |
+| Spawn predicate | Grass/leaves below and brightness >2; no time gate | Restored final predicate | RUNTIME-PASS |
+| Despawn | Normal persistence behavior | Restored inherited behavior | RUNTIME-PASS |
 | Attributes | fly .8, health 6, movement .4, attack 2; tame health 20/attack 4 | Same core values; adds tempt range | COMPATIBLE |
 | Navigation | FlyingMoveControl/FlyingPathNavigation | Modern equivalents | COMPATIBLE |
-| Flight/landing | Original random tree-flight and slow-fall/no fall damage | Released flight contract; first-match tree scan and 15-by-7 water fallback restored | FLIGHT RUNTIME-PASS / TREE RETEST |
-| Perching/tree use | Opportunistic first clear space over Leaves/Logs; no state/timer/memory | Same released scan contract | STATIC-EXACT / RUNTIME-OPEN |
-| Targeting | Owner defense plus all `owl_targets` tag members | Restored tag-driven target goal | STATIC-EXACT / RUNTIME-OPEN |
+| Flight/landing | Original random tree-flight and slow-fall/no fall damage | Released flight contract; first-match tree scan and 15-by-7 water fallback restored | RUNTIME-PASS |
+| Perching/tree use | Opportunistic first clear space over Leaves/Logs; no state/timer/memory | Same released scan contract | RUNTIME-PASS |
+| Targeting | Owner defense plus all `owl_targets` tag members | Restored tag-driven target goal | RUNTIME-PASS |
 | Original prey | Rabbit, chicken, silverfish, endermite, bat, toad, Blight Bat, Dragonfly, both bugs | Restored optional tag membership and wild tag-driven targeting | RUNTIME-PASS |
-| Taming | Any edible meat; 1-in-3 chance | `minecraft:wolf_food` equivalent; 1-in-3 | STATIC-COMPATIBLE / RUNTIME-OPEN |
-| Healing | Any edible meat, nutrition-based | Restored nutrition-based meat healing | STATIC-COMPATIBLE / RUNTIME-OPEN |
+| Taming | Any edible meat; 1-in-3 chance | `minecraft:wolf_food` equivalent; 1-in-3 | RUNTIME-PASS |
+| Healing | Any edible meat, nutrition-based | Restored nutrition-based meat healing | RUNTIME-PASS |
 | Temptation | Any edible meat | `minecraft:wolf_food` modern equivalent | STATIC-COMPATIBLE / RUNTIME-PASS |
 | Breeding/food | Any meat and original breeding goal | Meat breeding and owner inheritance runtime-confirmed; crash fixed | RUNTIME-PASS |
-| Sit/owner behavior | Tameable sit/follow/defense behavior | Released behavior; modern leaf-enabled follow teleport restored | STATIC-COMPATIBLE / LEAF RETEST |
+| Sit/owner behavior | Tameable sit/follow/defense behavior | Released behavior; modern leaf-enabled follow teleport restored | RUNTIME-PASS |
 | Shoulder behavior | Inherits shoulder storage, but registers no landing goal | Same released omission; no normal shoulder transition | SOURCE-CONFIRMED / UNREACHABLE |
 | Sounds | Idle, hurt, death | Released three-event behavior; compatibility-preserved extra IDs are inert | STATIC-EXACT / RUNTIME-PASS |
 | Model/animation | Historical geometry and movement | Released model translated to render-state API with dedicated baby transform | RUNTIME-PASS |
 | Emissive eyes | Always emissive eyes layer | Unconditional full-bright eyes layer | RUNTIME-PASS |
 | Texture variant | Includes Hedwig variant selection | Restored case-insensitive Hedwig selection | RUNTIME-PASS |
-| Drops | 1–2 feathers plus looting | Restored modern loot schema | STATIC-EXACT / RUNTIME-OPEN |
+| Drops | 1–2 feathers plus looting | Restored modern loot schema | STATIC/PACKAGE PASS |
 | State/NBT | `OwlState` and `StandingState`, plus inherited tame/owner/age/sit | Same released gameplay state; inert registry compatibility does not activate nests | STATIC-EXACT |
-| Persistence | Original tameable-entity behavior | Restored inherited behavior without day culling/nest state | STATIC-EXACT / RUNTIME-PARTIAL |
+| Persistence | Original tameable-entity behavior | Restored inherited behavior without day culling/nest state | RUNTIME-PASS |
 | Baby behavior | Vanilla age/breeding path with released ageable model transform | Genuine inherited baby age plus modern dedicated baby model/state selection | RUNTIME-PASS |
 
 To restore released parity while retaining optional work, isolate rules into

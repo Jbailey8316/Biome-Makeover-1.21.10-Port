@@ -92,8 +92,8 @@ do not claim to prove runtime pathfinding.
 | Flight, general AI and hunting | Runtime PASS |
 | Eyes and Hedwig texture | Runtime PASS |
 | Shoulder mounting | Source-confirmed unreachable; closed |
-| First-match tree landing translation | Fixed statically; runtime verification required |
-| Leaf-safe owner following/teleport | Fixed statically; runtime verification required |
+| First-match tree landing translation | Runtime PASS |
+| Leaf-safe owner following/teleport | Runtime PASS |
 
 ## Focused Prism retest
 
@@ -107,5 +107,13 @@ do not claim to prove runtime pathfinding.
 4. Briefly recheck flight, sit/follow, hunting, breeding and baby appearance,
    aging, `Hedwig`, emissive eyes, and save/reload.
 
-Stage 7 remains runtime-open only for the corrected tree/leaf-follow paths and
-the remaining comprehensive acceptance checklist.
+## Final acceptance
+
+Prism runtime acceptance confirmed natural/general behavior, flight, AI,
+hunting, taming, breeding without crashes, genuine baby state and rendering,
+baby save/reload and adult transition, emissive eyes, `Hedwig`, Black Thistle
+generation/Weakness, tree landing and leaf-supported owner following. Shoulder
+mounting remains correctly absent for the source-confirmed reason above.
+
+Stage 7 is **COMPLETE / RUNTIME ACCEPTED**. No mandatory final-release Owl
+parity blocker remains.

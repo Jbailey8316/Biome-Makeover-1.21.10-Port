@@ -9,6 +9,12 @@
   and takeoff sound IDs.
 - Explicit Mythas day/night Owl ecology.
 - Mythas Mobs Owl head integration.
+- Falconry-style arm perching: an explicit call/recall interaction could have a
+  tame Owl fly to the owner's extended forearm using a dedicated live-entity
+  pose with active head/eye/idle animation. A release command, sprinting,
+  swimming, combat or damage could return it to flight; later targeted hunting,
+  scouting, quest or Living World hooks could build on that interaction. This
+  deliberately replaces Parrot-style shoulder storage and is not BM parity.
 
 These ideas are explicitly outside released Biome Makeover parity and must not be implemented during Stages 0–13
 without separate approval.
