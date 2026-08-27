@@ -1,1 +1,1 @@
-{"type":"minecraft:crafting_shapeless","category":"misc","ingredients":["biomemakeover:brown_bud"],"result":{"id":"minecraft:brown_dye"}}
+{"type":"minecraft:crafting_shaped","category":"misc","pattern":["#"],"key":{"#":"biomemakeover:brown_bud"},"result":{"id":"minecraft:brown_dye"}}
