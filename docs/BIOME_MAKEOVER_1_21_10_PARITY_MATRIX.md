@@ -46,7 +46,7 @@ historical families and eighteen current Mythas enhancement units.
 | Mushroom Fields | 6% | A wild-mushroom fragment exists, in the wrong theme/context |
 | Badlands | 88% static | Stage 4 restored core blocks, cactus ecology, four worldgen chains, Scuttler, Tumbleweed and Cowboy patrol plumbing; Ghost Town remains Stage 10C, while horse hats and runtime verification remain open |
 | Swamp | 98% static / runtime partial | Fresh Swamp/Mangrove generation, flora, Decayed behavior, peat, canopy/leaf contracts, pads/lilies, accepted Lightning Bug visuals, waterlogged saplings, and the reachable glass-bottle capture/light block are restored. Final Prism, soak/save/server and existing-world checks remain; Peat Composter and Sunken Ruins stay Stage 9/10B. Final-release-disabled Toad/Tadpole/Wings are excluded. |
-| Dark Forest | Stage 6 physical static/package PASS; Stage 7 Owl runtime PASS; Stage 8 Rootling/Moth static/package checkpoint | Physical flora/worldgen and Owl accepted; reachable Rootling/Moth ecology restored pending runtime acceptance; later progression/Mansion remain open |
+| Dark Forest | Stage 6 physical static/package PASS; Stage 7 Owl runtime PASS; Stage 8 Rootling/Moth runtime PASS | Physical flora/worldgen, Owl and reachable Rootling/Moth ecology accepted; later progression/Mansion remain open |
 | Beach ecology | 0% | Helmit Crab family absent |
 | Mansion / illager progression | 0% | Structure, boss, curses, quests, and functional systems absent |
 | Shared/global systems | 6% | Basic modern bootstrap exists; content systems largely absent |
@@ -115,7 +115,7 @@ boats, and Mythas candidates remain deferred and do not change this status. Stag
 | Black Thistle, Foxglove, Itching Ivy, Moth Blossom | Physical blocks and generation runtime-confirmed; Black Thistle upper-half Weakness callback restored; ivy slowdown/particles/spread and bonemeal conversion restored | STATIC-COMPATIBLE / BLACK THISTLE RUNTIME-OPEN | Moth-dependent attraction remains Stage 8 |
 | Mesmerite/Illunite fissure, blocks and crystals | Complete physical families, four-stage growth, light/sound/loot and released fissure algorithm restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Fissure distribution/geometry and crystal presentation checks |
 | Owl core entity | Released behavior restored and accepted across spawn/general AI, flight/tree landing, follow, tame/breed/baby aging, hunting, eyes and Hedwig | COMPATIBLE / RUNTIME PASS | Shoulder transition is source-confirmed unreachable in final 1.20.1 |
-| Rootling and Moth | Complete released entities, spawn wiring, AI/ecology, Rootling agriculture/foods, Moth Scales/Nocturnal brewing, render/resources/loot | STATIC/PACKAGE RESTORED — RUNTIME OPEN | Stunt Powder and Ectoplasm crossover retain later ownership |
+| Rootling and Moth | Complete released entities, spawn wiring, AI/ecology, Rootling agriculture/foods, Moth Scales/Nocturnal brewing, render/resources/loot | COMPATIBLE / RUNTIME PASS | Runtime ecosystems accepted; source/static-exact Looting and potion permutations remain non-blocking; Stunt Powder and Ectoplasm crossover retain later ownership |
 | Dark Forest fox/rabbit additions | Both injected with custom weights/groups | PRESENT-BUT-DIFFERENT | Restore released weights/groups and full biome modifier semantics |
 | Mansion integration | No custom mansion | MISSING | Depends on complete illager/functional systems and templates |
 
@@ -159,7 +159,7 @@ Each unit is a meaningful behavior family rather than a raw file.
 | Mushroom Fields | 18 | PBD 1, PARTIAL 1, MISSING 16 | One generic mushroom fragment; no complete theme |
 | Badlands | 17 | MISSING 17 | No registrations, resources, entities or injection |
 | Swamp | 19 | STAGE 5 COMPLETE / RUNTIME PASS | Reachable released ecology and both Lightning Bug bottle loops are accepted; Peat Composter, Sunken Ruins, historical boats, disabled Toad content and Mythas ideas remain outside Stage 5 ownership |
-| Dark Forest | 28 | STAGE 6 PHYSICAL STATIC/PACKAGE PASS; LATER SYSTEMS OPEN | Eleven configured, twelve placed resources and seven exact injections; Owl/Rootling/Moth/progression/Mansion retain later ownership |
+| Dark Forest | 28 | STAGE 6 PHYSICAL STATIC/PACKAGE PASS; STAGES 7–8 RUNTIME PASS; LATER SYSTEMS OPEN | Eleven configured, twelve placed resources and seven exact injections; Owl and Rootling/Moth ecology accepted; progression/Mansion retain later ownership |
 | Beach ecology | 5 | MISSING 5 | No Helmit Crab implementation |
 | Mansion/illager | 22 | MISSING 22 | Entire released progression absent |
 | Shared/global | 16 | PBD 1, PARTIAL 1, MISSING 10, NRV 4 | Bootstrap/resources exist; systems below mostly absent |

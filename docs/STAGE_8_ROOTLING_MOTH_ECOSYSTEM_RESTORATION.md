@@ -2,7 +2,7 @@
 
 ## Status
 
-Static/package checkpoint. Runtime acceptance remains open. Stage 7 was closed and pushed at `50ce8856872217cb32574ce60dd100505238ad0a` before this work began.
+**COMPLETE / RUNTIME ACCEPTED.** Stage 7 was closed and pushed at `50ce8856872217cb32574ce60dd100505238ad0a` before this work began. The Stage 8 Prism pass launched successfully, created and revisited multiple worlds, exercised both ecosystems, saved cleanly and exited with code 0.
 
 ## Authority and scope
 
@@ -67,14 +67,17 @@ It does not own Stunt Powder, Altar/curses, Ectoplasm/Ghosts, the dependency-gat
 - Potions: +2 (`nocturnal_pot`, `long_nocturnal_pot`).
 - No existing ID was removed, renamed or repurposed.
 
-## Runtime-open risks
+## Final runtime/source disposition
 
-- Natural spawn sampling and the final leaves/darkness predicates.
-- Rootling social goal timing, shears avoidance, exact server/client flower synchronization, crop emergence and save/reload.
-- Moth flight/attack/Owl avoidance, released attacker-gated attraction, scale loot and audiovisual presentation.
-- Potion brewing, insomnia suppression and persistence.
+- Runtime-confirmed: Rootling natural spawning, spawn egg, personality AI, shears avoidance, shearing/bald/regrowth state, crop emergence, all six flower variants, manual bud dye crafting, Moth spawning/rendering/flight/combat, released attacker-gated light attraction and Moth Scale drops.
+- Source-confirmed: raw Bulbus Root is edible at 2 nutrition/0.6 saturation; roasted is 5/0.8. Neither has an effect or special food callback.
+- Source-confirmed: the crop has five states (ages 0–4), requires brightness 9 and farmland-compatible support, uses vanilla-style random/bonemeal increments, and emits a randomized Rootling upon reaching age 4. The observed roughly two Bone Meal applications is compatible with that contract.
+- Source-confirmed: initial spawn, crop emergence and post-shearing regrowth each select uniformly with `nextInt(6)`; the small blue/gray-heavy sample does not demonstrate weighting.
+- Source-confirmed: Moth loot is uniform 0–2 scales plus uniform Looting 0–2, without a player-kill condition.
+- Source/static-confirmed: Nocturnal resets player time-since-rest every 20 ticks; normal and extended potions last 72,000 and 144,000 ticks, with vanilla drink/splash/lingering handling.
+- The final data has no recipe-unlock advancement for bud dyes. Their absence from the recipe book before discovery is historical; no synthetic unlock was added. The six recipes were corrected from shapeless back to their released one-slot shaped contract.
 
-No Java test suite exists; static/package validation cannot establish runtime AI or rendering acceptance.
+Exact Looting sampling, every potion form, a long phantom-prevention soak and dedicated-server gameplay were not exhaustively exercised, but their implementations are source/static exact and no material Stage 8 blocker remains.
 
 ## Static validation
 
@@ -82,4 +85,4 @@ No Java test suite exists; static/package validation cannot establish runtime AI
 - Clean offline build: PASS; Gradle reports `test NO-SOURCE`.
 - Packaged reference/deferred-content/Taniwha audits: PASS.
 - Package totals: 873 models, 285 PNG textures, 271 item definitions, 328 recipes, 271 loot tables, 32 advancements, 78 tags and 75 OGG assets.
-- A dedicated-server bootstrap was attempted, but the offline run configuration lacks cached `net.fabricmc:fabric-log4j-util:1.0.2`; no Minecraft process started. Prism remains the required registry/datapack/runtime bootstrap.
+- A dedicated-server bootstrap was attempted, but the offline run configuration lacks cached `net.fabricmc:fabric-log4j-util:1.0.2`; no Minecraft process started. This does not supersede the successful Prism runtime acceptance evidence.

@@ -321,7 +321,7 @@ The registry contains 21 entity types: 18 distinct mob classes, the non-mob Tumb
 | Moth | Natural Dark Forest flying monster; attacks Players, avoids Owls, is attracted to/hugs Moth Blossoms, melee/flap/bite behavior and scales loot. |
 | Rootling | Natural Dark Forest animal; fears specified living entities, seeks rain, dances, follows entities, inspects flowers, accepts Bone Meal, can be sheared for color-specific bud/petal loot, has flower/color state and Rootling crop progression. |
 
-Stage 8 restores both of these reachable final-release entity ecosystems, including Rootling agriculture/foods and Moth Scales/Nocturnal brewing. Runtime acceptance remains open. The Ectoplasm-dependent Phantom Membrane recipe and Stunt Powder remain with their later dependency owners.
+Stage 8 restores both reachable final-release entity ecosystems, including Rootling agriculture/foods and Moth Scales/Nocturnal brewing, and is runtime accepted. The Ectoplasm-dependent Phantom Membrane recipe and Stunt Powder remain with their later dependency owners.
 | Adjudicator | Reachable boss in the Mansion boss room; multipart, phase-driven encounter using melee, bow, fangs/barrage, teleport, summon, mimic and Stone Golem phases; custom arena/room listener, sounds, model and boss loot. No normal spawn. |
 | Adjudicator Mimic | Summoned only by Adjudicator Mimic phase; copies encounter behavior/appearance, removed when phase ends; no normal spawning/summoning. |
 | Stone Golem | Player-buildable from Cladded Stone pattern; multipart neutral ranged golem, can be armed with Crossbow by interaction or dispenser, has player-created state, targeting/anger, turning sounds and projectile resistance. |
