@@ -568,6 +568,10 @@ if($owlEntitiesSource -notmatch '(?s)OWL\s*=.*?\.sized\(0\.7F,\s*0\.8F\).*?\.cli
 if($owlSource -notmatch 'support\.is\(Blocks\.GRASS_BLOCK\)' -or $owlSource -notmatch 'support\.is\(BlockTags\.LEAVES\)' -or
    $owlSource -notmatch 'getRawBrightness\(pos,\s*0\)\s*>\s*2' -or $owlSource -match 'isNightTime|removeWhenFarAway') { Add-Failure 'Owl must retain released grass/leaves brightness spawn contract without port-only day/night culling' }
 foreach($goalContract in @('addGoal\(3, new MeleeAttackGoal\(this, 1\.0D, true\)','addGoal\(4, new FollowOwnerGoal\(this, 1\.2D, 10\.0F, 2\.0F\)','addGoal\(5, new TemptGoal','addGoal\(9, new ExtendedFlyOntoTree\(this, 1\.0D, 0\.5F\)','NonTameRandomTargetGoal')) { if($owlSource -notmatch $goalContract){Add-Failure "Owl released goal contract missing: $goalContract"} }
+if($owlSource -match 'LandOnOwnersShoulderGoal') { Add-Failure 'Final 1.20.1 Owl inherited shoulder storage but did not register the vanilla shoulder-landing goal' }
+if($owlSource -notmatch '(?s)protected boolean canFlyToOwner\(\).*?return true;' -or
+   $owlSource -notmatch 'LandRandomPos\.getPos\(this\.mob,\s*15,\s*7\)' -or
+   $owlSource -notmatch 'BlockPos\.betweenClosed\(' -or $owlSource -match 'bestDistance') { Add-Failure 'Owl released leaves-enabled owner following and first-match tree-flight selection contract is incomplete' }
 if($owlSource -notmatch 'ItemTags\.WOLF_FOOD' -or $owlSource -notmatch 'Attributes\.TEMPT_RANGE, 10\.0D' -or
    $owlSource -match 'Items\.RABBIT|Items\.CHICKEN|WildPlayerCautionGoal|NightChickenHuntGoal|OwlNestBlock') { Add-Failure 'Owl released broad-meat contract or removal of experimental Owl AI is incomplete' }
 if($owlSource -match 'getDefaultDimensions\s*\([^)]*\)[\s\S]{0,250}super\.getDimensions\s*\(' -or

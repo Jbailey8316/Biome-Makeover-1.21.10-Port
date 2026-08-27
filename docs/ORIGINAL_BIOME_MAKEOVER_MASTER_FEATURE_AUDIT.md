@@ -352,7 +352,7 @@ This section is derived only from the pinned original `OwlEntity.java`, `BMEntit
 - Food: any edible meat, not a single named item. The same predicate drives temptation, breeding, taming and healing.
 - Wild interaction: if holding edible meat and the Owl has no attack target, consume one item (unless creative) and tame with 1-in-3 probability; success assigns owner, sits the Owl and broadcasts vanilla tame particles.
 - Tamed healing: edible meat heals by the food item’s nutrition value and is consumed unless creative.
-- Owner interaction: inherited `ShoulderRidingEntity` interaction is attempted first. If it does not consume the action, or the Owl is a baby, an owner interaction toggles ordered sitting. Because it extends `ShoulderRidingEntity`, vanilla shoulder-landing behavior is inherited where vanilla conditions are met; no custom shoulder goal is registered in this class.
+- Owner interaction: inherited `ShoulderRidingEntity` interaction is attempted first. If it does not consume the action, or the Owl is a baby, an owner interaction toggles ordered sitting. The superclass supplies shoulder serialization/storage, but neither it nor the pinned Owl registers `LandOnOwnersShoulderGoal`; unlike Parrot, the final Owl therefore has no reachable normal-AI shoulder transition.
 - Breeding: ordinary `BreedGoal`; child is an Owl and inherits owner UUID/tamed state from the parent creating it. No nest or egg mediates reproduction.
 - Baby: vanilla ageable child rendering through `AgeableListModel`; name tag is translated upward. No separate baby AI beyond inherited age/breeding rules.
 - Sounds: exactly three Owl events—idle, hurt and death—with 4 idle, 3 hurt and 2 death audio variants. No alert, contact, baby, takeoff or hoot-separate event exists.
@@ -379,7 +379,7 @@ This section is derived only from the pinned original `OwlEntity.java`, `BMEntit
 ### Dead/resource-only/uncertain Owl evidence
 
 - `OwlState.ATTACKING` exists but is not set by the pinned Owl class: implemented data shape, effectively unused state.
-- Shoulder behavior partly resides in vanilla `ShoulderRidingEntity`; exact runtime shoulder transfer/render interactions are **NEEDS HISTORICAL RUNTIME VERIFICATION**, especially across Fabric/Forge.
+- Shoulder storage partly resides in vanilla `ShoulderRidingEntity`, but transfer is unreachable because the final Owl omits the explicit landing goal. Runtime failure to shoulder-mount is source-confirmed, not a 1.21.10 regression.
 - Emissive eyes are unconditional at render-layer level; actual visibility under all render states is **NEEDS HISTORICAL RUNTIME VERIFICATION**.
 
 ## I. World-generation catalog

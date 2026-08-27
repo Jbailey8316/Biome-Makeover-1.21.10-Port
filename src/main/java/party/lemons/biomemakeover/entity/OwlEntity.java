@@ -1,6 +1,7 @@
 package party.lemons.biomemakeover.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -118,6 +119,13 @@ public class OwlEntity extends ShoulderRidingEntity {
         navigation.setCanFloat(false);
         navigation.setCanOpenDoors(false);
         return navigation;
+    }
+
+    @Override
+    protected boolean canFlyToOwner() {
+        // The released FlyingFollowOwnerGoal passed leavesAllowed=true. In 1.21.10
+        // vanilla moved that contract onto the tameable entity itself.
+        return true;
     }
 
     @Nullable
@@ -278,34 +286,27 @@ public class OwlEntity extends ShoulderRidingEntity {
         @Override
         protected Vec3 getPosition() {
             Vec3 target = null;
-            if (this.mob.isInWater()) target = LandRandomPos.getPos(this.mob, 15, 15);
+            if (this.mob.isInWater()) target = LandRandomPos.getPos(this.mob, 15, 7);
             if (this.mob.getRandom().nextFloat() >= this.probability) target = this.getTreeTarget();
             return target == null ? super.getPosition() : target;
         }
 
         private Vec3 getTreeTarget() {
-            BlockPos origin = this.mob.blockPosition();
-            BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-            BlockPos best = null;
-            double bestDistance = Double.MAX_VALUE;
-            for (int x = origin.getX() - 3; x <= origin.getX() + 3; ++x) {
-                for (int z = origin.getZ() - 3; z <= origin.getZ() + 3; ++z) {
-                    for (int y = origin.getY() - 6; y <= origin.getY() + 6; ++y) {
-                        cursor.set(x, y, z);
-                        BlockState support = this.mob.level().getBlockState(cursor.below());
-                        if ((support.getBlock() instanceof LeavesBlock || support.is(BlockTags.LOGS))
-                            && this.mob.level().isEmptyBlock(cursor)
-                            && this.mob.level().isEmptyBlock(cursor.above())) {
-                            double distance = origin.distSqr(cursor);
-                            if (distance < bestDistance) {
-                                bestDistance = distance;
-                                best = cursor.immutable();
-                            }
-                        }
-                    }
+            BlockPos origin = this.mob.getOnPos();
+            BlockPos.MutableBlockPos supportPos = new BlockPos.MutableBlockPos();
+            BlockPos.MutableBlockPos abovePos = new BlockPos.MutableBlockPos();
+            for (BlockPos candidate : BlockPos.betweenClosed(
+                Mth.floor(this.mob.getX() - 3.0D), Mth.floor(this.mob.getY() - 6.0D), Mth.floor(this.mob.getZ() - 3.0D),
+                Mth.floor(this.mob.getX() + 3.0D), Mth.floor(this.mob.getY() + 6.0D), Mth.floor(this.mob.getZ() + 3.0D))) {
+                if (origin.equals(candidate)) continue;
+                BlockState support = this.mob.level().getBlockState(supportPos.setWithOffset(candidate, Direction.DOWN));
+                if ((support.getBlock() instanceof LeavesBlock || support.is(BlockTags.LOGS))
+                    && this.mob.level().isEmptyBlock(candidate)
+                    && this.mob.level().isEmptyBlock(abovePos.setWithOffset(candidate, Direction.UP))) {
+                    return Vec3.atBottomCenterOf(candidate);
                 }
             }
-            return best == null ? null : Vec3.atBottomCenterOf(best);
+            return null;
         }
     }
 }

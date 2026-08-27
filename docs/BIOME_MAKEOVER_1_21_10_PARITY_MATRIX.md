@@ -114,7 +114,7 @@ boats, and Mythas candidates remain deferred and do not change this status. Stag
 | Ancient Oak complete wood set, tree and sapling | Physical family including signs plus 1x1/2x2 growth and exact selector configs restored; boats deferred | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Tree geometry, ratios, leaf/drop and persistence checks |
 | Black Thistle, Foxglove, Itching Ivy, Moth Blossom | Physical blocks and generation runtime-confirmed; Black Thistle upper-half Weakness callback restored; ivy slowdown/particles/spread and bonemeal conversion restored | STATIC-COMPATIBLE / BLACK THISTLE RUNTIME-OPEN | Moth-dependent attraction remains Stage 8 |
 | Mesmerite/Illunite fissure, blocks and crystals | Complete physical families, four-stage growth, light/sound/loot and released fissure algorithm restored | COMPATIBLE / NEEDS-RUNTIME-VERIFICATION | Fissure distribution/geometry and crystal presentation checks |
-| Owl core entity | Modern Owl exists | PRESENT-BUT-DIFFERENT | See dedicated matrix; preserve enhancements separately |
+| Owl core entity | Released behavior restored; breeding/baby/flight/hunting/eyes/Hedwig runtime-pass, tree-selection remediation runtime-open | STATIC/PACKAGE PASS; RUNTIME PARTIAL | See dedicated matrix; shoulder transition is source-confirmed unreachable |
 | Rootling and Moth | None | MISSING | Flora/tags first, then AI/render/loot/sounds/spawn |
 | Dark Forest fox/rabbit additions | Both injected with custom weights/groups | PRESENT-BUT-DIFFERENT | Restore released weights/groups and full biome modifier semantics |
 | Mansion integration | No custom mansion | MISSING | Depends on complete illager/functional systems and templates |
@@ -226,24 +226,24 @@ from the current Owl.
 | Despawn | Normal persistence behavior | Restored inherited behavior | STATIC-EXACT / RUNTIME-OPEN |
 | Attributes | fly .8, health 6, movement .4, attack 2; tame health 20/attack 4 | Same core values; adds tempt range | COMPATIBLE |
 | Navigation | FlyingMoveControl/FlyingPathNavigation | Modern equivalents | COMPATIBLE |
-| Flight/landing | Original random tree-flight and slow-fall/no fall damage | Extended exposed-canopy selection, lift/descent/hover corrections | PRESENT-BUT-DIFFERENT |
-| Perching/tree use | Tree-directed flying goal | Return-to-tree and tree scoring/memory behavior | MYTHAS-ENHANCEMENT / PBD |
+| Flight/landing | Original random tree-flight and slow-fall/no fall damage | Released flight contract; first-match tree scan and 15-by-7 water fallback restored | FLIGHT RUNTIME-PASS / TREE RETEST |
+| Perching/tree use | Opportunistic first clear space over Leaves/Logs; no state/timer/memory | Same released scan contract | STATIC-EXACT / RUNTIME-OPEN |
 | Targeting | Owner defense plus all `owl_targets` tag members | Restored tag-driven target goal | STATIC-EXACT / RUNTIME-OPEN |
-| Original prey | Rabbit, chicken, silverfish, endermite, bat, toad, Blight Bat, Dragonfly, both bugs | Chicken at night; rabbit helper says true but no target goal | PARTIAL |
+| Original prey | Rabbit, chicken, silverfish, endermite, bat, toad, Blight Bat, Dragonfly, both bugs | Restored optional tag membership and wild tag-driven targeting | RUNTIME-PASS |
 | Taming | Any edible meat; 1-in-3 chance | `minecraft:wolf_food` equivalent; 1-in-3 | STATIC-COMPATIBLE / RUNTIME-OPEN |
 | Healing | Any edible meat, nutrition-based | Restored nutrition-based meat healing | STATIC-COMPATIBLE / RUNTIME-OPEN |
-| Temptation | Any meat | Raw rabbit only | PRESENT-BUT-DIFFERENT |
+| Temptation | Any edible meat | `minecraft:wolf_food` modern equivalent | STATIC-COMPATIBLE / RUNTIME-PASS |
 | Breeding/food | Any meat and original breeding goal | Meat breeding and owner inheritance runtime-confirmed; crash fixed | RUNTIME-PASS |
-| Sit/owner behavior | Tameable/shoulder base behavior | Explicit synced sitting toggle and owner behavior | COMPATIBLE plus enhancement |
-| Shoulder behavior | Inherited shoulder riding | Goal exists; renderer has explicit shoulder-perch TODO | BROKEN / NEEDS-RUNTIME-VERIFICATION |
-| Sounds | Idle, hurt, death | Original three plus five custom events | COMPATIBLE plus enhancement |
-| Model/animation | Historical geometry and movement | Geometry adapted to render-state API; custom flying/sitting/sleep/blink | PARTIAL / enhancement |
-| Emissive eyes | Always emissive eyes layer | Layer always registered, but `nightEyes` state is not visibly consumed by layer | NEEDS-RUNTIME-VERIFICATION |
-| Texture variant | Includes Hedwig variant selection | Restored case-insensitive Hedwig selection | STATIC-EXACT / RUNTIME-OPEN |
+| Sit/owner behavior | Tameable sit/follow/defense behavior | Released behavior; modern leaf-enabled follow teleport restored | STATIC-COMPATIBLE / LEAF RETEST |
+| Shoulder behavior | Inherits shoulder storage, but registers no landing goal | Same released omission; no normal shoulder transition | SOURCE-CONFIRMED / UNREACHABLE |
+| Sounds | Idle, hurt, death | Released three-event behavior; compatibility-preserved extra IDs are inert | STATIC-EXACT / RUNTIME-PASS |
+| Model/animation | Historical geometry and movement | Released model translated to render-state API with dedicated baby transform | RUNTIME-PASS |
+| Emissive eyes | Always emissive eyes layer | Unconditional full-bright eyes layer | RUNTIME-PASS |
+| Texture variant | Includes Hedwig variant selection | Restored case-insensitive Hedwig selection | RUNTIME-PASS |
 | Drops | 1–2 feathers plus looting | Restored modern loot schema | STATIC-EXACT / RUNTIME-OPEN |
-| State/NBT | `OwlState` and `StandingState` | Same plus sitting, sleeping and nest position state | COMPATIBLE plus enhancement |
-| Persistence | Original tameable-entity behavior | Additional daytime/despawn/nest persistence decisions | PRESENT-BUT-DIFFERENT |
-| Baby behavior | Vanilla age/breeding path with released ageable model transform | Server age path confirmed; modern dedicated baby model/state selection restored | STATIC-COMPATIBLE / RUNTIME-OPEN |
+| State/NBT | `OwlState` and `StandingState`, plus inherited tame/owner/age/sit | Same released gameplay state; inert registry compatibility does not activate nests | STATIC-EXACT |
+| Persistence | Original tameable-entity behavior | Restored inherited behavior without day culling/nest state | STATIC-EXACT / RUNTIME-PARTIAL |
+| Baby behavior | Vanilla age/breeding path with released ageable model transform | Genuine inherited baby age plus modern dedicated baby model/state selection | RUNTIME-PASS |
 
 To restore released parity while retaining optional work, isolate rules into
 two layers. Restore the original spawn weight/predicate, meat ingredient,
@@ -476,8 +476,8 @@ later approved overlay.
    tree; most present feature JSONs have no biome injection path.
 3. Measure current Mesmerite and plant distributions and compare seeded worlds.
 4. Confirm current wall connections and tag namespace/directory semantics.
-5. Test Owl shoulder mounting and rendering; the current renderer explicitly
-   leaves a shoulder hook unfinished.
+5. Do not treat absent Owl shoulder mounting as a blocker: final 1.20.1 omitted
+   the landing goal required to invoke its inherited shoulder storage path.
 6. Test whether the current eyes layer is always emissive despite unused
    `nightEyes` state, and capture original unconditional behavior.
 7. Verify original Hedwig selection probability/persistence from historical

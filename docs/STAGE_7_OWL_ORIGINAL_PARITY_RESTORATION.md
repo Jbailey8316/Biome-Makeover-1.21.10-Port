@@ -29,8 +29,11 @@ Rootlings, Moths, Altar/curses, Mansion content, or Mythas enhancements.
   food's nutrition. Since 1.21.10 removed the old meat boolean, the maintained
   vanilla `minecraft:wolf_food` tag preserves this semantic family.
 - Babies use inherited age state. Offspring inherit owner and tame state.
-- Perching is opportunistic tree-targeting random stroll. Shoulder storage is
-  inherited from `ShoulderRidingEntity`; there is no custom nest lifecycle.
+- Tree landing is opportunistic tree-targeting random stroll. The released
+  class inherits shoulder serialization/storage from `ShoulderRidingEntity`,
+  but it does not register `LandOnOwnersShoulderGoal`; normal AI therefore has
+  no path that transfers an Owl to a player shoulder. There is no custom nest
+  lifecycle.
 - Rendering uses the released 64×64 model, 0.75 scale, historical flight lean
   and movement poses, and unconditional full-bright `owl_eyes.png`. A
   case-insensitive name `Hedwig` selects `owl_2.png`. There is no blink.
@@ -60,8 +63,9 @@ excluded from the jar. No registry ID was removed, renamed or repurposed.
 - Render-state extraction transfers flight, sitting, lean and Hedwig state;
   the emissive eye layer is unconditional.
 - Dynamic living dimensions moved to `getDefaultDimensions` in 1.21.10.
-- Modern `FollowOwnerGoal` replaces BM's old compatibility wrapper. Leaf-safe
-  owner following/teleporting and shoulder behavior require Prism verification.
+- Modern `FollowOwnerGoal` replaces BM's old compatibility wrapper. The old
+  `leavesAllowed=true` argument maps to `canFlyToOwner()` in 1.21.10. The
+  released first-match tree scan and 15-by-7 water escape search are retained.
 
 ## Prism acceptance checklist
 
@@ -76,7 +80,8 @@ excluded from the jar. No registry ID was removed, renamed or repurposed.
    save/reload.
 5. Test Rabbit, Chicken, Silverfish, Endermite, Bat, Dragonfly and both bug
    types as prey; tame Owls must not use the wild prey target goal.
-6. Test tree landing and inherited shoulder behavior, dismount and persistence.
+6. Test opportunistic tree landing. Do not expect shoulder mounting: final
+   1.20.1 supplied shoulder storage but omitted the goal that triggers it.
 7. Inspect standing, walking, flying, landing, sitting and baby poses from all
    sides. Eyes must glow by day and night with no blinking. Test `Hedwig`.
 8. Test ordinary and Looting kills: 1–2 Feathers plus Looting, no Owl head.
