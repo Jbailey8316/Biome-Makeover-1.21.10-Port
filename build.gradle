@@ -42,6 +42,7 @@ def stage3GeneratedResources = layout.buildDirectory.dir('generated/stage3Resour
 def stage4GeneratedResources = layout.buildDirectory.dir('generated/stage4Resources')
 def stage5GeneratedResources = layout.buildDirectory.dir('generated/stage5Resources')
 def stage6GeneratedResources = layout.buildDirectory.dir('generated/stage6Resources')
+def stage8GeneratedResources = layout.buildDirectory.dir('generated/stage8Resources')
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
     outputs.dir(stage3GeneratedResources)
@@ -201,6 +202,42 @@ tasks.register('generateStage6ItemDefinitions') {
     }
 }
 
+tasks.register('generateStage8ItemDefinitions') {
+    outputs.dir(stage8GeneratedResources)
+    doLast {
+        def output=stage8GeneratedResources.get().dir('assets/biomemakeover/items').asFile
+        output.mkdirs()
+        ['blue_bud','brown_bud','cyan_bud','gray_bud','light_blue_bud','purple_bud','rootling_seeds',
+         'bulbus_root','roasted_bulbus_root','moth_scales','rootling_spawn_egg','moth_spawn_egg'].each { id ->
+            new File(output,"${id}.json").text=JsonOutput.prettyPrint(JsonOutput.toJson([model:[type:'minecraft:model',model:"biomemakeover:item/${id}"]]))+System.lineSeparator()
+        }
+        def clientJar=fileTree("${projectDir}/.gradle/loom-cache/minecraftMaven").matching { include '**/minecraft-clientOnly-*.jar' }.files.sort { it.absolutePath }.last()
+        def eggColors=[rootling_spawn_egg:[0x2b2924,0xa17b1f],moth_spawn_egg:[0x7d5699,0x968e9c]]
+        def textureOutput=stage8GeneratedResources.get().dir('assets/biomemakeover/textures/item').asFile
+        def modelOutput=stage8GeneratedResources.get().dir('assets/biomemakeover/models/item').asFile
+        textureOutput.mkdirs(); modelOutput.mkdirs()
+        new ZipFile(clientJar).withCloseable { zip ->
+            def template=ImageIO.read(zip.getInputStream(zip.getEntry('assets/minecraft/textures/item/pig_spawn_egg.png')))
+            eggColors.each { id,colors ->
+                def image=new BufferedImage(template.width,template.height,BufferedImage.TYPE_INT_ARGB)
+                for(int x=0;x<template.width;x++)for(int y=0;y<template.height;y++){int argb=template.getRGB(x,y),alpha=(argb>>>24)&255;if(alpha==0){image.setRGB(x,y,0);continue};int brightness=(((argb>>>16)&255)+((argb>>>8)&255)+(argb&255))/3,target=brightness<190?colors[1]:colors[0];float shade=brightness/220F;int pixel=(alpha<<24)|(Math.min(255,Math.round(((target>>>16)&255)*shade))<<16)|(Math.min(255,Math.round(((target>>>8)&255)*shade))<<8)|Math.min(255,Math.round((target&255)*shade));image.setRGB(x,y,pixel)}
+                ImageIO.write(image,'png',new File(textureOutput,"${id}.png"))
+                new File(modelOutput,"${id}.json").text=JsonOutput.prettyPrint(JsonOutput.toJson([parent:'minecraft:item/generated',textures:[layer0:"biomemakeover:item/${id}"]]))+System.lineSeparator()
+            }
+        }
+        def budRoot=file('reference/Biome-Makeover-1.20/common/src/main/resources/assets/biomemakeover/textures/permutations/buds')
+        def bud=ImageIO.read(new File(budRoot,'bud.png')),sourcePalette=ImageIO.read(new File(budRoot,'color_palettes/bud_palette.png'))
+        ['blue','brown','cyan','gray','light_blue','purple'].each { color ->
+            def targetPalette=ImageIO.read(new File(budRoot,"color_palettes/${color}_bud.png")),palette=[:]
+            for(int x=0;x<sourcePalette.width;x++)for(int y=0;y<sourcePalette.height;y++)palette[sourcePalette.getRGB(x,y)]=targetPalette.getRGB(x,y)
+            def overlay=new BufferedImage(bud.width,bud.height,BufferedImage.TYPE_INT_ARGB)
+            for(int x=0;x<bud.width;x++)for(int y=0;y<bud.height;y++){int pixel=bud.getRGB(x,y);overlay.setRGB(x,y,palette.containsKey(pixel)?palette[pixel]:pixel)}
+            ImageIO.write(overlay,'png',new File(textureOutput,"${color}_bud_overlay.png"))
+            new File(modelOutput,"${color}_bud.json").text=JsonOutput.prettyPrint(JsonOutput.toJson([parent:'minecraft:item/generated',textures:[layer0:'biomemakeover:item/bud_base',layer1:"biomemakeover:item/${color}_bud_overlay"]]))+System.lineSeparator()
+        }
+    }
+}
+
 processResources {
     // Preserve the pre-Stage-6 source audit artifacts without packaging them as
     // released worldgen: final BM 1.20.1 has no owl_nest feature resources.
@@ -210,10 +247,12 @@ processResources {
     dependsOn tasks.named('generateStage4ItemDefinitions')
     dependsOn tasks.named('generateStage5ItemDefinitions')
     dependsOn tasks.named('generateStage6ItemDefinitions')
+    dependsOn tasks.named('generateStage8ItemDefinitions')
     from(stage3GeneratedResources)
     from(stage4GeneratedResources)
     from(stage5GeneratedResources)
     from(stage6GeneratedResources)
+    from(stage8GeneratedResources)
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
@@ -361,6 +400,17 @@ processResources {
                 .replace('/tags/items/', '/tags/item/')
                 .replace('/tags/entity_types/', '/tags/entity_type/')
         }
+    }
+
+    // Stage 8 reachable Dark Forest ecology advancements. Cross-biome
+    // Ectoplasm and later Stunt Powder/Altar progression remain excluded.
+    from('reference/Biome-Makeover-1.20/common/src/main/resources') {
+        include 'data/biomemakeover/advancements/biomemakeover/rootling_seeds.json'
+        include 'data/biomemakeover/advancements/biomemakeover/roasted_bulbus_root.json'
+        include 'data/biomemakeover/advancements/biomemakeover/moth_blossom.json'
+        include 'data/biomemakeover/advancements/biomemakeover/moth_scales.json'
+        include 'data/biomemakeover/advancements/biomemakeover/nocturnal_potion.json'
+        eachFile { details -> details.path=details.path.replace('/advancements/','/advancement/') }
     }
 
     // Stage 6 Dark Forest physical resources. Entity gameplay, Altar/curses,
@@ -682,6 +732,7 @@ processResources {
                 if (advancement.display?.icon instanceof Map && advancement.display.icon.item) {
                     advancement.display.icon.id = advancement.display.icon.remove('item')
                 }
+                if (advancement.display?.icon instanceof Map && advancement.display.icon.nbt) advancement.display.icon.remove('nbt')
                 advancement.criteria?.values()?.each { criterion ->
                     criterion.conditions?.items?.each { predicate ->
                         if (predicate.items instanceof List && predicate.items.size() == 1) predicate.items = predicate.items[0]

@@ -1,0 +1,11 @@
+{
+  "blocks_with_items": [],
+  "no_item_blocks": ["rootling_crop"],
+  "items": ["blue_bud","brown_bud","bulbus_root","cyan_bud","gray_bud","light_blue_bud","moth_scales","purple_bud","roasted_bulbus_root","rootling_seeds"],
+  "spawn_eggs": ["moth_spawn_egg","rootling_spawn_egg"],
+  "entities": ["moth","rootling"],
+  "sounds": ["moth_bite","moth_death","moth_flap","moth_hurt","moth_idle","rootling_afraid","rootling_death","rootling_hurt","rootling_idle"],
+  "mob_effects": ["nocturnal"],
+  "potions": ["nocturnal_pot","long_nocturnal_pot"],
+  "recipes": ["blue_dye_from_blue_bud","brown_dye_from_brown_bud","cyan_dye_from_cyan_bud","gray_dye_from_gray_bud","light_blue_dye_from_light_blue_bud","purple_dye_from_purple_bud","roasted_bulbus_root","roasted_bulbus_root_from_smoking","roasted_bulbus_root_from_campfire_cooking"]
+}

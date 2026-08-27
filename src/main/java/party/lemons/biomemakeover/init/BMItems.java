@@ -30,6 +30,7 @@ import net.minecraft.sounds.SoundEvents;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.item.GlowfishBucketItem;
 import party.lemons.biomemakeover.item.LightningBottleItem;
+import net.minecraft.world.item.BlockItem;
 
 public final class BMItems {
     public static final Item LEAF_LITTER = register("leaf_litter");
@@ -74,6 +75,16 @@ public final class BMItems {
     public static final Item CRACKED_BRICK = register("cracked_brick");
     public static final Item LIGHTNING_BOTTLE = register("lightning_bottle", LightningBottleItem::new);
     public static final Item ILLUNITE_SHARD = register("illunite_shard");
+    public static final Item BLUE_BUD = register("blue_bud");
+    public static final Item BROWN_BUD = register("brown_bud");
+    public static final Item CYAN_BUD = register("cyan_bud");
+    public static final Item GRAY_BUD = register("gray_bud");
+    public static final Item LIGHT_BLUE_BUD = register("light_blue_bud");
+    public static final Item PURPLE_BUD = register("purple_bud");
+    public static final Item ROOTLING_SEEDS = register("rootling_seeds", p -> new BlockItem(BMBlocks.ROOTLING_CROP, p));
+    public static final Item BULBUS_ROOT = register("bulbus_root", p -> new Item(p.food(new FoodProperties(2, 0.6F, false))));
+    public static final Item ROASTED_BULBUS_ROOT = register("roasted_bulbus_root", p -> new Item(p.food(new FoodProperties(5, 0.8F, false))));
+    public static final Item MOTH_SCALES = register("moth_scales");
 
     private BMItems() {}
 
@@ -101,6 +112,9 @@ public final class BMItems {
             entries.accept(GLOWSHROOM_STEW); entries.accept(GLOWFISH); entries.accept(COOKED_GLOWFISH); entries.accept(GLOWFISH_BUCKET);
             entries.accept(SCUTTLER_TAIL); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(CRACKED_BRICK); entries.accept(LIGHTNING_BOTTLE); entries.accept(ILLUNITE_SHARD);
             entries.accept(ANCIENT_OAK_SIGN); entries.accept(ANCIENT_OAK_HANGING_SIGN);
+            entries.accept(BLUE_BUD); entries.accept(BROWN_BUD); entries.accept(CYAN_BUD); entries.accept(GRAY_BUD);
+            entries.accept(LIGHT_BLUE_BUD); entries.accept(PURPLE_BUD); entries.accept(ROOTLING_SEEDS);
+            entries.accept(BULBUS_ROOT); entries.accept(ROASTED_BULBUS_ROOT); entries.accept(MOTH_SCALES);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

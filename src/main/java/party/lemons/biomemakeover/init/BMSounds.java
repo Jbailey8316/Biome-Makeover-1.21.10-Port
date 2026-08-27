@@ -38,6 +38,15 @@ public final class BMSounds {
     public static final SoundEvent ILLUNITE_HIT = register("illunite_hit");
     public static final SoundEvent ILLUNITE_PLACE = register("illunite_place");
     public static final SoundEvent ILLUNITE_STEP = register("illunite_step");
+    public static final SoundEvent ROOTLING_HURT = register("rootling_hurt");
+    public static final SoundEvent ROOTLING_DEATH = register("rootling_death");
+    public static final SoundEvent ROOTLING_AFRAID = register("rootling_afraid");
+    public static final SoundEvent ROOTLING_IDLE = register("rootling_idle");
+    public static final SoundEvent MOTH_IDLE = register("moth_idle");
+    public static final SoundEvent MOTH_FLAP = register("moth_flap");
+    public static final SoundEvent MOTH_DEATH = register("moth_death");
+    public static final SoundEvent MOTH_BITE = register("moth_bite");
+    public static final SoundEvent MOTH_HURT = register("moth_hurt");
 
     private BMSounds() {}
 

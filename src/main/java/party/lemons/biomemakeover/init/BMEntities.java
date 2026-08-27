@@ -27,6 +27,8 @@ import party.lemons.biomemakeover.entity.DecayedEntity;
 import party.lemons.biomemakeover.entity.DragonflyEntity;
 import party.lemons.biomemakeover.entity.LightningBugEntity;
 import party.lemons.biomemakeover.entity.LightningBottleEntity;
+import party.lemons.biomemakeover.entity.RootlingEntity;
+import party.lemons.biomemakeover.entity.MothEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
@@ -70,7 +72,13 @@ public final class BMEntities {
         EntityType.Builder.<LightningBugEntity>of((type, level) -> new LightningBugEntity(type, level, true), MobCategory.AMBIENT).sized(.4F, .4F).clientTrackingRange(12));
     public static final Item LIGHTNING_BUG_SPAWN_EGG = registerSpawnEgg("lightning_bug_spawn_egg", LIGHTNING_BUG_ALTERNATE);
     public static final EntityType<LightningBottleEntity> LIGHTNING_BOTTLE = registerEntity("lightning_bottle",
-        EntityType.Builder.<LightningBottleEntity>of(LightningBottleEntity::new, MobCategory.MISC).sized(.25F, .25F).clientTrackingRange(10).updateInterval(4));
+            EntityType.Builder.<LightningBottleEntity>of(LightningBottleEntity::new, MobCategory.MISC).sized(.25F, .25F).clientTrackingRange(10).updateInterval(4));
+    public static final EntityType<RootlingEntity> ROOTLING = registerEntity("rootling",
+        EntityType.Builder.<RootlingEntity>of(RootlingEntity::new, MobCategory.CREATURE).sized(.6F,1.1F).clientTrackingRange(12));
+    public static final EntityType<MothEntity> MOTH = registerEntity("moth",
+        EntityType.Builder.<MothEntity>of(MothEntity::new, MobCategory.MONSTER).sized(.8F,1.2F).clientTrackingRange(12));
+    public static final Item ROOTLING_SPAWN_EGG = registerSpawnEgg("rootling_spawn_egg", ROOTLING);
+    public static final Item MOTH_SPAWN_EGG = registerSpawnEgg("moth_spawn_egg", MOTH);
 
     private BMEntities() {
     }
@@ -100,6 +108,8 @@ public final class BMEntities {
         FabricDefaultAttributeRegistry.register(DRAGONFLY, DragonflyEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(LIGHTNING_BUG, LightningBugEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(LIGHTNING_BUG_ALTERNATE, LightningBugEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ROOTLING, RootlingEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(MOTH, MothEntity.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,
@@ -117,6 +127,12 @@ public final class BMEntities {
         SpawnPlacements.register(LIGHTNING_BUG, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, LightningBugEntity::checkLightningBugSpawn);
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS).register(entries -> {
             entries.accept(DECAYED_SPAWN_EGG); entries.accept(DRAGONFLY_SPAWN_EGG); entries.accept(LIGHTNING_BUG_SPAWN_EGG);
+            entries.accept(ROOTLING_SPAWN_EGG); entries.accept(MOTH_SPAWN_EGG);
         });
+        SpawnPlacements.register(ROOTLING, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            (type, level, reason, pos, random) -> level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)
+                && level.getRawBrightness(pos, 0) > 2);
+        SpawnPlacements.register(MOTH, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING,
+            MothEntity::checkSpawnRules);
     }
 }

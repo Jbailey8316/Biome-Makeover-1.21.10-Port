@@ -101,5 +101,38 @@
   "effect.biomemakeover.shocked": "Shocked",
   "subtitles.entity.lightning_bottle.throw": "Bottle o' Lightning thrown",
   "advancements.biomemakeover.lightning_bottle.title": "Never Strikes Twice",
-  "advancements.biomemakeover.lightning_bottle.description": "Obtain a Bottle o' Lightning"
+  "advancements.biomemakeover.lightning_bottle.description": "Obtain a Bottle o' Lightning",
+  "entity.biomemakeover.rootling":"Rootling",
+  "entity.biomemakeover.moth":"Moth",
+  "item.biomemakeover.rootling_spawn_egg":"Rootling Spawn Egg",
+  "item.biomemakeover.moth_spawn_egg":"Moth Spawn Egg",
+  "item.biomemakeover.rootling_seeds":"Rootling Seeds",
+  "item.biomemakeover.bulbus_root":"Bulbus Root",
+  "item.biomemakeover.roasted_bulbus_root":"Roasted Bulbus Root",
+  "item.biomemakeover.moth_scales":"Moth Scales",
+  "item.biomemakeover.blue_bud":"Blue Bud",
+  "item.biomemakeover.brown_bud":"Brown Bud",
+  "item.biomemakeover.cyan_bud":"Cyan Bud",
+  "item.biomemakeover.gray_bud":"Gray Bud",
+  "item.biomemakeover.light_blue_bud":"Light Blue Bud",
+  "item.biomemakeover.purple_bud":"Purple Bud",
+  "effect.biomemakeover.nocturnal":"Nocturnal",
+  "item.minecraft.potion.effect.nocturnal":"Potion of the Nocturnal",
+  "item.minecraft.splash_potion.effect.nocturnal":"Splash Potion of the Nocturnal",
+  "item.minecraft.lingering_potion.effect.nocturnal":"Lingering Potion of the Nocturnal",
+  "item.minecraft.tipped_arrow.effect.nocturnal":"Arrow of the Nocturnal",
+  "subtitles.biomemakeover.rootling.afraid":"Rootling gasps",
+  "subtitles.biomemakeover.rootling.death":"Rootling dies",
+  "subtitles.biomemakeover.rootling.hurt":"Rootling hurts",
+  "subtitles.biomemakeover.rootling.idle":"Rootling jabbers"
+  ,"advancements.biomemakeover.rootling_seeds.title":"Future Friend"
+  ,"advancements.biomemakeover.rootling_seeds.description":"Obtain some Rootling Seeds"
+  ,"advancements.biomemakeover.roasted_bulbus_root.title":"Former Friend"
+  ,"advancements.biomemakeover.roasted_bulbus_root.description":"Obtain a Roasted Bulbus Root"
+  ,"advancements.biomemakeover.moth_blossom.title":"Orange is the New Orange"
+  ,"advancements.biomemakeover.moth_blossom.description":"Obtain a Moth Blossom"
+  ,"advancements.biomemakeover.moth_scales.title":"Bug Swatter"
+  ,"advancements.biomemakeover.moth_scales.description":"Obtain some Moth Scales"
+  ,"advancements.biomemakeover.nocturnal_potion.title":"All Nighter"
+  ,"advancements.biomemakeover.nocturnal_potion.description":"Consume a Nocturnal Potion"
 }

@@ -1,0 +1,3 @@
+package party.lemons.biomemakeover.client.sound;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;import net.minecraft.sounds.SoundSource;import party.lemons.biomemakeover.entity.MothEntity;import party.lemons.biomemakeover.init.BMSounds;
+public final class MothLoopSound extends AbstractTickableSoundInstance {private final MothEntity moth;public MothLoopSound(MothEntity moth){super(BMSounds.MOTH_FLAP,SoundSource.HOSTILE,moth.getRandom());this.moth=moth;this.looping=true;this.delay=0;this.volume=.45F;this.pitch=1;tick();}@Override public boolean canPlaySound(){return !moth.isSilent();}@Override public void tick(){if(moth.isRemoved()||!moth.isAlive()){stop();return;}x=moth.getX();y=moth.getY();z=moth.getZ();}}

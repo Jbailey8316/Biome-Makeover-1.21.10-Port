@@ -14,6 +14,7 @@ import party.lemons.biomemakeover.init.BMAdvancements;
 import party.lemons.biomemakeover.init.BMParticles;
 import party.lemons.biomemakeover.init.BMBlockEntities;
 import party.lemons.biomemakeover.init.BMEffects;
+import party.lemons.biomemakeover.init.BMPotions;
 import party.lemons.biomemakeover.level.BMWorldEvents;
 
 public final class BiomeMakeover implements ModInitializer {
@@ -32,11 +33,12 @@ public final class BiomeMakeover implements ModInitializer {
         BMSounds.initialize();
         BMParticles.initialize();
         BMEffects.initialize();
+        BMPotions.initialize();
         BMFeatures.initialize();
         BMAdvancements.initialize();
         BMEntities.initialize();
         BMWorldgen.initialize();
         BMWorldEvents.initialize();
-        LOGGER.info("Biome Makeover owl nest full-test build loaded.");
+        LOGGER.info("Biome Makeover Stage 8 Dark Forest ecology build loaded.");
     }
 }

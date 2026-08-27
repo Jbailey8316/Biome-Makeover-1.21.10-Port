@@ -38,6 +38,7 @@ $stage3Path = Join-Path $RepositoryRoot 'validation/foundations/stage_3_mushroom
 $stage4Path = Join-Path $RepositoryRoot 'validation/foundations/stage_4_badlands_contract.json'
 $stage5Path = Join-Path $RepositoryRoot 'validation/foundations/stage_5_swamp_contract.json'
 $stage6Path = Join-Path $RepositoryRoot 'validation/foundations/stage_6_dark_forest_contract.json'
+$stage8Path = Join-Path $RepositoryRoot 'validation/foundations/stage_8_rootling_moth_contract.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
 $dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
@@ -47,6 +48,7 @@ $stage3 = Get-Content $stage3Path -Raw | ConvertFrom-Json
 $stage4 = Get-Content $stage4Path -Raw | ConvertFrom-Json
 $stage5 = Get-Content $stage5Path -Raw | ConvertFrom-Json
 $stage6 = Get-Content $stage6Path -Raw | ConvertFrom-Json
+$stage8 = Get-Content $stage8Path -Raw | ConvertFrom-Json
 
 foreach ($setName in @('blocks','no_item_blocks','standalone_items','entities','spawn_eggs','configured_features','placed_features')) {
     $values = @($stage3.$setName)
@@ -66,6 +68,7 @@ foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','ite
     $values = @($stage6.$setName)
     if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in Stage 6 contract set $setName" }
 }
+foreach ($setName in @('blocks_with_items','no_item_blocks','items','spawn_eggs','entities','sounds','mob_effects','potions','recipes')) { $values=@($stage8.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 8 contract set $setName"} }
 
 foreach ($property in $baseline.registries.PSObject.Properties) {
     $values = @($property.Value)
@@ -73,12 +76,12 @@ foreach ($property in $baseline.registries.PSObject.Properties) {
 }
 
 $parsedBlocks = @(Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java' | Where-Object { $_ -ne 'stripped_' })
-$blocks = Sorted (@($parsedBlocks) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks))
+$blocks = Sorted (@($parsedBlocks) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.blocks_with_items) + @($stage8.no_item_blocks))
 $standaloneItems = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMItems.java'
 $entityFileIds = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java'
 $entities = @($entityFileIds | Where-Object { $_ -notlike '*_spawn_egg' })
 $spawnEggs = @($entityFileIds | Where-Object { $_ -like '*_spawn_egg' })
-$allNoItemBlocks = @($stage3.no_item_blocks) + @($stage4.registry.no_item_blocks) + @($stage5.no_item_blocks) + @($stage6.no_item_blocks)
+$allNoItemBlocks = @($stage3.no_item_blocks) + @($stage4.registry.no_item_blocks) + @($stage5.no_item_blocks) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks)
 $items = Sorted (@($blocks | Where-Object { $_ -notin $allNoItemBlocks }) + @($standaloneItems) + @($spawnEggs))
 $sounds = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMSounds.java'
 $particleText=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMParticles.java') -Raw
@@ -94,10 +97,10 @@ foreach ($deferred in $stage3.deferred_released_ids) {
     }
 }
 
-Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks))) $blocks
-Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items))) $items
-Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities))) $entities
-Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step'))) $sounds
+Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks))) $blocks
+Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs))) $items
+Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities) + @($stage8.entities))) $entities
+Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds))) $sounds
 Assert-EqualSet 'particle registry IDs' (Sorted (@($baseline.registries.particle_type) + @($stage5.particles) + @($stage6.particles))) $particles
 Assert-EqualSet 'Stage 5 block-entity registry IDs' @($stage5.block_entities) $blockEntities
 
@@ -593,6 +596,19 @@ $owlLoot=Join-Path $builtData 'biomemakeover/loot_table/entities/owl.json'
 if(-not(Test-Path $owlTargetTag)){Add-Failure 'Owl released prey entity-type tag is not packaged'}
 if(-not(Test-Path $owlLoot)){Add-Failure 'Owl released entity loot table is not packaged'}else{$owlLootText=Get-Content $owlLoot -Raw;if($owlLootText -notmatch 'minecraft:feather' -or $owlLootText -notmatch 'minecraft:enchanted_count_increase' -or $owlLootText -notmatch 'minecraft:looting'){Add-Failure 'Owl feather/Looting loot contract is incomplete'}}
 foreach($owlTexture in @('owl.png','owl_2.png','owl_eyes.png')){if(-not(Test-Path (Join-Path $builtAssets "textures/entity/$owlTexture"))){Add-Failure "Owl released texture missing: $owlTexture"}}
+
+# Stage 8 reachable Rootling/Moth ecosystem contracts. These checks intentionally
+# follow registrations through acquisition paths instead of equating assets with parity.
+$rootlingSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/RootlingEntity.java') -Raw
+$mothSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/MothEntity.java') -Raw
+foreach($id in @('rootling','moth')){if($id -notin $entities){Add-Failure "Stage 8 entity registration missing: $id"};if(-not(Test-Path (Join-Path $builtData "biomemakeover/loot_table/entities/$id.json"))){Add-Failure "Stage 8 entity loot missing: $id"}}
+foreach($id in @('blue_bud','brown_bud','cyan_bud','gray_bud','light_blue_bud','purple_bud','rootling_seeds','bulbus_root','roasted_bulbus_root','moth_scales','rootling_spawn_egg','moth_spawn_egg')){if($id -notin $items){Add-Failure "Stage 8 item registration missing: $id"};if(-not(Test-Path (Join-Path $builtAssets "items/$id.json"))){Add-Failure "Stage 8 item definition missing: $id"}}
+if('rootling_crop' -notin $blocks -or $items -contains 'rootling_crop'){Add-Failure 'Rootling crop must be a registered no-item crop reached through rootling_seeds'}
+if($rootlingSource -notmatch '600\s*\+\s*random\.nextInt\(601\)' -or $rootlingSource -notmatch 'isInWaterOrRain' -or $rootlingSource -notmatch '2\s*\+\s*random\.nextInt\(3\)'){Add-Failure 'Rootling released 600-1200 regrowth, rain/water acceleration, or 2-4 shearing contract missing'}
+if($mothSource -notmatch 'getLastHurtByMob\(\)==null' -or $mothSource -notmatch 'getLightEmission\(\)>10' -or $mothSource -notmatch 'MOTH_ATTRACTIVE'){Add-Failure 'Moth final attacker-gated light/Moth Blossom attraction contract missing'}
+$mothTag=Join-Path $builtData 'biomemakeover/tags/block/moth_attractive.json';if(-not(Test-Path $mothTag) -or (Get-Content $mothTag -Raw) -notmatch 'biomemakeover:moth_blossom'){Add-Failure 'Moth-attractive block tag is missing Moth Blossom'}
+foreach($recipe in @('roasted_bulbus_root','roasted_bulbus_root_from_smoking','roasted_bulbus_root_from_campfire_cooking','blue_dye_from_blue_bud','brown_dye_from_brown_bud','cyan_dye_from_cyan_bud','gray_dye_from_gray_bud','light_blue_dye_from_light_blue_bud','purple_dye_from_purple_bud')){if(-not(Test-Path (Join-Path $builtData "biomemakeover/recipe/$recipe.json"))){Add-Failure "Stage 8 recipe missing: $recipe"}}
+if($items -contains 'stunt_powder' -or $entities -contains 'ghost' -or (Test-Path (Join-Path $builtData 'biomemakeover/recipe/phantom_membrane.json'))){Add-Failure 'Later Stunt Powder/Ectoplasm progression leaked into Stage 8'}
 $blackThistleSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/BlackThistleBlock.java') -Raw
 if($blackThistleSource -notmatch '(?s)entityInside\(BlockState\s+state,\s*Level\s+level,\s*BlockPos\s+pos,\s*Entity\s+entity,\s*InsideBlockEffectApplier\s+effects,\s*boolean' -or
    $blackThistleSource -notmatch 'DoubleBlockHalf\.UPPER' -or $blackThistleSource -notmatch 'MobEffects\.WEAKNESS,\s*110,\s*0' -or

@@ -35,6 +35,7 @@ import party.lemons.biomemakeover.block.BlackThistleBlock;
 import party.lemons.biomemakeover.block.ItchingIvyBlock;
 import party.lemons.biomemakeover.block.IvyBlock;
 import party.lemons.biomemakeover.block.MothBlossomBlock;
+import party.lemons.biomemakeover.block.RootlingCropBlock;
 import party.lemons.biomemakeover.block.BuddingIlluniteBlock;
 import party.lemons.biomemakeover.block.IlluniteClusterBlock;
 import party.lemons.biomemakeover.block.WildMushroomBlock;
@@ -54,6 +55,8 @@ import party.lemons.biomemakeover.block.WillowingBranchesBlock;
 import party.lemons.biomemakeover.block.PeatFarmlandBlock;
 
 public final class BMBlocks {
+    public static final net.minecraft.tags.TagKey<Block> MOTH_ATTRACTIVE = net.minecraft.tags.TagKey.create(
+        net.minecraft.core.registries.Registries.BLOCK, BiomeMakeover.id("moth_attractive"));
     public static final TagKey<Block> BARREL_CACTUS_PLANTABLE = blockTag("barrel_cactus_plantable_on");
     public static final TagKey<Block> SAGUARO_CACTUS_PLANTABLE = blockTag("saguaro_cactus_plantable_on");
     public static final TagKey<Block> FISSURE_NO_REPLACE = blockTag("fissure_no_replace");
@@ -117,6 +120,8 @@ public final class BMBlocks {
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().noOcclusion().randomTicks().strength(0.15F).speedFactor(0.5F).sound(SoundType.VINE));
     public static final Block MOTH_BLOSSOM = register("moth_blossom", MothBlossomBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().noOcclusion().randomTicks().strength(0.25F).speedFactor(0.5F).sound(SoundType.VINE));
+    public static final Block ROOTLING_CROP = registerNoItem("rootling_crop", RootlingCropBlock::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().randomTicks().instabreak().sound(SoundType.CROP).pushReaction(PushReaction.DESTROY));
     public static final Block FOXGLOVE = register("foxglove", TallFlowerBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
     public static final Block OWL_NEST = register("owl_nest", OwlNestBlock::new,

@@ -16,6 +16,7 @@ public final class BMEffects {
         new BasicEffect(MobEffectCategory.HARMFUL, 0x6EFFFF).addAttributeModifier(
             Attributes.MAX_HEALTH, BiomeMakeover.id("effect.shocked.max_health"), -2.0,
             AttributeModifier.Operation.ADD_VALUE));
+    public static final Holder<MobEffect> NOCTURNAL = register("nocturnal", new NocturnalEffect());
 
     private BMEffects() {}
 
@@ -29,5 +30,16 @@ public final class BMEffects {
 
     private static final class BasicEffect extends MobEffect {
         private BasicEffect(MobEffectCategory category, int color) { super(category, color); }
+    }
+    private static final class NocturnalEffect extends MobEffect {
+        private NocturnalEffect() { super(MobEffectCategory.BENEFICIAL, 0xBA93C7); }
+        @Override public boolean applyEffectTick(net.minecraft.server.level.ServerLevel level,
+                net.minecraft.world.entity.LivingEntity entity, int amplifier) {
+            if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
+                player.resetStat(net.minecraft.stats.Stats.CUSTOM.get(net.minecraft.stats.Stats.TIME_SINCE_REST));
+            }
+            return true;
+        }
+        @Override public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) { return duration % 20 == 0; }
     }
 }

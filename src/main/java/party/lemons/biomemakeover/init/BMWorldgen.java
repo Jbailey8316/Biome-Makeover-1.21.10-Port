@@ -91,6 +91,10 @@ public final class BMWorldgen {
             BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
             MobCategory.CREATURE, BMEntities.OWL, 20, 1, 4
         );
+        BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
+            MobCategory.CREATURE, BMEntities.ROOTLING, 40, 2, 6);
+        BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.DARK_FOREST),
+            MobCategory.MONSTER, BMEntities.MOTH, 90, 2, 3);
 
         // Native Dark Forest wildlife additions
         BiomeModifications.addSpawn(

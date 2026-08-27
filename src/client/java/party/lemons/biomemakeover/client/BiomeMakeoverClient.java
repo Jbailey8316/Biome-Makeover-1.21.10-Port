@@ -41,6 +41,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import party.lemons.biomemakeover.init.BMBlockEntities;
 import party.lemons.biomemakeover.client.render.LightningBugBottleRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import party.lemons.biomemakeover.client.render.RootlingRenderer;
+import party.lemons.biomemakeover.client.render.MothRenderer;
 
 public final class BiomeMakeoverClient implements ClientModInitializer {
     private static final TagKey<Biome> SWAMPS = TagKey.create(Registries.BIOME, BiomeMakeover.id("swamps"));
@@ -48,6 +50,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
     public void onInitializeClient() {
         BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT,
             BMBlocks.WILD_MUSHROOMS, BMBlocks.IVY, BMBlocks.ITCHING_IVY, BMBlocks.MOTH_BLOSSOM, BMBlocks.BLACK_THISTLE, BMBlocks.FOXGLOVE,
+            BMBlocks.ROOTLING_CROP,
             BMBlocks.ANCIENT_OAK_LEAVES, BMBlocks.ANCIENT_OAK_SAPLING,
             BMBlocks.ANCIENT_OAK_DOOR, BMBlocks.ANCIENT_OAK_TRAPDOOR,
             BMBlocks.SMALL_ILLUNITE_BUD, BMBlocks.MEDIUM_ILLUNITE_BUD, BMBlocks.LARGE_ILLUNITE_BUD, BMBlocks.ILLUNITE_CLUSTER);
@@ -84,6 +87,8 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         EntityRenderers.register(BMEntities.LIGHTNING_BUG_ALTERNATE, LightningBugRenderer::new);
         EntityRenderers.register(BMEntities.LIGHTNING_BOTTLE, ThrownItemRenderer::new);
         EntityRenderers.register(BMEntities.DECAYED, DecayedRenderer::new);
+        EntityRenderers.register(BMEntities.ROOTLING, RootlingRenderer::new);
+        EntityRenderers.register(BMEntities.MOTH, MothRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.LIGHTNING_BUG_BOTTLE,LightningBugBottleRenderer::new);
         ParticleFactoryRegistry.getInstance().register(BMParticles.LIGHTNING_SPARK,LightningSparkParticle.Provider::new);
         ParticleFactoryRegistry.getInstance().register(BMParticles.BLOSSOM,BlossomParticle.Provider::new);
