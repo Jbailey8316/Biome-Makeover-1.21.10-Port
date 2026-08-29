@@ -141,7 +141,7 @@ historical source.
 | Adjudicator boss and phase/mimic support | None | MISSING |
 | Mimic and Stone Golem | None | MISSING |
 | Witch quests/trades/progression | None | MISSING |
-| Altar and ten-curse engine | Ten curses runtime accepted; Altar implemented/static validated | PARTIAL — ALTAR AWAITING RUNTIME ACCEPTANCE |
+| Altar and ten-curse engine | Ten curses and Altar runtime accepted; waterlogging deferred as a minor deviation; Mythas hopper automation separately accepted | COMPLETE / RUNTIME ACCEPTED |
 | Poltergeist and soul systems | None | MISSING |
 | Illunite, cladding and special equipment | None | MISSING |
 | Mansion loot, advancements, sounds, particles and client UI | None | MISSING |
@@ -408,7 +408,7 @@ unreleased dev content or activate Mythas additions by default.
 | 8 | Remaining simple entities and Beach ecology | Attributes/spawn/loot/render inventory | AI, despawn, animation, sound tests |
 | 9 | Functional blocks, five block entities, menus and packets | Codec/NBT/menu/packet round trips | Save/reload, multiplayer interaction tests |
 
-Stage 9 is subdivided by the source-audited dependency graph. Stage 9A and Stage 9B.1 are complete/runtime accepted. Stage 9B.1 restores the ten data-driven curses and their runtime engine. Stage 9B.2 now restores the complete Altar and `BMCursed` processing loop and is implemented/static validated, awaiting Prism runtime acceptance. Stage 10+ remains unstarted.
+Stage 9 is subdivided by the source-audited dependency graph. Stage 9A, Stage 9B.1 and Stage 9B.2 are complete/runtime accepted. Stage 9B.1 restores the ten data-driven curses and their runtime engine; Stage 9B.2 restores the reachable Altar and `BMCursed` processing loop. Altar waterlogging remains a documented minor parity deviation and is not claimed as functional. Brewing-Stand-style hopper locking is an explicit runtime-accepted Mythas enhancement, not final-source parity. Stage 10+ remains unstarted.
 | 10 | Mushroom House, Sunken Ruins, Ghost Town/archaeology | Template/processor/loot references | Locate/generate in new chunks; archaeology tests |
 | 11 | Mansion foundation, 228 templates and layout/processors | Template reachability and deterministic layout tests | Locate/generate mansion in disposable new region |
 | 12 | Illager progression, Adjudicator, Mimic, Golem, quests/curses | State-machine, loot, packet, advancement tests | Full multiplayer progression playthrough |

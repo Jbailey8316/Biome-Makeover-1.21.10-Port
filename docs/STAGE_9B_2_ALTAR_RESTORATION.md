@@ -1,6 +1,8 @@
 # Stage 9B.2 — Complete Altar Restoration
 
-Status: **REMEDIATED / AWAITING TARGETED RUNTIME RETEST**. Stage 9B.1 remains **COMPLETE / RUNTIME ACCEPTED**. Stage 10+ is not started.
+Status: **COMPLETE / RUNTIME ACCEPTED**. Stage 9B.1 remains **COMPLETE / RUNTIME ACCEPTED**. Stage 9B is complete; Stage 10+ is not started.
+
+Known minor parity deviation: Altar waterlogging is deferred and remains nonfunctional at runtime. Its state/fluid translation is retained, but the unsuccessful interaction remediation is not treated as runtime acceptance and does not block this stage.
 
 ## Authority and reachability
 
@@ -13,7 +15,7 @@ The shaped pattern is exactly ` B ` / `ICI` / `MCM`. The visible block item and 
 ## Final block and inventory contract
 
 - `biomemakeover:altar` is a strength-5, correct-tool, pickaxe-mineable, bass-drum, black-map-color block and normal block item.
-- The released three-part pedestal collision/outline shape, no-occlusion cutout rendering, `ACTIVE` and `WATERLOGGED` states are retained. Light is 1 while inactive and 5 while active.
+- The released three-part pedestal collision/outline shape, no-occlusion cutout rendering, `ACTIVE` and `WATERLOGGED` states are retained. Light is 1 while inactive and 5 while active. Actual player waterlogging remains a known deferred runtime deviation.
 - The Altar block entity has exactly two logical slots: slot 0 target, slot 1 `#biomemakeover:curse_fuel`. The final tag contains only `biomemakeover:illunite_shard`.
 - Processing is server-authoritative and takes exactly 300 ticks. Inventory and `Progress` persist. Removing or invalidating either required input resets progress to zero. Chunk unload/reload and server restart retain valid in-progress state.
 - A successful or failed completed attempt consumes one fuel. A failed curse search ejects the original target, empties slot 0, and does not refund fuel.
@@ -54,7 +56,7 @@ The historical `strictAltarCursing` default is false, so over-maximum upgrades s
 ## Runtime remediation findings
 
 - **Recipe-book discovery is final-source parity.** Final 1.20.1 packages the shaped recipe and the visible obtain-Altar advancement, but no `advancements/recipes/...` unlock resource and no generated unlock criterion. The recipe is therefore not made visible by obtaining Book, Illunite, Mesmerite, or Crying Obsidian. Successful manual crafting teaches it through vanilla recipe-award behavior. No premature unlock was added.
-- **Waterlogging interaction was defective.** The block state and fluid methods existed, but 1.21.10 routes held-item interaction through `useItemOn` before the empty-hand menu hook. The menu consumed the interaction before `BucketItem` could invoke `SimpleWaterloggedBlock`. Water Bucket and empty Bucket interactions now pass to the native fluid-item path; other held items still open the menu, and no non-water fluid is accepted.
+- **Waterlogging remains deferred.** The state/fluid contract and a held-bucket interaction translation are present, but targeted Prism retesting still could not waterlog the Altar. No further production attempt is made during closure. This is documented as a minor, accepted parity deviation that may be revisited in a future Minecraft migration, including 26.2.
 - **Altar audio startup was defective.** Registration, JSON, mono OGG, sound instance, and client registration were present, but the port had replaced final source's explicit server effect with a passive client observation of ACTIVE. Prism proved that observation never instantiated an audible sound. The authoritative start edge is restored through one server block event per cycle, matching the original event semantics without packet spam.
 - **Immediate hopper extraction is original behavior.** Final 1.20.1 exposes slot 0 on vertical faces and slot 1 on horizontal faces, and `canTakeItemThroughFace` returns true without consulting validity, progress, or ACTIVE. An output hopper can therefore remove pending input immediately. That baseline is documented as parity, not a defect.
 
@@ -73,15 +75,10 @@ This is intentionally not final-source parity. Automated extraction now follows 
 
 The Stage 9B.2 foundation contract and parity validator assert registrations, exact recipe, two logical slots, 300 ticks, persistence, sided faces, fuel tag, book/item component separation, marker/repair cost, 100-attempt fallback, exclusive curse levels, required assets/data, client-only registration and absence of later-stage leakage. Static checks cannot prove random outcome distribution, audiovisual timing, hopper timing, or menu behavior in a live integrated/dedicated server.
 
-## Focused Prism acceptance
+## Runtime acceptance
 
-1. Craft the Altar with ` B ` / `ICI` / `MCM`; confirm the Altar advancement, placement, waterlogging, breaking/drop, UI and two slots.
-2. Process a plain Book plus one Illunite Shard for 300 ticks. Confirm one level-I curse in an Enchanted Book, one fuel consumed and no XP cost.
-3. Process an eligible ordinary item such as a Sharpness V sword. Confirm one existing eligible enchantment rises by one (Sharpness VI when selected), a compatible absent curse is added, repair cost behavior is visible, and direct repeat Altar processing is rejected.
-4. Reject an unenchanted item, Enchanted Book, marked output and item with no upgradeable non-curse enchantment. Verify no invalid curse appears on incompatible gear.
-5. Save/reload during processing; confirm inventory and progress resume. Remove target/fuel mid-cycle and confirm progress resets.
-6. Test vertical target insertion/extraction, horizontal fuel insertion/extraction and invalid automation input. Compare comparator output for empty, one slot, both slots and larger fuel stacks.
-7. During processing verify light 5, particles, floating animated book, progress glyph and positional sound. Confirm sound stops after completion, interruption, breaking and unload.
-8. Smoke-test a cursed book through an anvil, a cursed item through a grindstone, item save/drop/container persistence, and representative Stage 9B.1 curse behavior. A dedicated-server join is recommended for final sidedness/authority acceptance.
+Targeted Prism testing accepted the complete reachable Altar loop: source-correct manual recipe discovery and crafting, block/model/menu, plain-Book cursing, 300-tick processing, one Illunite consumption, level-I stored curse output, ordinary enchanted-item upgrading including over-maximum levels, compatible random curse application, repeat-Altar marker rejection, grindstone curse/marker persistence, Enchanted Book input rejection, save/reload, interruption/reset, inventory spills, comparator output, floating book, particles and animation.
 
-No Altar runtime acceptance is claimed until this candidate passes Prism.
+The remediated positional processing sound is now audible as a soft cursing hum with completion feedback. The explicit survival `BMCursed` anvil restriction prevents later enchantment application as intended. The separately classified Mythas automation lock passed with hoppers retaining valid input until processing and extracting the completed result.
+
+Waterlogging did not pass and is not claimed. Stage 9B.2 is accepted with that one documented minor deviation.

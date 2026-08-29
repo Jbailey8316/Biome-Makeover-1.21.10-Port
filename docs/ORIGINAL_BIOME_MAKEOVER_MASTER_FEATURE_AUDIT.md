@@ -11,7 +11,7 @@ with the current port are maintained separately:
 - `docs/SHOWCASE_INFORMED_DARK_FOREST_AUDIT.md`
 - `docs/SHOWCASE_INFORMED_WOODLAND_MANSION_AUDIT.md`
 
-Current-port checkpoint note: `docs/STAGE_9B_2_ALTAR_RESTORATION.md` records the complete Altar implementation candidate. The ten-curse engine is already runtime accepted; the Altar is implemented/static validated and awaits Prism runtime acceptance.
+Current-port checkpoint note: `docs/STAGE_9B_2_ALTAR_RESTORATION.md` records the complete/runtime-accepted Altar and ten-curse system. Altar waterlogging remains a deferred nonfunctional minor parity deviation. Brewing-Stand-style hopper automation is a separately documented, runtime-accepted Mythas enhancement rather than final-source parity.
 
 The Dark Forest/Mansion follow-up directly inventories the pinned Mansion
 resource tree at 168 NBT files and records the older `228` description as a

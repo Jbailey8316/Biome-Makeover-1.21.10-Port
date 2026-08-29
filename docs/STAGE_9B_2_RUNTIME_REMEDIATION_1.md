@@ -1,6 +1,8 @@
 # Stage 9B.2 Runtime Remediation 1
 
-Status: **REMEDIATED / AWAITING TARGETED RUNTIME RETEST**.
+Status: **COMPLETE / RUNTIME ACCEPTED**.
+
+Known minor parity deviation: Altar waterlogging is deferred and remains nonfunctional at runtime. Mythas Altar automation locking is separately classified and runtime accepted.
 
 Authority is final released Biome Makeover 1.20.1. The earlier Stage 9B.2 Prism run accepted crafting, block/model/UI, both cursing paths, 300-tick processing, exclusive curse levels, over-maximum upgrade, marker rejection, grindstone persistence, interruption, save/reload, inventory drops, comparator, renderer, and particles. This pass changes only the demonstrated runtime defects and the separately authorized Mythas automation rule.
 
@@ -29,6 +31,8 @@ This is explicitly outside original BM parity. Final 1.20.1 allowed a hopper to 
 - Slot 1 blocks real Illunite fuel extraction only while a valid target is pending/processing. It releases fuel when no valid target exists, and never traps an invalid fuel-slot stack.
 - Manual menu extraction, face-specific insertion, one-shard consumption, and failed-selection pop/clear/fuel-loss behavior are unchanged.
 
-## Runtime-only checks
+## Targeted runtime acceptance
 
-Prism must confirm water Bucket placement/pickup, audible sound start/stop lifetime, the exact permitted/blocked anvil operations, and the separately documented automated extraction behavior. Static checks cannot hear audio or exercise hopper transfer timing.
+Prism confirmed audible cursing hum/completion audio, the survival `BMCursed` anvil-enchantment blocker, and practical Brewing-Stand-style hopper automation that retains valid input until processing and then extracts the result. All earlier accepted Altar crafting, cursing, persistence, interruption, drop, comparator and visual behavior continued to pass.
+
+Water Bucket interaction still did not produce a waterlogged Altar. The static WATERLOGGED/fluid translation remains packaged, but actual waterlogging is explicitly not runtime accepted. No additional implementation attempt is authorized in this closure; the deviation is deferred for a future migration if worthwhile.

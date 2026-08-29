@@ -1,6 +1,6 @@
 # Stage 9B.1 — Final Ten-Curse Engine
 
-Status: **COMPLETE / RUNTIME ACCEPTED**. Stage 9B.2 (Altar) is implemented in its separate checkpoint and **AWAITING RUNTIME ACCEPTANCE**; none of its implementation changes the accepted curse hooks.
+Status: **COMPLETE / RUNTIME ACCEPTED**. Stage 9B.2 (Altar) is also **COMPLETE / RUNTIME ACCEPTED** with waterlogging documented as a minor deferred parity deviation; none of its implementation changes the accepted curse hooks.
 
 ## Authority and architecture
 
