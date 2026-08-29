@@ -128,7 +128,8 @@ public final class AltarCursing {
     }
 
     public static int randomCurseLevel(Holder<Enchantment> curse, RandomSource random) {
-        int maximum = curse.value().definition().maxLevel();
-        return maximum == 1 ? 1 : 1 + random.nextInt(maximum - 1);
+        int minimum = curse.value().getMinLevel();
+        int maximum = curse.value().getMaxLevel();
+        return minimum == maximum ? minimum : random.nextInt(minimum, maximum);
     }
 }

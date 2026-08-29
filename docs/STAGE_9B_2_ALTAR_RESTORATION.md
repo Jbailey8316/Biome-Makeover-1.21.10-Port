@@ -35,7 +35,7 @@ The pool is the active enchantment registry's curse tag minus `biomemakeover:alt
 
 For ordinary items, an initial random curse is retried up to 100 times while it is already present or unsupported. If those tries fail, the final brute-force phase walks a randomized registry order and retains the last compatible absent curse, matching the released helper's observable selection structure. If none exists, processing fails with the ejection/fuel-loss behavior above. The two empty final extension tags (`altar_curse_excluded`, `altar_cant_upgrade`) are packaged.
 
-The released random-range upper bound is exclusive. Max-5 curses therefore produce I–IV and max-3 curses I–II on ordinary items. A max-level-1 curse is explicitly assigned I to avoid an invalid random bound. Books always receive I.
+The released random-range upper bound is exclusive and begins at the selected definition's actual minimum. Final BM max-5 curses therefore produce I–IV and max-3 curses I–II on ordinary items. A curse whose minimum equals its maximum (including vanilla max-level-1 curses) receives that sole level without an invalid random bound. Books always receive I.
 
 The historical `strictAltarCursing` default is false, so over-maximum upgrades such as Sharpness V → VI remain eligible. The port preserves that released default rather than introducing a new config/registry mutation system.
 
