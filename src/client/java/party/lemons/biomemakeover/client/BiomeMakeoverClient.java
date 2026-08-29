@@ -27,6 +27,7 @@ import net.minecraft.client.model.HorseModel;
 import party.lemons.biomemakeover.client.render.CowboyHatLayer;
 import party.lemons.biomemakeover.client.render.CowboyRenderer;
 import party.lemons.biomemakeover.client.render.CowboyHatArmorRenderer;
+import party.lemons.biomemakeover.client.render.WitchHatArmorRenderer;
 import party.lemons.biomemakeover.client.render.DragonflyRenderer;
 import party.lemons.biomemakeover.client.render.LightningBugRenderer;
 import party.lemons.biomemakeover.client.render.DecayedRenderer;
@@ -77,6 +78,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
             BMBlocks.SWAMP_CYPRESS.get("swamp_cypress_door"), BMBlocks.SWAMP_CYPRESS.get("swamp_cypress_trapdoor"),BMBlocks.LIGHTNING_BUG_BOTTLE);
         BMModelLayers.register();
         ArmorRenderer.register(context -> new CowboyHatArmorRenderer(context.getModelSet()),BMItems.COWBOY_HAT);
+        ArmorRenderer.register(context -> new WitchHatArmorRenderer(context.getModelSet()),BMItems.WITCH_HAT);
         EntityRenderers.register(BMEntities.OWL, OwlRenderer::new);
         EntityRenderers.register(BMEntities.GLOWFISH, GlowfishRenderer::new);
         EntityRenderers.register(BMEntities.TUMBLEWEED, TumbleweedRenderer::new);

@@ -38,8 +38,11 @@ import net.minecraft.tags.TagKey;
 
 public final class BMItems {
     public static final TagKey<Item> CURSE_FUEL = TagKey.create(Registries.ITEM, BiomeMakeover.id("curse_fuel"));
+    public static final TagKey<Item> WITCH_HATS = TagKey.create(Registries.ITEM, BiomeMakeover.id("witch_hats"));
     public static final ResourceKey<JukeboxSong> BUTTON_MUSHROOMS_SONG = ResourceKey.create(
         Registries.JUKEBOX_SONG, BiomeMakeover.id("button_mushrooms"));
+    public static final ResourceKey<JukeboxSong> SWAMP_JIVES_SONG = ResourceKey.create(
+        Registries.JUKEBOX_SONG, BiomeMakeover.id("swamp_jives"));
     public static final Item LEAF_LITTER = register("leaf_litter");
     public static final Item OWL_EGG = register("owl_egg");
     private static final FoodProperties GLOWFISH_FOOD = new FoodProperties(1, 0.1F, true);
@@ -77,6 +80,14 @@ public final class BMItems {
             new AttributeModifier(ResourceLocation.withDefaultNamespace("armor.helmet"),2,
                 AttributeModifier.Operation.ADD_VALUE),EquipmentSlotGroup.HEAD).build())
         .repairable(Items.LEATHER)
+            .component(DataComponents.EQUIPPABLE,Equippable.builder(EquipmentSlot.HEAD)
+            .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER).build())));
+    public static final Item WITCH_HAT = register("witch_hat", p -> new Item(p
+        .durability(500)
+        .attributes(ItemAttributeModifiers.builder().add(Attributes.ARMOR,
+            new AttributeModifier(ResourceLocation.withDefaultNamespace("armor.helmet"),2,
+                AttributeModifier.Operation.ADD_VALUE),EquipmentSlotGroup.HEAD).build())
+        .repairable(Items.LEATHER)
         .component(DataComponents.EQUIPPABLE,Equippable.builder(EquipmentSlot.HEAD)
             .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER).build())));
     public static final Item CRACKED_BRICK = register("cracked_brick");
@@ -95,6 +106,8 @@ public final class BMItems {
     public static final Item STUNT_POWDER = register("stunt_powder", StuntPowderItem::new);
     public static final Item BUTTON_MUSHROOMS_MUSIC_DISK = register("button_mushrooms_music_disk",
         p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(BUTTON_MUSHROOMS_SONG)));
+    public static final Item SWAMP_JIVES_MUSIC_DISK = register("swamp_jives_music_disk",
+        p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(SWAMP_JIVES_SONG)));
 
     private BMItems() {}
 
@@ -120,12 +133,12 @@ public final class BMItems {
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(entries -> {
             entries.accept(LEAF_LITTER);
             entries.accept(GLOWSHROOM_STEW); entries.accept(GLOWFISH); entries.accept(COOKED_GLOWFISH); entries.accept(GLOWFISH_BUCKET);
-            entries.accept(SCUTTLER_TAIL); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(CRACKED_BRICK); entries.accept(LIGHTNING_BOTTLE); entries.accept(ILLUNITE_SHARD);
+            entries.accept(SCUTTLER_TAIL); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(WITCH_HAT); entries.accept(CRACKED_BRICK); entries.accept(LIGHTNING_BOTTLE); entries.accept(ILLUNITE_SHARD);
             entries.accept(ANCIENT_OAK_SIGN); entries.accept(ANCIENT_OAK_HANGING_SIGN);
             entries.accept(BLUE_BUD); entries.accept(BROWN_BUD); entries.accept(CYAN_BUD); entries.accept(GRAY_BUD);
             entries.accept(LIGHT_BLUE_BUD); entries.accept(PURPLE_BUD); entries.accept(ROOTLING_SEEDS);
             entries.accept(BULBUS_ROOT); entries.accept(ROASTED_BULBUS_ROOT); entries.accept(MOTH_SCALES); entries.accept(STUNT_POWDER);
-            entries.accept(BUTTON_MUSHROOMS_MUSIC_DISK);
+            entries.accept(BUTTON_MUSHROOMS_MUSIC_DISK); entries.accept(SWAMP_JIVES_MUSIC_DISK);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

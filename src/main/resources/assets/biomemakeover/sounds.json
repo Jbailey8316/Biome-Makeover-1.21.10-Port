@@ -19,5 +19,6 @@
   "moth_bite":{"sounds":["biomemakeover:moth_bite_1","biomemakeover:moth_bite_2","biomemakeover:moth_bite_3"]},
   "moth_hurt":{"sounds":["biomemakeover:moth_hurt_1","biomemakeover:moth_hurt_2","biomemakeover:moth_hurt_3"]},
   "altar_cursing":{"sounds":["biomemakeover:altar_cursing"]},
-  "button_mushrooms":{"sounds":[{"name":"biomemakeover:button_mushrooms","stream":true}]}
+  "button_mushrooms":{"sounds":[{"name":"biomemakeover:button_mushrooms","stream":true}]},
+  "swamp_jives":{"sounds":[{"name":"biomemakeover:swamp_jives","stream":true}]}
 }

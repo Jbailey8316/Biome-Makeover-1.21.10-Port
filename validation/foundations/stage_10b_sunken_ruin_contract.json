@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "historical_source_commit": "2f314c0596af095a4890995a465f308f69476b4a",
+  "items": ["swamp_jives_music_disk", "witch_hat"],
+  "sounds": ["swamp_jives"],
+  "structure_types": ["sunken_ruin"],
+  "structure_pieces": ["sunken_ruin"],
+  "structures": ["sunken_ruin"],
+  "structure_sets": ["sunken_ruins"],
+  "templates": [
+    "sunken_ruins/sunken_1",
+    "sunken_ruins/sunken_2",
+    "sunken_ruins/sunken_3",
+    "sunken_ruins/sunken_small_1",
+    "sunken_ruins/sunken_small_2",
+    "sunken_ruins/sunken_small_3",
+    "sunken_ruins/sunken_small_4",
+    "sunken_ruins/sunken_small_5",
+    "sunken_ruins/sunken_small_6"
+  ],
+  "loot_tables": ["sunken_ruin"],
+  "advancements": ["biomemakeover/sunken_ruin", "biomemakeover/swamp_disc", "biomemakeover/witch_hat"],
+  "jukebox_songs": ["swamp_jives"],
+  "biome_tags": ["has_structure/sunken_ruin", "swamps"],
+  "item_tags": ["witch_hats"],
+  "placement": {
+    "spacing": 24,
+    "separation": 9,
+    "salt": 420,
+    "large_probability": 0.6,
+    "cluster_probability": 0.8
+  },
+  "templates_contract": {
+    "sunken_1": {"bytes":7465,"sha256":"CDD49475FF88926A28D6AC35C2066F9E71299F819482406C4AF304B989B6976C","size":[15,9,17],"placed_blocks":458,"chest_markers":1,"witch_markers":3,"lightning_bottles":0},
+    "sunken_2": {"bytes":6296,"sha256":"E7F21B1CE6F9DD579B2EB9384A21768DCF1F5CC27D19B27DFA9C1BD036946EB4","size":[15,8,15],"placed_blocks":376,"chest_markers":1,"witch_markers":3,"lightning_bottles":0},
+    "sunken_3": {"bytes":7307,"sha256":"C81FCBE58E52E9B8A3377104E00CB801D8883B9E64182269524F5A7B609C8777","size":[15,10,14],"placed_blocks":786,"chest_markers":1,"witch_markers":2,"lightning_bottles":6},
+    "sunken_small_1": {"bytes":923,"sha256":"884938C5EDA8CF976A54D47D45BDA3B0D243EEBAC73C8CB2FA19088CF1E96133","size":[7,4,5],"placed_blocks":57,"chest_markers":0,"witch_markers":1,"lightning_bottles":0},
+    "sunken_small_2": {"bytes":1142,"sha256":"23550DE08B5F753BC68087A6900D3C2D0253FF52F6F7B87D7C926F8C1460B3C2","size":[7,5,5],"placed_blocks":97,"chest_markers":1,"witch_markers":1,"lightning_bottles":0},
+    "sunken_small_3": {"bytes":1252,"sha256":"51E73246225271D8BADDB7B2430F4809830FD5B7E3013062AB9B8877FB707AD5","size":[7,6,5],"placed_blocks":94,"chest_markers":1,"witch_markers":0,"lightning_bottles":1},
+    "sunken_small_4": {"bytes":1192,"sha256":"0140844ADD46E93A5D3F64BA57759BACC89C7D740EE04E6257FAD0752F0FD3B1","size":[7,6,5],"placed_blocks":70,"chest_markers":1,"witch_markers":0,"lightning_bottles":0},
+    "sunken_small_5": {"bytes":1536,"sha256":"43BB2F513638D8553F323EAB3A415F0BE862639A56AAF8028B2BB7BDD9F36539","size":[7,9,5],"placed_blocks":113,"chest_markers":1,"witch_markers":1,"lightning_bottles":0},
+    "sunken_small_6": {"bytes":1455,"sha256":"2FF392E30034306DCB75DD6159A3F15FD39B536F33A72E34F9A74A1D98094F48","size":[7,8,5],"placed_blocks":137,"chest_markers":1,"witch_markers":0,"lightning_bottles":0}
+  },
+  "loot": {
+    "roll_min": 2,
+    "roll_max": 8,
+    "total_weight": 58,
+    "entries": {
+      "minecraft:charcoal": 6,
+      "minecraft:glass_bottle": 6,
+      "minecraft:red_mushroom": 6,
+      "minecraft:brown_mushroom": 6,
+      "minecraft:sugar": 6,
+      "biomemakeover:witch_hat": 3,
+      "biomemakeover:lightning_bottle": 3,
+      "biomemakeover:swamp_jives_music_disk": 1
+    }
+  },
+  "disc": {
+    "song": "biomemakeover:swamp_jives",
+    "length_seconds": 277.0,
+    "comparator_output": 1,
+    "ogg_bytes": 1100948,
+    "ogg_sha256": "4C22E43123601CFDAE6FFE69408E348B082556128EE4E54F3157C4A0808E7124"
+  },
+  "witch_hat": {
+    "durability": 500,
+    "defense": 2,
+    "item_texture_sha256": "54755351E1A12572A85B5BF0637BA028D0BFC5B75227971076D26ED03CBD157E",
+    "wearable_texture_sha256": "1E98647EC2007049EE03A0201725D9FA7E8C7E757159E3022C55005AA6769D43"
+  }
+}

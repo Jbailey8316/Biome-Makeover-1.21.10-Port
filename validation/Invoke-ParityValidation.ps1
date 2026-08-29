@@ -42,6 +42,7 @@ $stage8Path = Join-Path $RepositoryRoot 'validation/foundations/stage_8_rootling
 $stage9aPath = Join-Path $RepositoryRoot 'validation/foundations/stage_9a_functional_utilities_contract.json'
 $stage9b2Path = Join-Path $RepositoryRoot 'validation/foundations/stage_9b2_altar_contract.json'
 $stage10aPath = Join-Path $RepositoryRoot 'validation/foundations/stage_10a_mushroom_house_contract.json'
+$stage10bPath = Join-Path $RepositoryRoot 'validation/foundations/stage_10b_sunken_ruin_contract.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
 $dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
@@ -55,6 +56,7 @@ $stage8 = Get-Content $stage8Path -Raw | ConvertFrom-Json
 $stage9a = Get-Content $stage9aPath -Raw | ConvertFrom-Json
 $stage9b2 = Get-Content $stage9b2Path -Raw | ConvertFrom-Json
 $stage10a = Get-Content $stage10aPath -Raw | ConvertFrom-Json
+$stage10b = Get-Content $stage10bPath -Raw | ConvertFrom-Json
 
 foreach ($setName in @('blocks','no_item_blocks','standalone_items','entities','spawn_eggs','configured_features','placed_features')) {
     $values = @($stage3.$setName)
@@ -78,6 +80,7 @@ foreach ($setName in @('blocks_with_items','no_item_blocks','items','spawn_eggs'
 foreach ($setName in @('blocks_with_items','no_item_blocks','items','recipes','advancements')) { $values=@($stage9a.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 9A contract set $setName"} }
 foreach ($setName in @('blocks_with_items','block_entities','menus','sounds','recipes','loot_tables','advancements','item_tags','enchantment_tags','textures')) { $values=@($stage9b2.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 9B.2 contract set $setName"} }
 foreach ($setName in @('items','entities','spawn_eggs','sounds','structure_processors','structures','structure_sets','template_pools','processor_lists','templates','loot_tables','advancements','jukebox_songs','biome_tags')) { $values=@($stage10a.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 10A contract set $setName"} }
+foreach ($setName in @('items','sounds','structure_types','structure_pieces','structures','structure_sets','templates','loot_tables','advancements','jukebox_songs','biome_tags','item_tags')) { $values=@($stage10b.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 10B contract set $setName"} }
 
 foreach ($property in $baseline.registries.PSObject.Properties) {
     $values = @($property.Value)
@@ -109,9 +112,9 @@ foreach ($deferred in $stage3.deferred_released_ids) {
 }
 
 Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks) + @($stage9a.no_item_blocks) + @($stage9b2.blocks_with_items))) $blocks
-Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items) + @($stage9b2.blocks_with_items) + @($stage10a.items) + @($stage10a.spawn_eggs))) $items
+Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items) + @($stage9b2.blocks_with_items) + @($stage10a.items) + @($stage10a.spawn_eggs) + @($stage10b.items))) $items
 Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities) + @($stage8.entities) + @($stage10a.entities))) $entities
-Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds) + @($stage9b2.sounds) + @($stage10a.sounds))) $sounds
+Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds) + @($stage9b2.sounds) + @($stage10a.sounds) + @($stage10b.sounds))) $sounds
 Assert-EqualSet 'particle registry IDs' (Sorted (@($baseline.registries.particle_type) + @($stage5.particles) + @($stage6.particles))) $particles
 Assert-EqualSet 'block-entity registry IDs' (Sorted (@($stage5.block_entities) + @($stage9b2.block_entities))) $blockEntities
 Assert-EqualSet 'structure-processor registry IDs' @($stage10a.structure_processors) $structureProcessors
@@ -640,7 +643,7 @@ $peatLoot=Join-Path $builtData 'biomemakeover/loot_table/blocks/peat_composter.j
 $peatAdvancement=Join-Path $builtData 'biomemakeover/advancement/biomemakeover/create_peat.json';if(-not(Test-Path $peatAdvancement)){Add-Failure 'Stage 9A create_peat advancement missing'}else{$adv=Get-Content -Raw $peatAdvancement|ConvertFrom-Json;if($adv.criteria.create_peat.trigger-ne'biomemakeover:peat_compost'){Add-Failure 'Stage 9A create_peat advancement trigger differs from released contract'}}
 $mixinConfig=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.mixins.json') -Raw
 foreach($required in @('AgeableMobMixin','PointedDripstoneBlockMixin','ComposterBlockMixin')){if($mixinConfig-notmatch$required){Add-Failure "Stage 9A mixin not wired: $required"}}
-foreach($forbidden in @('witch_hat','ectoplasm','poltergeist','tapestry','crude_fragment','cladded_stone','stone_golem','adjudicator','mimic')){if($items-contains$forbidden-or$entities-contains$forbidden-or$blocks-contains$forbidden){Add-Failure "Stage 10+ registry leaked into Stage 9B.2: $forbidden"}}
+foreach($forbidden in @('ectoplasm','poltergeist','tapestry','crude_fragment','cladded_stone','stone_golem','adjudicator','mimic')){if($items-contains$forbidden-or$entities-contains$forbidden-or$blocks-contains$forbidden){Add-Failure "Later-stage registry leaked through Stage 10B: $forbidden"}}
 
 # Stage 9B.1: dynamic-registry definitions and exact source-level hooks for all
 # ten final curses. The removed Sliding curse stays absent.
@@ -812,6 +815,98 @@ $discAdvancementPath=Join-Path $builtData 'biomemakeover/advancement/biomemakeov
 if(Test-Path $discAdvancementPath){$discAdvancement=Get-Content $discAdvancementPath -Raw|ConvertFrom-Json;if($discAdvancement.parent-ne'biomemakeover:biomemakeover/enter_mushroom_fields'-or$discAdvancement.display.icon.id-ne'biomemakeover:button_mushrooms_music_disk'-or$discAdvancement.display.frame-ne'goal'-or$discAdvancement.display.show_toast-ne$true-or$discAdvancement.display.announce_to_chat-ne$true-or$discAdvancement.display.hidden-ne$false-or$discAdvancement.criteria.get_disc.trigger-ne'minecraft:inventory_changed'-or$discAdvancement.criteria.get_disc.conditions.items[0].items-ne'biomemakeover:button_mushrooms_music_disk'){Add-Failure 'Stage 10A Button Mushrooms advancement differs from final inventory-changed goal'}}
 $creeperDiscTag=Join-Path $builtData 'minecraft/tags/item/creeper_drop_music_discs.json'
 if((Test-Path $creeperDiscTag) -and (Get-Content $creeperDiscTag -Raw)-match'button_mushrooms_music_disk'){Add-Failure 'Stage 10A disc must not enter vanilla Creeper music-disc drops'}
+
+# Stage 10B: custom non-jigsaw Sunken Ruin, Swamp Jives, and the shared
+# wearable Witch Hat foundation. Runtime-only placement remains a Prism gate,
+# but every deterministic registry/resource/algorithm contract is locked here.
+foreach($resource in @(
+ 'biomemakeover/worldgen/structure/sunken_ruin.json',
+ 'biomemakeover/worldgen/structure_set/sunken_ruins.json',
+ 'biomemakeover/tags/worldgen/biome/has_structure/sunken_ruin.json',
+ 'biomemakeover/tags/worldgen/biome/swamps.json',
+ 'biomemakeover/tags/item/witch_hats.json',
+ 'biomemakeover/loot_table/sunken_ruin.json',
+ 'biomemakeover/jukebox_song/swamp_jives.json',
+ 'biomemakeover/advancement/biomemakeover/sunken_ruin.json',
+ 'biomemakeover/advancement/biomemakeover/swamp_disc.json',
+ 'biomemakeover/advancement/biomemakeover/witch_hat.json'
+)){if(-not(Test-Path(Join-Path $builtData $resource))){Add-Failure "Stage 10B packaged data resource missing: $resource"}}
+
+$sunkenSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/worldgen/SunkenRuinStructure.java') -Raw
+$structureRegistrySource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMStructures.java') -Raw
+foreach($required in @('BuiltInRegistries\.STRUCTURE_TYPE','BiomeMakeover\.id\("sunken_ruin"\)','SunkenRuinStructure\.CODEC','BuiltInRegistries\.STRUCTURE_PIECE','SunkenRuinStructure\.SunkenRuinPiece::new')){if($structureRegistrySource-notmatch$required){Add-Failure "Stage 10B structure bootstrap contract missing: $required"}}
+foreach($required in @('RecordCodecBuilder\.mapCodec','floatRange\(0\.0F, 1\.0F\)\.fieldOf\("large_probability"\)','fieldOf\("cluster_probability"\)','GenerationStep\.Decoration\.LOCAL_MODIFICATIONS','Heightmap\.Types\.OCEAN_FLOOR_WG','random\.nextFloat\(\) <= structure\.largeProbability','random\.nextFloat\(\) <= structure\.clusterProbability','Mth\.nextInt\(random, 4, 8\)','new BlockRotProcessor\(integrity\)','new SunkenRuinPiece\(manager, template, position, rotation, 1\.0F','Rotation\.getRandom\(random\)','Mirror\.NONE','ChestBlock\.WATERLOGGED','EntitySpawnReason\.STRUCTURE','witch\.setPersistenceRequired','tag\.putString\("Rot"','tag\.putFloat\("Integrity"','tag\.putBoolean\("IsLarge"')){if($sunkenSource-notmatch$required){Add-Failure "Stage 10B Sunken Ruin source contract missing: $required"}}
+if($sunkenSource-match'findCollisionPiece'){Add-Failure 'Stage 10B must preserve final auxiliary-overlap behavior rather than adding mutual piece collision checks'}
+if($worldgenSource-match'SUNKEN_RUIN'){Add-Failure 'Stage 10B must use native structure tags/set, not Fabric biome injection'}
+
+$sunkenStructurePath=Join-Path $builtData 'biomemakeover/worldgen/structure/sunken_ruin.json'
+if(Test-Path $sunkenStructurePath){$sunkenStructure=Get-Content $sunkenStructurePath -Raw|ConvertFrom-Json;if($sunkenStructure.type-ne'biomemakeover:sunken_ruin'-or$sunkenStructure.biomes-ne'#biomemakeover:has_structure/sunken_ruin'-or$sunkenStructure.large_probability-ne$stage10b.placement.large_probability-or$sunkenStructure.cluster_probability-ne$stage10b.placement.cluster_probability-or$sunkenStructure.step-ne'surface_structures'-or@($sunkenStructure.spawn_overrides.PSObject.Properties).Count-ne0){Add-Failure 'Stage 10B structure JSON differs from the final source data; effective LOCAL_MODIFICATIONS remains enforced by the class override'}}
+$sunkenSetPath=Join-Path $builtData 'biomemakeover/worldgen/structure_set/sunken_ruins.json'
+if(Test-Path $sunkenSetPath){$sunkenSet=Get-Content $sunkenSetPath -Raw|ConvertFrom-Json;$placement=$sunkenSet.placement;if($sunkenSet.structures.Count-ne1-or$sunkenSet.structures[0].structure-ne'biomemakeover:sunken_ruin'-or$sunkenSet.structures[0].weight-ne1-or$placement.type-ne'minecraft:random_spread'-or$placement.spacing-ne$stage10b.placement.spacing-or$placement.separation-ne$stage10b.placement.separation-or$placement.salt-ne$stage10b.placement.salt-or$placement.spread_type-ne'linear'){Add-Failure 'Stage 10B structure-set differs from spacing 24/separation 9/salt 420 linear'}}
+$sunkenBiomeTag=Get-Content (Join-Path $builtData 'biomemakeover/tags/worldgen/biome/has_structure/sunken_ruin.json') -Raw|ConvertFrom-Json
+if($sunkenBiomeTag.values.Count-ne1-or$sunkenBiomeTag.values[0]-ne'#biomemakeover:swamps'){Add-Failure 'Stage 10B Sunken Ruin biome tag chain is incomplete'}
+$swampTag=Get-Content (Join-Path $builtData 'biomemakeover/tags/worldgen/biome/swamps.json') -Raw|ConvertFrom-Json
+if($swampTag.values.Count-ne1-or$swampTag.values[0]-ne'#c:is_swamp'){Add-Failure 'Stage 10B shared swamp tag must route through current #c:is_swamp'}
+
+foreach($templateProperty in $stage10b.templates_contract.PSObject.Properties){
+ $name=$templateProperty.Name;$expected=$templateProperty.Value
+ $path=Join-Path $builtData "biomemakeover/structure/sunken_ruins/$name.nbt"
+ if(-not(Test-Path $path)){Add-Failure "Stage 10B template missing from singular path: $name";continue}
+ $file=Get-Item $path;$hash=(Get-FileHash $path -Algorithm SHA256).Hash
+ if($file.Length-ne$expected.bytes-or$hash-ne$expected.sha256){Add-Failure "Stage 10B template bytes/hash differ from final source: $name"}
+ if(Test-Path(Join-Path $builtData "biomemakeover/structures/sunken_ruins/$name.nbt")){Add-Failure "Stage 10B template has obsolete plural duplicate: $name"}
+}
+if(Test-Path(Join-Path $builtData 'biomemakeover/worldgen/template_pool/sunken_ruins')){Add-Failure 'Stage 10B Sunken Ruin must not add jigsaw template pools'}
+if(Test-Path(Join-Path $builtData 'biomemakeover/worldgen/processor_list/sunken_ruins')){Add-Failure 'Stage 10B Sunken Ruin must not add processor lists'}
+
+$sunkenLootPath=Join-Path $builtData 'biomemakeover/loot_table/sunken_ruin.json'
+if(Test-Path $sunkenLootPath){
+ $sunkenLoot=Get-Content $sunkenLootPath -Raw|ConvertFrom-Json
+ $pool=$sunkenLoot.pools[0];$entries=@($pool.entries)
+ if($sunkenLoot.type-ne'minecraft:chest'-or$sunkenLoot.random_sequence-ne'biomemakeover:sunken_ruin'-or$sunkenLoot.pools.Count-ne1-or$pool.rolls.type-ne'minecraft:uniform'-or$pool.rolls.min-ne2-or$pool.rolls.max-ne8-or$pool.bonus_rolls-ne0-or($pool.PSObject.Properties.Name-contains'conditions')-or$entries.Count-ne12-or(@($entries|ForEach-Object{[int]$_.weight}|Measure-Object -Sum).Sum)-ne$stage10b.loot.total_weight){Add-Failure 'Stage 10B Sunken Ruin loot header/rolls/conditions/total weight differ from final source'}
+ foreach($expected in $stage10b.loot.entries.PSObject.Properties){$matching=@($entries|Where-Object{$_.name-eq$expected.Name});if($matching.Count-ne1-or$matching[0].weight-ne[int]$expected.Value){Add-Failure "Stage 10B loot entry weight differs: $($expected.Name)"}}
+ $potionContracts=@(@('minecraft:potion','minecraft:water',6),@('minecraft:potion','minecraft:awkward',6),@('minecraft:splash_potion','minecraft:water',6),@('minecraft:potion','minecraft:poison',3))
+ foreach($contract in $potionContracts){$match=@($entries|Where-Object{$_.name-eq$contract[0]-and$_.weight-eq$contract[2]-and$_.functions[0].function-eq'minecraft:set_potion'-and$_.functions[0].id-eq$contract[1]});if($match.Count-ne1){Add-Failure "Stage 10B modern potion loot translation missing: $($contract -join '/')"}}
+ $countContracts=@(
+  @{name='minecraft:charcoal';weight=6;min=1;max=3},@{name='minecraft:glass_bottle';weight=6;min=1;max=3},
+  @{name='minecraft:red_mushroom';weight=6;min=1;max=4},@{name='minecraft:brown_mushroom';weight=6;min=1;max=4},
+  @{name='minecraft:sugar';weight=6;min=1;max=6},@{name='biomemakeover:lightning_bottle';weight=3;min=1;max=2}
+ )
+ foreach($contract in $countContracts){$match=@($entries|Where-Object{$_.name-eq$contract.name-and$_.weight-eq$contract.weight});if($match.Count-ne1-or@($match[0].functions).Count-ne1-or$match[0].functions[0].function-ne'minecraft:set_count'-or$match[0].functions[0].count.type-ne'minecraft:uniform'-or$match[0].functions[0].count.min-ne$contract.min-or$match[0].functions[0].count.max-ne$contract.max){Add-Failure "Stage 10B loot count differs: $($contract.name)"}}
+ foreach($single in @('biomemakeover:witch_hat','biomemakeover:swamp_jives_music_disk')){$match=@($entries|Where-Object{$_.name-eq$single});if($match.Count-ne1-or($match[0].PSObject.Properties.Name-contains'functions')){Add-Failure "Stage 10B single-item rare loot must use the default count one: $single"}}
+}
+
+$itemSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw
+foreach($required in @('SWAMP_JIVES_SONG[\s\S]{0,180}Registries\.JUKEBOX_SONG','SWAMP_JIVES_MUSIC_DISK = register\("swamp_jives_music_disk"','jukeboxPlayable\(SWAMP_JIVES_SONG\)','WITCH_HATS = TagKey\.create\(Registries\.ITEM, BiomeMakeover\.id\("witch_hats"\)','WITCH_HAT = register\("witch_hat"','\.durability\(500\)','Attributes\.ARMOR[\s\S]{0,180},2,','EquipmentSlotGroup\.HEAD','\.repairable\(Items\.LEATHER\)','SoundEvents\.ARMOR_EQUIP_LEATHER')){if($itemSource-notmatch$required){Add-Failure "Stage 10B item contract missing: $required"}}
+$swampSongPath=Join-Path $builtData 'biomemakeover/jukebox_song/swamp_jives.json'
+if(Test-Path $swampSongPath){$song=Get-Content $swampSongPath -Raw|ConvertFrom-Json;if($song.sound_event-ne$stage10b.disc.song-or$song.length_in_seconds-ne$stage10b.disc.length_seconds-or$song.comparator_output-ne$stage10b.disc.comparator_output-or$song.description.translate-ne'item.biomemakeover.swamp_jives_music_disk.desc'){Add-Failure 'Stage 10B Swamp Jives jukebox-song metadata differs from final 277-second/signal-1 contract'}}
+$swampOggPath=Join-Path $builtAssets 'sounds/swamp_jives.ogg'
+if(Test-Path $swampOggPath){$ogg=Get-Item $swampOggPath;$oggHash=(Get-FileHash $swampOggPath -Algorithm SHA256).Hash;if($ogg.Length-ne$stage10b.disc.ogg_bytes-or$oggHash-ne$stage10b.disc.ogg_sha256){Add-Failure 'Stage 10B Swamp Jives OGG differs from the exact final source asset'}}
+$swampSound=$soundsJson.swamp_jives;if($null-eq$swampSound-or$swampSound.sounds.Count-ne1-or$swampSound.sounds[0].name-ne'biomemakeover:swamp_jives'-or$swampSound.sounds[0].stream-ne$true-or$swampSound.sounds[0].loop-eq$true){Add-Failure 'Stage 10B Swamp Jives sound must be one streamed, non-looping original asset'}
+foreach($asset in @('models/item/swamp_jives_music_disk.json','items/swamp_jives_music_disk.json','textures/item/music_disc_swamp_jives.png','models/item/witch_hat.json','items/witch_hat.json','textures/item/witch_hat.png','textures/misc/witch_hat.png')){if(-not(Test-Path(Join-Path $builtAssets $asset))){Add-Failure "Stage 10B packaged asset missing: $asset"}}
+$witchItemHash=(Get-FileHash (Join-Path $builtAssets 'textures/item/witch_hat.png') -Algorithm SHA256).Hash
+$witchWearHash=(Get-FileHash (Join-Path $builtAssets 'textures/misc/witch_hat.png') -Algorithm SHA256).Hash
+if($witchItemHash-ne$stage10b.witch_hat.item_texture_sha256-or$witchWearHash-ne$stage10b.witch_hat.wearable_texture_sha256){Add-Failure 'Stage 10B Witch Hat textures differ from final source'}
+$witchTag=Get-Content (Join-Path $builtData 'biomemakeover/tags/item/witch_hats.json') -Raw|ConvertFrom-Json
+if($witchTag.values.Count-ne1-or$witchTag.values[0]-ne'biomemakeover:witch_hat'){Add-Failure 'Stage 10B witch_hats membership must contain only Witch Hat'}
+
+$witchModel=Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/model/WitchHatModel.java') -Raw
+foreach($required in @('addOrReplaceChild\("hat"','addOrReplaceChild\("hat2"','addOrReplaceChild\("hat3"','addOrReplaceChild\("hat4"','LayerDefinition\.create\(mesh, 64, 128\)')){if($witchModel-notmatch$required){Add-Failure "Stage 10B four-tier Witch Hat model missing: $required"}}
+foreach($required in @('ArmorRenderer\.register\(context -> new WitchHatArmorRenderer','BMItems\.WITCH_HAT')){if($clientInit-notmatch$required){Add-Failure "Stage 10B Witch Hat client registration missing: $required"}}
+if((Get-ChildItem(Join-Path $RepositoryRoot 'src/main/java')-Recurse-File-Filter'*.java'|Get-Content -Raw)-match'client\.model\.WitchHatModel|client\.render\.WitchHatArmorRenderer'){Add-Failure 'Stage 10B Witch Hat client classes leaked into common Java'}
+$advancementSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMAdvancements.java') -Raw
+foreach($required in @('wear_witch_hat','ServerTickEvents\.END_SERVER_TICK','getItemBySlot\(EquipmentSlot\.HEAD\)\.is\(BMItems\.WITCH_HATS\)','WEAR_WITCH_HAT\.trigger\(player\)')){if($advancementSource-notmatch$required){Add-Failure "Stage 10B server-authoritative Witch Hat wear criterion missing: $required"}}
+$sunkenAdvancement=Get-Content (Join-Path $builtData 'biomemakeover/advancement/biomemakeover/sunken_ruin.json') -Raw|ConvertFrom-Json
+if($sunkenAdvancement.parent-ne'biomemakeover:biomemakeover/enter_swamp'-or$sunkenAdvancement.display.icon.id-ne'minecraft:cauldron'-or$sunkenAdvancement.display.frame-ne'task'-or$sunkenAdvancement.display.show_toast-ne$true-or$sunkenAdvancement.display.announce_to_chat-ne$true-or$sunkenAdvancement.display.hidden-ne$false-or$sunkenAdvancement.criteria.ruin.trigger-ne'minecraft:location'-or$sunkenAdvancement.criteria.ruin.conditions.player[0].predicate.location.structure-ne'biomemakeover:sunken_ruin'){Add-Failure 'Stage 10B Sinking Feeling advancement differs from final location contract'}
+$swampAdvancement=Get-Content (Join-Path $builtData 'biomemakeover/advancement/biomemakeover/swamp_disc.json') -Raw|ConvertFrom-Json
+if($swampAdvancement.parent-ne'biomemakeover:biomemakeover/enter_swamp'-or$swampAdvancement.display.icon.id-ne'biomemakeover:swamp_jives_music_disk'-or$swampAdvancement.display.frame-ne'goal'-or$swampAdvancement.display.show_toast-ne$true-or$swampAdvancement.display.announce_to_chat-ne$true-or$swampAdvancement.display.hidden-ne$false-or$swampAdvancement.criteria.get_disc.trigger-ne'minecraft:inventory_changed'-or$swampAdvancement.criteria.get_disc.conditions.items[0].items-ne'biomemakeover:swamp_jives_music_disk'){Add-Failure 'Stage 10B Swamp Shuffle advancement differs from final inventory contract'}
+$hatAdvancement=Get-Content (Join-Path $builtData 'biomemakeover/advancement/biomemakeover/witch_hat.json') -Raw|ConvertFrom-Json
+if($hatAdvancement.parent-ne'biomemakeover:biomemakeover/sunken_ruin'-or$hatAdvancement.display.icon.id-ne'biomemakeover:witch_hat'-or$hatAdvancement.display.frame-ne'task'-or$hatAdvancement.display.show_toast-ne$true-or$hatAdvancement.display.announce_to_chat-ne$true-or$hatAdvancement.display.hidden-ne$false-or$hatAdvancement.criteria.wear_hat.trigger-ne'biomemakeover:wear_witch_hat'){Add-Failure 'Stage 10B Which Witch? advancement differs from final wear contract/modern trigger translation'}
+
+if((Test-Path(Join-Path $builtData 'biomemakeover/loot_table/entities/witch_hat.json'))-or$productionSource-match'WitchMixin_Quests|entities/witch_hat'){Add-Failure 'Stage 10B leaked the Stage 12A primary Witch Hat death path'}
+if($productionSource-match'witch_quest|quest_reward|witch_trade'){Add-Failure 'Stage 10B leaked Stage 12A Witch quest content'}
+if((Test-Path $creeperDiscTag) -and (Get-Content $creeperDiscTag -Raw)-match'swamp_jives_music_disk'){Add-Failure 'Stage 10B disc must not enter vanilla Creeper music-disc drops'}
+if(Get-ChildItem (Join-Path $builtData 'biomemakeover/recipe') -Recurse -File -Filter '*.json'|Where-Object{(Get-Content $_.FullName -Raw)-match'swamp_jives_music_disk|witch_hat'}){Add-Failure 'Stage 10B Witch Hat and Swamp Jives must not gain recipes'}
 
 # Resolve every custom curse hook against the actual named Minecraft classes
 # used by Loom, then verify the production JAR contains the expected remapped

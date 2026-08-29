@@ -299,8 +299,17 @@ tasks.register('auditStage10BSourceTemplates', JavaExec) {
     args file('reference/Biome-Makeover-1.20/common/src/main/resources').absolutePath
 }
 
+tasks.register('validateStage10BTemplateRuntime', JavaExec) {
+    dependsOn tasks.named('compileStage10BSourceTemplateAudit')
+    dependsOn tasks.named('processResources')
+    classpath = files(stage10bAuditClasses) + sourceSets.main.output + sourceSets.main.compileClasspath
+    mainClass = 'Stage10BSourceTemplateAudit'
+    args file('build/resources/main').absolutePath, '--packaged'
+}
+
 tasks.named('check') {
     dependsOn tasks.named('validateStage10ATemplateRuntime')
+    dependsOn tasks.named('validateStage10BTemplateRuntime')
 }
 
 processResources {
@@ -666,7 +675,7 @@ processResources {
     doLast {
         def swampBiomeTag = new File(destinationDir, 'data/biomemakeover/tags/worldgen/biome/swamps.json')
         swampBiomeTag.parentFile.mkdirs()
-        swampBiomeTag.text = JsonOutput.prettyPrint(JsonOutput.toJson([replace:false, values:['minecraft:swamp','minecraft:mangrove_swamp']])) + System.lineSeparator()
+        swampBiomeTag.text = JsonOutput.prettyPrint(JsonOutput.toJson([replace:false, values:['#c:is_swamp']])) + System.lineSeparator()
         def swampBonemealTag = new File(destinationDir, 'data/biomemakeover/tags/worldgen/biome/swamp_bonemeal.json')
         swampBonemealTag.parentFile.mkdirs()
         swampBonemealTag.text = JsonOutput.prettyPrint(JsonOutput.toJson([replace:false, values:['#biomemakeover:swamps']])) + System.lineSeparator()

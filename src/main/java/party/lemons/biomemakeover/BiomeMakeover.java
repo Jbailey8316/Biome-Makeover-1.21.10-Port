@@ -18,6 +18,7 @@ import party.lemons.biomemakeover.init.BMPotions;
 import party.lemons.biomemakeover.level.BMWorldEvents;
 import party.lemons.biomemakeover.init.BMMenus;
 import party.lemons.biomemakeover.init.BMStructureProcessors;
+import party.lemons.biomemakeover.init.BMStructures;
 
 public final class BiomeMakeover implements ModInitializer {
     public static final String MOD_ID = "biomemakeover";
@@ -39,10 +40,11 @@ public final class BiomeMakeover implements ModInitializer {
         BMPotions.initialize();
         BMFeatures.initialize();
         BMStructureProcessors.initialize();
+        BMStructures.initialize();
         BMAdvancements.initialize();
         BMEntities.initialize();
         BMWorldgen.initialize();
         BMWorldEvents.initialize();
-        LOGGER.info("Biome Makeover Stage 10A Mushroom House restoration build loaded.");
+        LOGGER.info("Biome Makeover Stage 10B Sunken Ruin restoration candidate loaded.");
     }
 }

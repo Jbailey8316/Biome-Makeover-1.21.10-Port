@@ -9,6 +9,7 @@ public final class BMModelLayers {
     public static final ModelLayerLocation OWL_BABY = new ModelLayerLocation(BiomeMakeover.id("owl"), "baby");
     public static final ModelLayerLocation SCUTTLER = new ModelLayerLocation(BiomeMakeover.id("scuttler"), "main");
     public static final ModelLayerLocation COWBOY_HAT = new ModelLayerLocation(BiomeMakeover.id("cowboy_hat"), "main");
+    public static final ModelLayerLocation WITCH_HAT = new ModelLayerLocation(BiomeMakeover.id("witch_hat"), "main");
     public static final ModelLayerLocation DRAGONFLY = new ModelLayerLocation(BiomeMakeover.id("dragonfly"), "main");
     public static final ModelLayerLocation LIGHTNING_BUG = new ModelLayerLocation(BiomeMakeover.id("lightning_bug"), "main");
     public static final ModelLayerLocation LIGHTNING_BUG_INNER = new ModelLayerLocation(BiomeMakeover.id("lightning_bug_inner"), "main");
@@ -23,6 +24,7 @@ public final class BMModelLayers {
         EntityModelLayerRegistry.registerModelLayer(OWL_BABY, OwlModel::createBabyLayer);
         EntityModelLayerRegistry.registerModelLayer(SCUTTLER, ScuttlerModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(COWBOY_HAT, CowboyHatModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(WITCH_HAT, WitchHatModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(DRAGONFLY, DragonflyModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(LIGHTNING_BUG, LightningBugModel::createEmptyLayer);
         EntityModelLayerRegistry.registerModelLayer(LIGHTNING_BUG_INNER, LightningBugModel::createInnerLayer);
