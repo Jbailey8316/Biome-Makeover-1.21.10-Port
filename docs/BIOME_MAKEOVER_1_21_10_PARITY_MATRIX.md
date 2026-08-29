@@ -45,7 +45,7 @@ historical families and eighteen current Mythas enhancement units.
 |---|---:|---|
 | Mushroom Fields | 6% | A wild-mushroom fragment exists, in the wrong theme/context |
 | Badlands | 88% static | Stage 4 restored core blocks, cactus ecology, four worldgen chains, Scuttler, Tumbleweed and Cowboy patrol plumbing; Ghost Town remains Stage 10C, while horse hats and runtime verification remain open |
-| Swamp | Runtime accepted; Stage 9A utility awaiting runtime | Fresh Swamp/Mangrove generation, flora, Decayed behavior, peat, canopy/leaf contracts, pads/lilies, accepted Lightning Bug visuals, waterlogged saplings, and the reachable glass-bottle capture/light block are restored. Peat Composter is implemented in Stage 9A and awaits focused Prism acceptance; Sunken Ruins remain later-owned. Final-release-disabled Toad/Tadpole/Wings are excluded. |
+| Swamp | Runtime accepted; Stage 9A utility complete | Fresh Swamp/Mangrove generation, flora, Decayed behavior, peat, canopy/leaf contracts, pads/lilies, accepted Lightning Bug visuals, waterlogged saplings, and the reachable glass-bottle capture/light block are restored. Peat Composter is complete/runtime accepted in Stage 9A; Sunken Ruins remain later-owned. Final-release-disabled Toad/Tadpole/Wings are excluded. |
 | Dark Forest | Stage 6 physical static/package PASS; Stage 7 Owl runtime PASS; Stage 8 Rootling/Moth runtime PASS | Physical flora/worldgen, Owl and reachable Rootling/Moth ecology accepted; later progression/Mansion remain open |
 | Beach ecology | 0% | Helmit Crab family absent |
 | Mansion / illager progression | 0% | Structure, boss, curses, quests, and functional systems absent |

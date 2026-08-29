@@ -1,6 +1,6 @@
 # Stage 9 Pre-Implementation Source Audit
 
-Stage 9A implementation follow-up: `STAGE_9A_INDEPENDENT_FUNCTIONAL_UTILITIES.md` records the dependency-closed Stunt Powder and Peat Composter implementation. Stage 9B and later scopes remain unstarted.
+Stage 9A closure follow-up: `STAGE_9A_INDEPENDENT_FUNCTIONAL_UTILITIES.md` records the dependency-closed Stunt Powder and Peat Composter implementation and successful Prism runtime acceptance. Stage 9A is complete; Stage 9B and later scopes remain unstarted.
 
 Audit date: 2026-08-29  
 Authority: final Biome Makeover 1.20.1-1.11.4 source at `2f314c0596af095a4890995a465f308f69476b4a`  

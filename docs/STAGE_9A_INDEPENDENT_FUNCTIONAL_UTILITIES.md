@@ -1,6 +1,6 @@
 # Stage 9A — Independent Functional Utilities
 
-Status: **IMPLEMENTED / AWAITING PRISM RUNTIME ACCEPTANCE**
+Status: **COMPLETE / RUNTIME ACCEPTED**
 
 Authority is the final released Biome Makeover 1.20.1 source. This checkpoint restores only Stunt Powder with the global ageable-mob `Stuntable` contract and the Peat Composter. Altar/curses, Witch progression, structures, Ghost/Ectoplasm, Mansion progression and all Stage 9B+ content remain excluded.
 
@@ -51,11 +51,21 @@ The parity validator now asserts the Stage 9A registry delta, exact Stunt Powder
 5. Convert another with a hopper below; verify exactly one Peat transfers and the block resets. Verify side automation cannot extract.
 6. Save/reload while a converted block exists and repeat extraction.
 
-Dedicated-server boot/join and save/reload remain required before runtime acceptance.
+## Runtime acceptance
+
+Prism testing used Minecraft 1.21.10, Fabric Loader 0.19.3, Fabric API 0.138.4+1.21.10 and Biome Makeover 1.21.10-0.8.5. The client and integrated server loaded normally with no Stage 9A startup or blocking runtime error.
+
+- Stunt Powder applied successfully to an eligible baby cow. The treated cow remained a baby while an untreated control aged normally, proving the global mixin does not freeze ordinary babies. Adult and repeated-use rejection, synchronized baby rendering/physical state and save/reload persistence passed.
+- Natural water/dripstone conversion of a full vanilla Composter passed. Manual extraction returned exactly one Peat and reset the block. Breaking returned the vanilla Composter. Downward hopper extraction returned Peat from an already converted block.
+- `Re-Peat` and `For Peat's Sake` fired during the Peat test. This matches final data: player extraction triggers `peat_compost`/`create_peat`, while acquiring the resulting Peat satisfies the existing inventory criterion.
+- An active hopper beneath the *vanilla* full Composter can extract its vanilla Bone Meal before a water drip converts it. Final 1.20.1 adds no hopper lock or interception to the vanilla pre-conversion block, so this race is expected parity behavior. Automation must lock the hopper until conversion; no convenience override was added.
+
+The accepted Stage 7 Owl renderer still selects its dedicated adult/baby model pair from `entity.isBaby()`. Stage 9A changed no Owl source or renderer. Vanilla age mutation remains untouched for every non-stunted Owl, including baby growth and breeding cooldowns; only entities whose persistent stunted flag is true reject subsequent age changes.
 
 ## Static checkpoint results
 
 - Clean offline Gradle build: PASS; Java test task reports `NO-SOURCE` (the repository has no automated Java tests).
 - Parity/package validator: PASS at 261 blocks, 272 items, 12 entities, 1 block entity, 40 sounds and 2 particles; worldgen remains unchanged at 38 configured, 37 placed and 31 injected features.
-- Packaged totals: 2,877 entries, 278 blockstates, 600 block models, 272 item definitions, 274 item models, 315 texture entries, 329 recipes, 271 loot tables, 33 advancements and 78 tag files.
-- Dedicated-server bootstrap: attempted offline, but Loom could not resolve uncached `net.fabricmc:fabric-log4j-util:1.0.2`; no dependency or Gradle change was made. Prism/dedicated runtime validation remains open.
+- Packaged totals: 2,877 entries, 278 blockstates, 600 block models, 272 item definitions, 274 item models, 286 PNG textures, 329 recipes, 271 loot tables, 33 advancements and 78 tag files.
+- Texture-count reconciliation: the Stage 8 total of 285 counted PNG files. The initial Stage 9A figure of 315 counted every JAR entry below `textures/`: 286 PNGs, 14 animation `.mcmeta` files and 15 directory entries. Stage 9A added exactly one PNG (`stunt_powder.png`); no unrelated or duplicate texture was introduced.
+- Dedicated-server bootstrap: attempted offline, but Loom could not resolve uncached `net.fabricmc:fabric-log4j-util:1.0.2`; no dependency or Gradle change was made. Dedicated-server gameplay was not exercised in this acceptance pass; the successful integrated-server test is the available runtime evidence.
