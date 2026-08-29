@@ -116,6 +116,32 @@ gating/persistence, randomized anger duration, invulnerability hook, and the
 exact eight-entry tag. These checks are semantic source-contract guards, not
 a substitute for runtime AI/damage testing.
 
+## Stage 10C.1 final runtime acceptance
+
+Stage 10C.1 is complete and runtime accepted after the final Prism pass.
+Ghost acceptance covers the spawn egg, summon, stable ticking, dedicated
+source model and texture/translucency, flight, Ectoplasm loot, fresh
+neutrality, retaliation, persistent 20–39 second NeutralMob anger, alert
+propagation, save/load anger state, and the exact environmental damage
+blacklist. Phantom Membrane crafting is accepted: one Ectoplasm plus three
+Moth Scales shapelessly produces one membrane, and the recipe is learned after
+manual crafting as observed.
+
+Possessed applies to a player with the restored icon and particles visible;
+its harmful color/cadence contract remains source-correct. Full effect-world
+interaction is intentionally deferred to the Poltergeist implementation in
+Stage 10C.3 and is not a missing 10C.1 feature.
+
+Ghost flight can occasionally place a Ghost partly in terrain or temporarily
+stick it there; observed recovery is possible. This is non-blocking and
+accepted for parity. No pathfinding polish was performed; optional terrain or
+flight polish is future work only.
+
+The final accepted candidate was built and tested as
+`build/libs/biomemakeover-fabric-1.21.10-0.8.5.jar` (SHA-256 recorded in the
+stage handoff). Stage 10C.1 is now closed; Stage 10C.2 (archaeology) remains
+the next substage, while Poltergeist integration remains Stage 10C.3.
+
 ## Possessed effect audit and icon remediation
 
 The final effect is `biomemakeover:possessed`, a harmful MobEffect with color
