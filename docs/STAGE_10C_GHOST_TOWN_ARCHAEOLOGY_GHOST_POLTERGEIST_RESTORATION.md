@@ -63,3 +63,20 @@ movement change or exception suppression was introduced.
 The remediation is committed as `750fd6b` and remains awaiting Prism runtime
 validation. The shortest retest is: inspect the Ghost egg sprite, summon a
 Ghost, wait 20–30 seconds, and verify stable ticking, rendering, and movement.
+
+## 10C.1 second runtime remediation — Ghost rendering
+
+The first remediation passed spawn-egg loading and Ghost ticking/movement, but
+Prism showed a green translucent villager-like model. The source audit found
+that final 1.20.1 uses a dedicated `GhostModel` (64×64 texture atlas), custom
+body/head/arms/tapered lower-body hierarchy, source walking-arm/tail animation,
+and an `entityTranslucent` render type. Villager geometry was therefore only a
+placeholder artifact; translucency and airborne presentation are source-correct.
+
+The port now carries the original model geometry in a modern
+`GhostRenderState`/`EntityModel` pair, registers a dedicated `ghost` model
+layer, copies the source head/pose and walk animation state into the render
+state, uses the original `ghost.png`, and selects the translucent render type.
+No extra glow, particles, bobbing, or gameplay behavior was added. The model
+and renderer validator now rejects a missing layer or a vanilla placeholder
+model. Runtime visual acceptance remains pending Prism retest.

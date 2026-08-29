@@ -16,6 +16,7 @@ public final class BMModelLayers {
     public static final ModelLayerLocation LIGHTNING_BUG_OUTER = new ModelLayerLocation(BiomeMakeover.id("lightning_bug_outer"), "main");
     public static final ModelLayerLocation ROOTLING = new ModelLayerLocation(BiomeMakeover.id("rootling"), "main");
     public static final ModelLayerLocation MOTH = new ModelLayerLocation(BiomeMakeover.id("moth"), "main");
+    public static final ModelLayerLocation GHOST = new ModelLayerLocation(BiomeMakeover.id("ghost"), "main");
 
     private BMModelLayers() {}
 
@@ -31,5 +32,6 @@ public final class BMModelLayers {
         EntityModelLayerRegistry.registerModelLayer(LIGHTNING_BUG_OUTER, LightningBugModel::createOuterLayer);
         EntityModelLayerRegistry.registerModelLayer(ROOTLING, RootlingModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(MOTH, MothModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(GHOST, GhostModel::createBodyLayer);
     }
 }
