@@ -1,6 +1,6 @@
 # Stage 9B.2 — Complete Altar Restoration
 
-Status: **IMPLEMENTED / AWAITING RUNTIME ACCEPTANCE**. Stage 9B.1 remains **COMPLETE / RUNTIME ACCEPTED**. Stage 10+ is not started.
+Status: **REMEDIATED / AWAITING TARGETED RUNTIME RETEST**. Stage 9B.1 remains **COMPLETE / RUNTIME ACCEPTED**. Stage 10+ is not started.
 
 ## Authority and reachability
 
@@ -27,7 +27,9 @@ A plain Book is accepted and becomes an Enchanted Book containing exactly one ra
 
 An ordinary item is accepted only when it is not an Enchanted Book, is unmarked, already has enchantments, and contains an eligible non-curse enchantment whose definition has a maximum level above one and is not tagged `altar_cant_upgrade`. One eligible enchantment is selected uniformly and incremented by exactly one without maximum-level clamping. One absent supported curse is then added, the output is marked `BMCursed`, and its repair cost becomes 39.
 
-`BMCursed` is retained as the private historical boolean name inside modern `CUSTOM_DATA`. It is separate from “contains a curse.” It survives ordinary ItemStack serialization, world/container storage, drop and pickup. A plain cursed book is deliberately unmarked. Grindstone processing preserves curse components and the base stack's custom marker; ordinary anvil component-copy behavior governs marker propagation just as base-stack NBT governed it historically. No cleansing or special anvil prohibition was added.
+`BMCursed` is retained as the private historical boolean name inside modern `CUSTOM_DATA`. It is separate from “contains a curse.” It survives ordinary ItemStack serialization, world/container storage, drop and pickup. A plain cursed book is deliberately unmarked. Grindstone processing preserves curse components and the base stack's custom marker.
+
+Final 1.20.1 relied on repair cost 39 plus vanilla's survival cost ceiling: every non-rename operation added at least one level and therefore had no output at cost 40 or above, while rename-only was capped to 39 and creative retained its vanilla bypass. The modern port now enforces that same effective result directly for `BMCursed` inputs so an XP-limit-relaxing mod cannot reopen enchantment transfer, upgrades, material repair, or durability combination. Rename-only and creative behavior remain source-correct; ordinary items are untouched. No cleansing was added.
 
 ## Curse selection and source quirks
 
@@ -46,8 +48,15 @@ The historical `strictAltarCursing` default is false, so over-maximum upgrades s
 - Normal items use `DataComponents.ENCHANTMENTS`; cursed books use `STORED_ENCHANTMENTS`; the marker uses `CUSTOM_DATA`; repair economics use `REPAIR_COST`.
 - The final menu layout has target/fuel slots, player inventory and progress glyph only. There is no curse selection or XP control.
 - The floating vanilla enchanting-table book is rendered through the modern block-entity render-state/model pipeline, including the released client animation-counter cadence. The original GUI, five block textures, models and blockstate are reused.
-- ACTIVE block-state synchronization replaces the historical one-shot S2C effect packet: the client starts the positional Altar sound and animation on the authoritative inactive→active transition. No C2S gameplay payload exists. The sound instance stops when the block entity disappears or processing ends, preventing orphan audio on break/unload/world exit.
+- The server now reproduces the historical one-shot S2C start-effect edge with a vanilla block-event packet. The client starts one positional Altar sound instance only when that authoritative event arrives; ACTIVE state continues to drive visuals and stop conditions. No custom payload or C2S gameplay path exists. The sound stops on interruption or block-entity invalidation and naturally ends with the processing-length asset.
 - Client screen, renderer and sound classes remain exclusively in the client source set; common/server code contains no client class reference.
+
+## Runtime remediation findings
+
+- **Recipe-book discovery is final-source parity.** Final 1.20.1 packages the shaped recipe and the visible obtain-Altar advancement, but no `advancements/recipes/...` unlock resource and no generated unlock criterion. The recipe is therefore not made visible by obtaining Book, Illunite, Mesmerite, or Crying Obsidian. Successful manual crafting teaches it through vanilla recipe-award behavior. No premature unlock was added.
+- **Waterlogging interaction was defective.** The block state and fluid methods existed, but 1.21.10 routes held-item interaction through `useItemOn` before the empty-hand menu hook. The menu consumed the interaction before `BucketItem` could invoke `SimpleWaterloggedBlock`. Water Bucket and empty Bucket interactions now pass to the native fluid-item path; other held items still open the menu, and no non-water fluid is accepted.
+- **Altar audio startup was defective.** Registration, JSON, mono OGG, sound instance, and client registration were present, but the port had replaced final source's explicit server effect with a passive client observation of ACTIVE. Prism proved that observation never instantiated an audible sound. The authoritative start edge is restored through one server block event per cycle, matching the original event semantics without packet spam.
+- **Immediate hopper extraction is original behavior.** Final 1.20.1 exposes slot 0 on vertical faces and slot 1 on horizontal faces, and `canTakeItemThroughFace` returns true without consulting validity, progress, or ACTIVE. An output hopper can therefore remove pending input immediately. That baseline is documented as parity, not a defect.
 
 ## Static validation
 

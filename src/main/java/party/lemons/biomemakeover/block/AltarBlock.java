@@ -10,6 +10,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -67,6 +69,19 @@ public final class AltarBlock extends Block implements EntityBlock, SimpleWaterl
     }
 
     @Override
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+                                          net.minecraft.world.InteractionHand hand, BlockHitResult hit) {
+        // In 1.21.10 a held-item interaction must explicitly pass through to
+        // BucketItem. Otherwise useWithoutItem opens the menu before the
+        // SimpleWaterloggedBlock contract can place or collect its water.
+        if ((stack.is(Items.WATER_BUCKET) && !state.getValue(WATERLOGGED))
+            || (stack.is(Items.BUCKET) && state.getValue(WATERLOGGED))) {
+            return InteractionResult.PASS;
+        }
+        return super.useItemOn(stack, state, level, pos, player, hand, hit);
+    }
+
+    @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new AltarBlockEntity(pos, state);
     }
@@ -84,6 +99,12 @@ public final class AltarBlock extends Block implements EntityBlock, SimpleWaterl
     protected MenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos) {
         BlockEntity entity = level.getBlockEntity(pos);
         return entity instanceof MenuProvider provider ? provider : null;
+    }
+
+    @Override
+    protected boolean triggerEvent(BlockState state, Level level, BlockPos pos, int event, int data) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        return blockEntity != null && blockEntity.triggerEvent(event, data);
     }
 
     @Override

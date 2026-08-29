@@ -693,12 +693,23 @@ if($menuSource-notmatch 'Registries\.MENU, BiomeMakeover\.id\("altar"\)' -or $me
 $altarBlockSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/AltarBlock.java') -Raw
 $altarEntitySource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/entity/AltarBlockEntity.java') -Raw
 $altarCursingSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/item/AltarCursing.java') -Raw
+$anvilMixinSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/AnvilMenuMixin.java') -Raw
+$combinerAccessorSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/ItemCombinerMenuAccessor.java') -Raw
 foreach($required in @('ACTIVE','WATERLOGGED','getAnalogOutputSignal','AbstractContainerMenu\.getRedstoneSignalFromBlockEntity','SimpleWaterloggedBlock','Containers\.updateNeighboursAfterDestroy','preRemoveSideEffects spills every Container')){if($altarBlockSource-notmatch$required){Add-Failure "Stage 9B.2 Altar block contract missing: $required"}}
+foreach($required in @('useItemOn','Items\.WATER_BUCKET','Items\.BUCKET','InteractionResult\.PASS','triggerEvent\(BlockState state, Level level, BlockPos pos','blockEntity\.triggerEvent\(event, data\)')){if($altarBlockSource-notmatch$required){Add-Failure "Stage 9B.2 Altar water/broadcast interaction contract missing: $required"}}
 if($altarBlockSource-match'Containers\.dropContents'){Add-Failure 'Stage 9B.2 Altar must not duplicate the 1.21.10 BlockEntity container spill hook'}
 foreach($required in @('MAX_TIME = 300','withSize\(2','Progress','direction\.getAxis\(\) == Direction\.Axis\.Y \? new int\[\]\{0\} : new int\[\]\{1\}','BMItems\.CURSE_FUEL','Block\.popResource','setItem\(0, ItemStack\.EMPTY\)','progress = 0')){if($altarEntitySource-notmatch$required){Add-Failure "Stage 9B.2 Altar inventory/process contract missing: $required"}}
+foreach($required in @('START_SOUND_EVENT = 1','!serverWasWorking','level\.blockEvent\(worldPosition, state\.getBlock\(\), START_SOUND_EVENT, 0\)','triggerEvent\(int event, int data\)','clientSoundStarter\.accept\(this\)')){if($altarEntitySource-notmatch$required){Add-Failure "Stage 9B.2 Altar start-sound event contract missing: $required"}}
+if($altarEntitySource-match'clientWasActive'){Add-Failure 'Stage 9B.2 sound must start from the authoritative block event, not a passive client state-transition guess'}
 foreach($required in @('DataComponents\.STORED_ENCHANTMENTS','DataComponents\.ENCHANTMENTS','DataComponents\.CUSTOM_DATA','BMCursed','DataComponents\.REPAIR_COST, REPAIR_COST','attempts >= RANDOM_ATTEMPTS','minimum == maximum \? minimum : random\.nextInt\(minimum, maximum\)')){if($altarCursingSource-notmatch$required){Add-Failure "Stage 9B.2 Altar cursing contract missing: $required"}}
+foreach($required in @('@Mixin\(AnvilMenu\.class\)','@Shadow private boolean onlyRenaming','@Inject\(method = "createResult", at = @At\("RETURN"\)\)','hasInfiniteMaterials\(\)','AltarCursing\.hasMarker\(inputs\.getItem\(0\)\)','AltarCursing\.hasMarker\(inputs\.getItem\(1\)\)','setItem\(0, ItemStack\.EMPTY\)')){if($anvilMixinSource-notmatch$required){Add-Failure "Stage 9B.2 BMCursed anvil translation missing: $required"}}
+foreach($required in @('@Mixin\(ItemCombinerMenu\.class\)','@Accessor\("player"\)','@Accessor\("inputSlots"\)','@Accessor\("resultSlots"\)')){if($combinerAccessorSource-notmatch$required){Add-Failure "Stage 9B.2 item-combiner accessor missing: $required"}}
+$commonMixinConfig=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.mixins.json') -Raw
+foreach($required in @('ItemCombinerMenuAccessor','AnvilMenuMixin')){if($commonMixinConfig-notmatch[regex]::Escape($required)){Add-Failure "Stage 9B.2 anvil mixin not wired: $required"}}
 $altarRecipePath=Join-Path $builtData 'biomemakeover/recipe/altar.json'
 if(-not(Test-Path $altarRecipePath)){Add-Failure 'Stage 9B.2 Altar recipe missing'}else{$altarRecipe=Get-Content $altarRecipePath -Raw|ConvertFrom-Json;if(($altarRecipe.pattern-join'/')-ne' B /ICI/MCM'-or$altarRecipe.key.B-ne'minecraft:book'-or$altarRecipe.key.I-ne'biomemakeover:illunite_shard'-or$altarRecipe.key.C-ne'minecraft:crying_obsidian'-or$altarRecipe.key.M-ne'biomemakeover:mesmerite'-or$altarRecipe.result.id-ne'biomemakeover:altar'){Add-Failure 'Stage 9B.2 Altar recipe differs from the final two-Crying-Obsidian contract'}}
+$altarRecipeUnlock=Get-ChildItem (Join-Path $builtData 'biomemakeover/advancement') -Recurse -File -Filter '*.json' -ErrorAction SilentlyContinue|Where-Object{$_.FullName-replace'\\','/'-match'/recipes/.*/altar\.json$'}
+if($altarRecipeUnlock){Add-Failure 'Final 1.20.1 has no Altar recipe-unlock advancement; do not invent premature recipe-book discovery'}
 foreach($resource in @($stage9b2.loot_tables|ForEach-Object{"biomemakeover/loot_table/$_.json"})+@($stage9b2.advancements|ForEach-Object{"biomemakeover/advancement/$_.json"})+@($stage9b2.item_tags|ForEach-Object{"biomemakeover/tags/item/$_.json"})+@($stage9b2.enchantment_tags|ForEach-Object{"biomemakeover/tags/enchantment/$_.json"})){if(-not(Test-Path(Join-Path $builtData $resource))){Add-Failure "Stage 9B.2 packaged data resource missing: $resource"}}
 foreach($texture in $stage9b2.textures){if(-not(Test-Path(Join-Path $builtAssets "textures/$texture"))){Add-Failure "Stage 9B.2 packaged texture missing: $texture"}}
 foreach($asset in @('blockstates/altar.json','models/block/altar.json','models/item/altar.json','items/altar.json','sounds/altar_cursing.ogg')){if(-not(Test-Path(Join-Path $builtAssets $asset))){Add-Failure "Stage 9B.2 packaged asset missing: $asset"}}
@@ -715,8 +726,10 @@ if($null-eq$minecraftCommonJar){Add-Failure 'Cannot locate mapped Minecraft comm
  $savedErrorPreference=$ErrorActionPreference;$ErrorActionPreference='Continue'
  try{
   $entityMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.entity.Entity 2>$null|Out-String)
-  $livingMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.entity.LivingEntity 2>$null|Out-String)
-  $bowMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.item.BowItem 2>$null|Out-String)
+ $livingMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.entity.LivingEntity 2>$null|Out-String)
+ $bowMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.item.BowItem 2>$null|Out-String)
+  $anvilMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.inventory.AnvilMenu 2>$null|Out-String)
+  $combinerMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.inventory.ItemCombinerMenu 2>$null|Out-String)
  }finally{$ErrorActionPreference=$savedErrorPreference}
  foreach($contract in @(
    @('Entity.setRemainingFireTicks','public void setRemainingFireTicks\(int\);[\s\S]*?descriptor: \(I\)V',$entityMethods),
@@ -725,7 +738,12 @@ if($null-eq$minecraftCommonJar){Add-Failure 'Cannot locate mapped Minecraft comm
    @('LivingEntity.tick','public void tick\(\);[\s\S]*?descriptor: \(\)V',$livingMethods),
    @('LivingEntity.causeFallDamage','public boolean causeFallDamage\(double, float, net\.minecraft\.world\.damagesource\.DamageSource\);[\s\S]*?descriptor: \(DFLnet/minecraft/world/damagesource/DamageSource;\)Z',$livingMethods),
    @('LivingEntity.calculateFallDamage','protected int calculateFallDamage\(double, float\);[\s\S]*?descriptor: \(DF\)I',$livingMethods),
-   @('BowItem.shootProjectile','protected void shootProjectile\([\s\S]*?descriptor: \(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/projectile/Projectile;IFFFLnet/minecraft/world/entity/LivingEntity;\)V',$bowMethods)
+   @('BowItem.shootProjectile','protected void shootProjectile\([\s\S]*?descriptor: \(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/projectile/Projectile;IFFFLnet/minecraft/world/entity/LivingEntity;\)V',$bowMethods),
+   @('AnvilMenu.createResult','public void createResult\(\);[\s\S]*?descriptor: \(\)V',$anvilMethods),
+   @('AnvilMenu.onlyRenaming','private boolean onlyRenaming;[\s\S]*?descriptor: Z',$anvilMethods),
+   @('ItemCombinerMenu.player','protected final net\.minecraft\.world\.entity\.player\.Player player;[\s\S]*?descriptor: Lnet/minecraft/world/entity/player/Player;',$combinerMethods),
+   @('ItemCombinerMenu.inputSlots','protected final net\.minecraft\.world\.Container inputSlots;[\s\S]*?descriptor: Lnet/minecraft/world/Container;',$combinerMethods),
+   @('ItemCombinerMenu.resultSlots','protected final net\.minecraft\.world\.inventory\.ResultContainer resultSlots;[\s\S]*?descriptor: Lnet/minecraft/world/inventory/ResultContainer;',$combinerMethods)
  )){if($contract[2]-notmatch$contract[1]){Add-Failure "Stage 9B.1 named runtime target missing or descriptor changed: $($contract[0])"}}
 }
 $mappingRoot=Join-Path $env:USERPROFILE '.gradle/caches/fabric-loom/1.21.10'
@@ -738,7 +756,12 @@ if($null-eq$mappingFile){$warnings.Add('Intermediary mapping table unavailable; 
   'm\s+\(\)V\s+\S+\s+method_5790\s+updateSwimming',
   'm\s+\(DFL\S+;\)Z\s+\S+\s+method_5747\s+causeFallDamage',
   'm\s+\(DF\)I\s+\S+\s+method_23329\s+calculateFallDamage',
-  'm\s+\(L\S+;L\S+;IFFFL\S+;\)V\s+\S+\s+method_7763\s+shootProjectile'
+  'm\s+\(L\S+;L\S+;IFFFL\S+;\)V\s+\S+\s+method_7763\s+shootProjectile',
+  'm\s+\(\)V\s+\S+\s+method_24928\s+createResult',
+  'f\s+Z\s+\S+\s+field_52566\s+onlyRenaming',
+  'f\s+L\S+;\s+\S+\s+field_22482\s+player',
+  'f\s+L\S+;\s+\S+\s+field_22480\s+inputSlots',
+  'f\s+L\S+;\s+\S+\s+field_22479\s+resultSlots'
  )){if($mappingText-notmatch$contract){Add-Failure "Stage 9B.1 intermediary mapping contract missing: $contract"}}
 }
 $productionJar=Get-ChildItem (Join-Path $RepositoryRoot 'build/libs') -File -Filter 'biomemakeover-fabric-*.jar'|Where-Object{$_.Name-notlike'*-sources.jar'}|Select-Object -First 1
@@ -750,6 +773,8 @@ if($null-ne$productionJar){
    'party/lemons/biomemakeover/mixin/curse/EntityCurseMixin.class'=@('method_20803','method_5790','method_5748')
    'party/lemons/biomemakeover/mixin/curse/LivingEntityCurseMixin.class'=@('method_5773','method_5747','method_23329')
    'party/lemons/biomemakeover/mixin/curse/BowItemCurseMixin.class'=@('method_7763')
+   'party/lemons/biomemakeover/mixin/AnvilMenuMixin.class'=@('method_24928','field_52566')
+   'party/lemons/biomemakeover/mixin/ItemCombinerMenuAccessor.class'=@('field_22482','field_22480','field_22479')
   }
   foreach($classPath in $selectorContracts.Keys){$entry=$zip.GetEntry($classPath);if($null-eq$entry){Add-Failure "Packaged curse mixin class missing: $classPath";continue};$stream=$entry.Open();try{$memory=[IO.MemoryStream]::new();$stream.CopyTo($memory);$classText=[Text.Encoding]::ASCII.GetString($memory.ToArray())}finally{$stream.Dispose()};foreach($selector in $selectorContracts[$classPath]){if(-not$classText.Contains($selector)){Add-Failure "Packaged curse mixin selector missing: $classPath -> $selector"}}}
  }finally{$zip.Dispose()}

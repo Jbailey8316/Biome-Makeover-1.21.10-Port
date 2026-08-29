@@ -32,6 +32,7 @@ import java.util.function.Consumer;
 /** Released two-slot Altar inventory and 300-tick server processing contract. */
 public final class AltarBlockEntity extends RandomizableContainerBlockEntity implements WorldlyContainer {
     public static final int MAX_TIME = 300;
+    public static final int START_SOUND_EVENT = 1;
     private static final double PI = Math.PI;
     private static final double TAU = Math.PI * 2.0D;
     private static final RandomSource BOOK_RANDOM = RandomSource.create();
@@ -39,7 +40,7 @@ public final class AltarBlockEntity extends RandomizableContainerBlockEntity imp
 
     private NonNullList<ItemStack> inventory = NonNullList.withSize(2, ItemStack.EMPTY);
     private int progress;
-    private boolean clientWasActive;
+    private boolean serverWasWorking;
     private final ContainerData data = new ContainerData() {
         @Override public int get(int index) { return progress; }
         @Override public void set(int index, int value) { progress = value; }
@@ -83,10 +84,18 @@ public final class AltarBlockEntity extends RandomizableContainerBlockEntity imp
                 setChanged();
             }
             setActive(state, false);
+            serverWasWorking = false;
             return;
         }
 
         setActive(state, true);
+        if (!serverWasWorking) {
+            // Final 1.20.1 emitted a one-shot S2C effect when work began. A
+            // vanilla block event provides the same authoritative start edge
+            // without a custom client-to-server gameplay payload.
+            level.blockEvent(worldPosition, state.getBlock(), START_SOUND_EVENT, 0);
+        }
+        serverWasWorking = true;
         progress++;
         setChanged();
         if (progress < MAX_TIME) {
@@ -116,9 +125,16 @@ public final class AltarBlockEntity extends RandomizableContainerBlockEntity imp
 
     private void clientTick(BlockState state) {
         boolean active = state.getValue(AltarBlock.ACTIVE);
-        if (active && !clientWasActive) clientSoundStarter.accept(this);
-        clientWasActive = active;
         updateBook(active);
+    }
+
+    @Override
+    public boolean triggerEvent(int event, int data) {
+        if (event == START_SOUND_EVENT) {
+            if (level != null && level.isClientSide()) clientSoundStarter.accept(this);
+            return true;
+        }
+        return super.triggerEvent(event, data);
     }
 
     private void updateBook(boolean active) {
