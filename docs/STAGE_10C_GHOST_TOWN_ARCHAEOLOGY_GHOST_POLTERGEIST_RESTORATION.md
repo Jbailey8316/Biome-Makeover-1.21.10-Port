@@ -80,3 +80,38 @@ state, uses the original `ghost.png`, and selects the translucent render type.
 No extra glow, particles, bobbing, or gameplay behavior was added. The model
 and renderer validator now rejects a missing layer or a vanilla placeholder
 model. Runtime visual acceptance remains pending Prism retest.
+
+## 10C.1 gameplay remediation — neutral anger and damage immunity
+
+The previously accepted runtime state includes the Ghost spawn egg, summon,
+stable ticking, flight/movement, dedicated renderer/model, released
+texture/translucency, and Ectoplasm loot drop. Aggression and environmental
+immunity remain runtime gates until the targeted Prism retest.
+
+The final 1.20.1 Ghost is neutral when created. Its target priorities are
+`HurtByTargetGoal` (priority 1, alerting nearby Ghosts), an
+`NearestAttackableTargetGoal<Player>` (priority 2) gated by `isAngryAt`, and
+`ResetUniversalAngerTargetGoal` (priority 3); movement/look goals do not make
+a fresh Ghost hostile. Anger uses the vanilla `NeutralMob` contract with a
+random 20–39 second timer, persisted UUID target and timer, expiry updates,
+and alert bounds equal to follow range horizontally and 10 blocks vertically.
+Manual and structure-created Ghosts share this behavior.
+
+The port previously used an unconditional nearest-player target and had no
+NeutralMob state. It now implements the modern 1.21.10 `NeutralMob` methods,
+anger save/load helpers, source priorities, and bounded alert propagation;
+the only API adaptation is using current `ServerLevel`/`ValueInput`/
+`ValueOutput` signatures.
+
+Final damage behavior is a blacklist only. The
+`biomemakeover:ghost_immune_to` damage-type tag contains exactly lava,
+in_wall, cactus, drown, sweet_berry_bush, hot_floor, fly_into_wall, and fall.
+`GhostEntity.isInvulnerableTo(ServerLevel, DamageSource)` checks that tag and
+otherwise delegates to vanilla behavior. The tag had previously been empty
+and unchecked; no item, projectile, explosion, magic, or generic-fire
+immunity was added.
+
+The Stage 10C.1 validator now checks the NeutralMob contract, anger goal
+gating/persistence, randomized anger duration, invulnerability hook, and the
+exact eight-entry tag. These checks are semantic source-contract guards, not
+a substitute for runtime AI/damage testing.
