@@ -17,7 +17,7 @@ The shaped pattern is exactly ` B ` / `ICI` / `MCM`. The visible block item and 
 - The Altar block entity has exactly two logical slots: slot 0 target, slot 1 `#biomemakeover:curse_fuel`. The final tag contains only `biomemakeover:illunite_shard`.
 - Processing is server-authoritative and takes exactly 300 ticks. Inventory and `Progress` persist. Removing or invalidating either required input resets progress to zero. Chunk unload/reload and server restart retain valid in-progress state.
 - A successful or failed completed attempt consumes one fuel. A failed curse search ejects the original target, empties slot 0, and does not refund fuel.
-- Vertical faces expose target slot 0; horizontal faces expose fuel slot 1. Exposed slots remain extractable, matching the released `WorldlyContainer` contract. There is no processing lock.
+- Vertical faces expose target slot 0; horizontal faces expose fuel slot 1. Final 1.20.1 made every exposed slot immediately extractable and had no processing lock. The explicitly authorized **MYTHAS ENHANCEMENT - ALTAR AUTOMATION LOCKING** changes only automated extraction: a processable target cannot be pulled, its required fuel cannot be pulled while that target is pending/processing, and completed outputs or invalid garbage can be pulled. Manual slot interaction remains unchanged.
 - Comparator output is vanilla two-slot container-fullness output; processing progress does not create a separate comparator scale.
 - Breaking spills contents once through the modern `BlockEntity.preRemoveSideEffects` container hook. The block only performs the vanilla post-destroy neighbor/comparator update, avoiding a duplicate historical manual drop. The released explosion-conditioned loot table returns the Altar block item.
 
@@ -57,6 +57,17 @@ The historical `strictAltarCursing` default is false, so over-maximum upgrades s
 - **Waterlogging interaction was defective.** The block state and fluid methods existed, but 1.21.10 routes held-item interaction through `useItemOn` before the empty-hand menu hook. The menu consumed the interaction before `BucketItem` could invoke `SimpleWaterloggedBlock`. Water Bucket and empty Bucket interactions now pass to the native fluid-item path; other held items still open the menu, and no non-water fluid is accepted.
 - **Altar audio startup was defective.** Registration, JSON, mono OGG, sound instance, and client registration were present, but the port had replaced final source's explicit server effect with a passive client observation of ACTIVE. Prism proved that observation never instantiated an audible sound. The authoritative start edge is restored through one server block event per cycle, matching the original event semantics without packet spam.
 - **Immediate hopper extraction is original behavior.** Final 1.20.1 exposes slot 0 on vertical faces and slot 1 on horizontal faces, and `canTakeItemThroughFace` returns true without consulting validity, progress, or ACTIVE. An output hopper can therefore remove pending input immediately. That baseline is documented as parity, not a defect.
+
+## MYTHAS ENHANCEMENT - Altar automation locking
+
+This is intentionally not final-source parity. Automated extraction now follows a Brewing-Stand-style lifecycle without changing the two source-owned slots or face routing:
+
+- A processable plain Book or eligible enchanted item in target slot 0 is not hopper-extractable, whether awaiting fuel or actively processing.
+- A completed Enchanted Book or marked ordinary-item result is no longer a valid Altar target and is hopper-extractable.
+- An invalid item in target slot 0 remains hopper-extractable, avoiding an automation deadlock.
+- Real Illunite fuel is not hopper-extractable while a valid target is pending/processing. Fuel becomes extractable when there is no valid target; invalid garbage in the fuel slot is always extractable.
+- Player menu removal is unchanged because the rule is confined to `canTakeItemThroughFace`.
+- The final failed-selection path remains unchanged: the original target is popped into the world, slot 0 clears, and one fuel is consumed.
 
 ## Static validation
 

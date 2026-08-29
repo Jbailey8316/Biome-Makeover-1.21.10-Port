@@ -19,6 +19,16 @@ Final cursing writes `BMCursed=true` and repair cost 39. In vanilla 1.20.1, ever
 - A narrow `AnvilMenu.createResult()` tail hook checks `BMCursed` on either input. In survival it clears a non-rename result; rename-only and creative are preserved. This modernizes final effective behavior independently of mods that relax the XP ceiling and leaves ordinary items untouched.
 - Static validation resolves `AnvilMenu.createResult()V` (`method_24928`), `onlyRenaming:Z` (`field_52566`), and the three `ItemCombinerMenu` fields against the actual 1.21.10 mapped common JAR and audits their packaged intermediary names.
 
+## MYTHAS ENHANCEMENT - Altar automation locking
+
+This is explicitly outside original BM parity. Final 1.20.1 allowed a hopper to pull any exposed Altar slot immediately. Mythas now makes ordinary unattended processing practical:
+
+- Slot 0 blocks automated extraction while its stack is a valid processable Altar target.
+- Successful Book and ordinary-item outputs are invalid as new direct inputs, so they become automatically extractable without a separate persisted output flag.
+- Invalid target-slot garbage remains extractable.
+- Slot 1 blocks real Illunite fuel extraction only while a valid target is pending/processing. It releases fuel when no valid target exists, and never traps an invalid fuel-slot stack.
+- Manual menu extraction, face-specific insertion, one-shard consumption, and failed-selection pop/clear/fuel-loss behavior are unchanged.
+
 ## Runtime-only checks
 
 Prism must confirm water Bucket placement/pickup, audible sound start/stop lifetime, the exact permitted/blocked anvil operations, and the separately documented automated extraction behavior. Static checks cannot hear audio or exercise hopper transfer timing.

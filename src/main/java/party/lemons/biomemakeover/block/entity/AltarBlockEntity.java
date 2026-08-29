@@ -190,7 +190,19 @@ public final class AltarBlockEntity extends RandomizableContainerBlockEntity imp
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction direction) {
         return slot == 0 ? AltarCursing.isValidTarget(stack) : slot == 1 && stack.is(BMItems.CURSE_FUEL);
     }
-    @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction direction) { return true; }
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction direction) {
+        // MYTHAS ENHANCEMENT: final 1.20.1 returned true for every exposed
+        // slot, so an output hopper could steal a valid input immediately.
+        // Validity provides a durable input/output boundary without adding a
+        // second inventory state: completed Book/equipment outputs are not
+        // valid targets, and invalid garbage stays removable.
+        if (slot == 0) return !AltarCursing.isValidTarget(stack);
+        if (slot == 1) {
+            return !stack.is(BMItems.CURSE_FUEL) || !AltarCursing.isValidTarget(inventory.get(0));
+        }
+        return true;
+    }
     @Override public int getContainerSize() { return 2; }
     @Override protected NonNullList<ItemStack> getItems() { return inventory; }
     @Override protected void setItems(NonNullList<ItemStack> items) { inventory = items; }
