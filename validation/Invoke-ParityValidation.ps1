@@ -662,6 +662,21 @@ $curseKeys=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/bi
 $curseEffects=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/item/enchantment/BMCurseEffects.java') -Raw
 foreach($id in $curseSpecs.Keys){if($curseKeys-notmatch[regex]::Escape("key(`"$id`"") ){Add-Failure "Stage 9B.1 canonical ResourceKey missing: $id"}}
 foreach($required in @('11000 - level \* 1000','0\.05D \* level','300\.0F / \(level \* 1\.5F\)','ticks \+ \(int\)\(ticks \* \(level / 2\.0F\)\)','distance >= 3\.0D \? distance \+ level','level \* 1\.3F')){if($curseEffects-notmatch$required){Add-Failure "Stage 9B.1 pure calculation contract missing: $required"}}
+foreach($required in @(
+ 'for \(EquipmentSlot slot : ARMOR\)',
+ 'BMEnchantments\.equippedLevel\(entity, slot, BMEnchantments\.CONDUCTIVITY_CURSE\)',
+ 'level\.random\.nextInt\(conductivityDenominator\(conductivity\)\) == 0',
+ 'level\.isThundering\(\)',
+ 'level\.isRainingAt\(pos\)',
+ 'EntityType\.LIGHTNING_BOLT\.create\(level, EntitySpawnReason\.TRIGGERED\)',
+ 'level\.addFreshEntity\(bolt\)'
+)){if($curseEffects-notmatch$required){Add-Failure "Stage 9B.1 Conductivity server path differs from final source: $required"}}
+$enfeeblementDefinition=Get-Content (Join-Path $builtData 'biomemakeover/enchantment/enfeeblement_curse.json') -Raw|ConvertFrom-Json
+if($enfeeblementDefinition.supported_items-ne'#minecraft:enchantable/vanishing'-or'any'-notin@($enfeeblementDefinition.slots)){Add-Failure 'Enfeeblement must retain final VANISHABLE plus every-equipment-slot activation, including held supported items'}
+$suffocationMixin=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/curse/EntityCurseMixin.java') -Raw
+if($suffocationMixin-notmatch '(?s)method = "getMaxAirSupply".*?getAirSupply\(\) > maximum.*?setAirSupply\(maximum\).*?setReturnValue\(maximum\)' -or $suffocationMixin-match 'setItemSlot|onEquip|equipmentChanged'){Add-Failure 'Suffocation must clamp during the maximum-air query without a nonhistorical equipment-change callback'}
+$decayedCurseSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/DecayedEntity.java') -Raw
+if($decayedCurseSource-notmatch '(?s)BMEnchantments\.holder\(registryAccess\(\), BMEnchantments\.DECAY_CURSE\).*?shield\.enchant\(decay, 1 \+ random\.nextInt\(4\)\)'){Add-Failure 'Decayed shield must resolve canonical Decay and retain final uniform levels 1-4'}
 $curseMixins=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.mixins.json') -Raw
 foreach($required in @('curse.LivingEntityCurseMixin','curse.EntityCurseMixin','curse.BowItemCurseMixin')){if($curseMixins-notmatch[regex]::Escape($required)){Add-Failure "Stage 9B.1 mixin not wired: $required"}}
 if(Test-Path(Join-Path $builtData 'biomemakeover/enchantment/sliding_curse.json')){Add-Failure 'Historical/removed Sliding curse was registered'}

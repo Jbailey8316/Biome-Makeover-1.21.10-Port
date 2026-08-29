@@ -18,7 +18,7 @@ The historical config could change max level, costs, treasure, discoverability a
 | `enfeeblement_curse` | 5 | vanishable / any | native slot-aware max-health attribute, `-2L` per equipped item |
 | `depth_curse` | 3 | boots / feet | server tick downward velocity `0.05L`, flying bypass; swimming cancellation |
 | `flammability_curse` | 3 | armor / armor | narrow new-fire-duration hook, highest equipped level, factors 1.5/2/2.5 with historical truncation |
-| `suffocation_curse` | 3 | helmet / head | narrow max-air hook, after tick 20, values 200/100/66 and immediate clamp |
+| `suffocation_curse` | 3 | helmet / head | narrow max-air hook, after tick 20, values 200/100/66; current air clamps when vanilla next queries maximum air |
 | `unwieldiness_curse` | 3 | weapons plus axes / hands | native slot-aware attack-speed attribute `-0.25L` |
 | `inaccuracy_curse` | 3 | bow / main hand | bow-only launch hook; independently signed uniform pitch/yaw offsets through `1.3L` degrees |
 | `buckling_curse` | 3 | leggings / legs | modifies fall-distance input by `+L` for distance at least 3, then preserves vanilla calculation |
@@ -37,6 +37,16 @@ Runtime-open: every curse effect, per-piece stacking, RNG behavior, persistence,
 
 ## Runtime remediation 1 — maximum-air hook ownership
 
-The first Prism launch exposed a mixin-owner migration error before gameplay began. In 1.21.10, `getMaxAirSupply()I` is declared by `Entity` (`class_1297.method_5748`), not `LivingEntity` (`class_1309`). The named source compiled because the method is inherited, and Loom remapped the selector correctly, but Mixin only searches the declared target class during injection. The required Suffocation injection now lives in `EntityCurseMixin`, matching the final 1.20.1 owner pattern and retaining exact 200/100/66 values plus current-air clamping.
+The first Prism launch exposed a mixin-owner migration error before gameplay began. In 1.21.10, `getMaxAirSupply()I` is declared by `Entity` (`class_1297.method_5748`), not `LivingEntity` (`class_1309`). The named source compiled because the method is inherited, and Loom remapped the selector correctly, but Mixin only searches the declared target class during injection. The required Suffocation injection now lives in `EntityCurseMixin`, matching the final 1.20.1 owner pattern and retaining exact 200/100/66 values plus current-air clamping whenever vanilla queries maximum air. Final source has no equipment-change callback, so equipping the helmet underwater need not rewrite the air field in that same interaction tick.
 
 The complete curse hook set was rechecked against the actual 1.21.10 named classes and intermediary mapping table. Packaged selectors are also validated after remapping. The loader's “No refMap loaded” diagnostic is expected for this project: Loom rewrites selectors directly into the remapped production classes, as demonstrated by the failing named selector appearing at runtime as `method_5748`. Existing accepted mixins use the same architecture; no global refmap change is required.
+
+## Runtime findings audit
+
+Prism confirmed Decay, Insomnia, Depths, Flammability, Suffocation, Unwieldiness, Inaccuracy and Buckling execute. Enfeeblement produced the exact `20 -> 16 -> 12` level-II stacking and clean removal contract.
+
+- **Enfeeblement held armor is final-source parity.** The released enchantment used `EnchantmentCategory.VANISHABLE`, declared every `EquipmentSlot`, and its tickable attribute framework evaluated each currently equipped slot—including main hand and offhand. Consequently a command/anvil-created cursed chestplate held in a hand applies its penalty, as does any other supported vanishable item in an active hand. Merely existing in ordinary inventory does not activate it. The 1.21.10 `supported_items: #minecraft:enchantable/vanishing`, `slots: ["any"]` definition is the faithful mapping.
+- **Suffocation live-equip delay is parity-correct.** Final source performed the current-air clamp inside `getMaxAirSupply`; it did not listen for equipment changes. A full-air player equipping the helmet underwater retains that field until vanilla next queries maximum air, at which point it clamps to 200/100/66. Documentation must not call this an immediate equipment callback.
+- **Conductivity remains source-correct and runtime-inconclusive only because it is random.** The server tick loops all four armor slots. Each enchanted stack independently resolves its own level and rolls `nextInt(11000 - 1000 * level)`. Only a successful roll continues through thunder and `isRainingAt(getOnPos())`; it then creates and adds a real `LIGHTNING_BOLT` at the block-bottom center. Four level-V pieces therefore use four independent 1/6000 rolls per tick. Clear weather, sheltered positions, dry biomes and dimensions without qualifying weather cannot strike. No probability or debug behavior was changed.
+
+Shared vanilla behavior remains data-driven: curse tags preserve grindstone behavior and red tooltip semantics; normal/stored enchantment components preserve items and books through anvils, saves, containers, drops and dimension travel. The ten definitions remain omitted from enchanting-table, trading, random-loot and mob-equipment acquisition tags.
