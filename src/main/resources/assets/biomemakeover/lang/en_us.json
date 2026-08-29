@@ -152,4 +152,10 @@
   ,"enchantment.biomemakeover.unwieldiness_curse":"Curse of Unwieldiness"
   ,"enchantment.biomemakeover.inaccuracy_curse":"Curse of Inaccuracy"
   ,"enchantment.biomemakeover.buckling_curse":"Curse of Buckling"
+  ,"entity.biomemakeover.mushroom_trader":"Mushroom Trader"
+  ,"item.biomemakeover.mushroom_trader_spawn_egg":"Mushroom Trader Spawn Egg"
+  ,"item.biomemakeover.button_mushrooms_music_disk":"Music Disc"
+  ,"item.biomemakeover.button_mushrooms_music_disk.desc":"Podington Bear - Button Mushrooms"
+  ,"advancements.biomemakeover.mushroom_disc.title":"Badger Badger Badger"
+  ,"advancements.biomemakeover.mushroom_disc.description":"Collect the Music Disc from the Mushroom Fields biome"
 }

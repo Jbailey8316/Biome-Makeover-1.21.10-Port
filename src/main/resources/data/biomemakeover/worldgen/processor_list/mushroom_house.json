@@ -1,0 +1,20 @@
+{
+  "processors": [
+    {
+      "processor_type": "biomemakeover:replace_selection",
+      "target": "minecraft:flower_pot",
+      "output": {
+        "type": "minecraft:weighted_state_provider",
+        "entries": [
+          { "data": { "Name": "biomemakeover:potted_mycelium_roots" }, "weight": 2 },
+          { "data": { "Name": "minecraft:potted_red_mushroom" }, "weight": 3 },
+          { "data": { "Name": "minecraft:potted_brown_mushroom" }, "weight": 3 },
+          { "data": { "Name": "biomemakeover:potted_wild_mushrooms" }, "weight": 2 },
+          { "data": { "Name": "biomemakeover:potted_green_glowshroom" }, "weight": 2 },
+          { "data": { "Name": "biomemakeover:potted_purple_glowshroom" }, "weight": 2 },
+          { "data": { "Name": "biomemakeover:potted_orange_glowshroom" }, "weight": 2 }
+        ]
+      }
+    }
+  ]
+}

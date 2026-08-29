@@ -43,6 +43,7 @@ def stage4GeneratedResources = layout.buildDirectory.dir('generated/stage4Resour
 def stage5GeneratedResources = layout.buildDirectory.dir('generated/stage5Resources')
 def stage6GeneratedResources = layout.buildDirectory.dir('generated/stage6Resources')
 def stage8GeneratedResources = layout.buildDirectory.dir('generated/stage8Resources')
+def stage10aGeneratedResources = layout.buildDirectory.dir('generated/stage10aResources')
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
     outputs.dir(stage3GeneratedResources)
@@ -238,6 +239,34 @@ tasks.register('generateStage8ItemDefinitions') {
     }
 }
 
+tasks.register('generateStage10AItemResources') {
+    outputs.dir(stage10aGeneratedResources)
+    doLast {
+        def clientJar = fileTree("${projectDir}/.gradle/loom-cache/minecraftMaven").matching {
+            include '**/minecraft-clientOnly-*.jar'
+        }.files.sort { it.absolutePath }.last()
+        def textureOutput = stage10aGeneratedResources.get().dir('assets/biomemakeover/textures/item').asFile
+        textureOutput.mkdirs()
+        new ZipFile(clientJar).withCloseable { zip ->
+            def template = ImageIO.read(zip.getInputStream(zip.getEntry('assets/minecraft/textures/item/pig_spawn_egg.png')))
+            int primary = 0xb3a48b, secondary = 0xb3a48b
+            def image = new BufferedImage(template.width, template.height, BufferedImage.TYPE_INT_ARGB)
+            for (int x = 0; x < template.width; x++) for (int y = 0; y < template.height; y++) {
+                int argb = template.getRGB(x, y), alpha = (argb >>> 24) & 255
+                if (alpha == 0) { image.setRGB(x, y, 0); continue }
+                int brightness = (((argb >>> 16) & 255) + ((argb >>> 8) & 255) + (argb & 255)) / 3
+                int target = brightness < 190 ? secondary : primary
+                float shade = brightness / 220F
+                int red = Math.min(255, Math.round(((target >>> 16) & 255) * shade))
+                int green = Math.min(255, Math.round(((target >>> 8) & 255) * shade))
+                int blue = Math.min(255, Math.round((target & 255) * shade))
+                image.setRGB(x, y, (alpha << 24) | (red << 16) | (green << 8) | blue)
+            }
+            ImageIO.write(image, 'png', new File(textureOutput, 'mushroom_trader_spawn_egg.png'))
+        }
+    }
+}
+
 processResources {
     // Preserve the pre-Stage-6 source audit artifacts without packaging them as
     // released worldgen: final BM 1.20.1 has no owl_nest feature resources.
@@ -248,11 +277,13 @@ processResources {
     dependsOn tasks.named('generateStage5ItemDefinitions')
     dependsOn tasks.named('generateStage6ItemDefinitions')
     dependsOn tasks.named('generateStage8ItemDefinitions')
+    dependsOn tasks.named('generateStage10AItemResources')
     from(stage3GeneratedResources)
     from(stage4GeneratedResources)
     from(stage5GeneratedResources)
     from(stage6GeneratedResources)
     from(stage8GeneratedResources)
+    from(stage10aGeneratedResources)
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
@@ -829,6 +860,7 @@ processResources {
             stage4Contract.registry.spawn_eggs + stage4Contract.registry.entities + stage5Contract.blocks_with_items +
             stage5Contract.no_item_blocks + stage5Contract.special_items + stage5Contract.spawn_eggs + stage5Contract.entities) as Set
         allowed.add('altar')
+        allowed.addAll(['button_mushrooms_music_disk', 'mushroom_trader', 'mushroom_trader_spawn_egg'])
         def minecraftTags = destinationDir.toPath().resolve('data/minecraft/tags').toFile()
         if (minecraftTags.exists()) {
             fileTree(minecraftTags).matching { include '**/*.json' }.files.each { tagFile ->

@@ -44,6 +44,7 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import party.lemons.biomemakeover.client.render.RootlingRenderer;
 import party.lemons.biomemakeover.client.render.MothRenderer;
 import party.lemons.biomemakeover.client.render.AltarRenderer;
+import party.lemons.biomemakeover.client.render.MushroomTraderRenderer;
 import party.lemons.biomemakeover.client.screen.AltarScreen;
 import party.lemons.biomemakeover.client.sound.AltarCursingSound;
 import party.lemons.biomemakeover.block.entity.AltarBlockEntity;
@@ -97,6 +98,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         EntityRenderers.register(BMEntities.DECAYED, DecayedRenderer::new);
         EntityRenderers.register(BMEntities.ROOTLING, RootlingRenderer::new);
         EntityRenderers.register(BMEntities.MOTH, MothRenderer::new);
+        EntityRenderers.register(BMEntities.MUSHROOM_TRADER, MushroomTraderRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.LIGHTNING_BUG_BOTTLE,LightningBugBottleRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.ALTAR,AltarRenderer::new);
         MenuScreens.register(BMMenus.ALTAR,AltarScreen::new);

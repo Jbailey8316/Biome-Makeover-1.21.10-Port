@@ -29,6 +29,7 @@ import party.lemons.biomemakeover.entity.LightningBugEntity;
 import party.lemons.biomemakeover.entity.LightningBottleEntity;
 import party.lemons.biomemakeover.entity.RootlingEntity;
 import party.lemons.biomemakeover.entity.MothEntity;
+import party.lemons.biomemakeover.entity.MushroomTraderEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
@@ -79,6 +80,10 @@ public final class BMEntities {
         EntityType.Builder.<MothEntity>of(MothEntity::new, MobCategory.MONSTER).sized(.8F,1.2F).clientTrackingRange(12));
     public static final Item ROOTLING_SPAWN_EGG = registerSpawnEgg("rootling_spawn_egg", ROOTLING);
     public static final Item MOTH_SPAWN_EGG = registerSpawnEgg("moth_spawn_egg", MOTH);
+    public static final EntityType<MushroomTraderEntity> MUSHROOM_TRADER = registerEntity("mushroom_trader",
+        EntityType.Builder.<MushroomTraderEntity>of(MushroomTraderEntity::new, MobCategory.AMBIENT)
+            .sized(0.6F, 1.95F).clientTrackingRange(12));
+    public static final Item MUSHROOM_TRADER_SPAWN_EGG = registerSpawnEgg("mushroom_trader_spawn_egg", MUSHROOM_TRADER);
 
     private BMEntities() {
     }
@@ -110,6 +115,7 @@ public final class BMEntities {
         FabricDefaultAttributeRegistry.register(LIGHTNING_BUG_ALTERNATE, LightningBugEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(ROOTLING, RootlingEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(MOTH, MothEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(MUSHROOM_TRADER, MushroomTraderEntity.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,
@@ -128,6 +134,7 @@ public final class BMEntities {
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS).register(entries -> {
             entries.accept(DECAYED_SPAWN_EGG); entries.accept(DRAGONFLY_SPAWN_EGG); entries.accept(LIGHTNING_BUG_SPAWN_EGG);
             entries.accept(ROOTLING_SPAWN_EGG); entries.accept(MOTH_SPAWN_EGG);
+            entries.accept(MUSHROOM_TRADER_SPAWN_EGG);
         });
         SpawnPlacements.register(ROOTLING, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             (type, level, reason, pos, random) -> level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)

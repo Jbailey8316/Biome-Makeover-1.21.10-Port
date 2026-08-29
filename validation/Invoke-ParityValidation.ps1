@@ -41,6 +41,7 @@ $stage6Path = Join-Path $RepositoryRoot 'validation/foundations/stage_6_dark_for
 $stage8Path = Join-Path $RepositoryRoot 'validation/foundations/stage_8_rootling_moth_contract.json'
 $stage9aPath = Join-Path $RepositoryRoot 'validation/foundations/stage_9a_functional_utilities_contract.json'
 $stage9b2Path = Join-Path $RepositoryRoot 'validation/foundations/stage_9b2_altar_contract.json'
+$stage10aPath = Join-Path $RepositoryRoot 'validation/foundations/stage_10a_mushroom_house_contract.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
 $dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
@@ -53,6 +54,7 @@ $stage6 = Get-Content $stage6Path -Raw | ConvertFrom-Json
 $stage8 = Get-Content $stage8Path -Raw | ConvertFrom-Json
 $stage9a = Get-Content $stage9aPath -Raw | ConvertFrom-Json
 $stage9b2 = Get-Content $stage9b2Path -Raw | ConvertFrom-Json
+$stage10a = Get-Content $stage10aPath -Raw | ConvertFrom-Json
 
 foreach ($setName in @('blocks','no_item_blocks','standalone_items','entities','spawn_eggs','configured_features','placed_features')) {
     $values = @($stage3.$setName)
@@ -75,6 +77,7 @@ foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','ite
 foreach ($setName in @('blocks_with_items','no_item_blocks','items','spawn_eggs','entities','sounds','mob_effects','potions','recipes')) { $values=@($stage8.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 8 contract set $setName"} }
 foreach ($setName in @('blocks_with_items','no_item_blocks','items','recipes','advancements')) { $values=@($stage9a.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 9A contract set $setName"} }
 foreach ($setName in @('blocks_with_items','block_entities','menus','sounds','recipes','loot_tables','advancements','item_tags','enchantment_tags','textures')) { $values=@($stage9b2.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 9B.2 contract set $setName"} }
+foreach ($setName in @('items','entities','spawn_eggs','sounds','structure_processors','structures','structure_sets','template_pools','processor_lists','templates','loot_tables','advancements','jukebox_songs','biome_tags')) { $values=@($stage10a.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 10A contract set $setName"} }
 
 foreach ($property in $baseline.registries.PSObject.Properties) {
     $values = @($property.Value)
@@ -94,6 +97,8 @@ $particleText=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons
 $particles=Sorted ([regex]::Matches($particleText,'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)')|ForEach-Object{$_.Groups[1].Value})
 $blockEntityText=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlockEntities.java') -Raw
 $blockEntities=Sorted ([regex]::Matches($blockEntityText,'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)')|ForEach-Object{$_.Groups[1].Value})
+$structureProcessorText=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMStructureProcessors.java') -Raw
+$structureProcessors=Sorted ([regex]::Matches($structureProcessorText,'BiomeMakeover\.id\("([a-z0-9_./-]+)"\)')|ForEach-Object{$_.Groups[1].Value})
 $stage3Java = (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java') -Raw) +
     (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw) +
     (Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java') -Raw)
@@ -104,11 +109,12 @@ foreach ($deferred in $stage3.deferred_released_ids) {
 }
 
 Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks) + @($stage9a.no_item_blocks) + @($stage9b2.blocks_with_items))) $blocks
-Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items) + @($stage9b2.blocks_with_items))) $items
-Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities) + @($stage8.entities))) $entities
-Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds) + @($stage9b2.sounds))) $sounds
+Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items) + @($stage9b2.blocks_with_items) + @($stage10a.items) + @($stage10a.spawn_eggs))) $items
+Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities) + @($stage8.entities) + @($stage10a.entities))) $entities
+Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds) + @($stage9b2.sounds) + @($stage10a.sounds))) $sounds
 Assert-EqualSet 'particle registry IDs' (Sorted (@($baseline.registries.particle_type) + @($stage5.particles) + @($stage6.particles))) $particles
 Assert-EqualSet 'block-entity registry IDs' (Sorted (@($stage5.block_entities) + @($stage9b2.block_entities))) $blockEntities
+Assert-EqualSet 'structure-processor registry IDs' @($stage10a.structure_processors) $structureProcessors
 
 $configured = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/configured_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/configured_feature') | Where-Object { $_ -ne 'dark_forest/owl_nest' })
 $placed = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/placed_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/placed_feature') | Where-Object { $_ -ne 'dark_forest/owl_nest' })
@@ -718,6 +724,93 @@ $clientInit=Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons
 foreach($required in @('MenuScreens\.register\(BMMenus\.ALTAR','BlockEntityRenderers\.register\(BMBlockEntities\.ALTAR','AltarBlockEntity\.setClientSoundStarter')){if($clientInit-notmatch$required){Add-Failure "Stage 9B.2 client-only registration missing: $required"}}
 if((Get-ChildItem(Join-Path $RepositoryRoot 'src/main/java')-Recurse-File-Filter'*.java'|Get-Content -Raw)-match'client\.screen\.AltarScreen|client\.render\.AltarRenderer|client\.sound\.AltarCursingSound'){Add-Failure 'Stage 9B.2 client classes leaked into common Java sources'}
 
+# Stage 10A: one native jigsaw house, its structure-owned merchant, and the
+# guaranteed Button Mushrooms record. The exact template hash locks the binary
+# block/entity/offer contract audited from final 1.20.1.
+foreach($resource in @(
+ 'biomemakeover/worldgen/structure/mushroom_house.json',
+ 'biomemakeover/worldgen/structure_set/mushroom_houses.json',
+ 'biomemakeover/worldgen/template_pool/mushroom_house/house.json',
+ 'biomemakeover/worldgen/processor_list/mushroom_house.json',
+ 'biomemakeover/structures/mushroom_house/house/house_1.nbt',
+ 'biomemakeover/tags/worldgen/biome/has_structure/mushroom_house.json',
+ 'biomemakeover/tags/worldgen/biome/mushroom_fields.json',
+ 'biomemakeover/loot_table/mushroom_house.json',
+ 'biomemakeover/loot_table/entities/mushroom_trader.json',
+ 'biomemakeover/jukebox_song/button_mushrooms.json',
+ 'biomemakeover/advancement/biomemakeover/mushroom_disc.json'
+)){if(-not(Test-Path(Join-Path $builtData $resource))){Add-Failure "Stage 10A packaged data resource missing: $resource"}}
+
+$houseStructurePath=Join-Path $builtData 'biomemakeover/worldgen/structure/mushroom_house.json'
+if(Test-Path $houseStructurePath){
+ $houseStructure=Get-Content $houseStructurePath -Raw|ConvertFrom-Json
+ if($houseStructure.type-ne'minecraft:jigsaw'-or$houseStructure.step-ne'surface_structures'-or$houseStructure.biomes-ne'#biomemakeover:has_structure/mushroom_house'-or$houseStructure.start_pool-ne'biomemakeover:mushroom_house/house'-or$houseStructure.size-ne3-or$houseStructure.max_distance_from_center-ne80-or$houseStructure.project_start_to_heightmap-ne'WORLD_SURFACE_WG'-or$houseStructure.terrain_adaptation-ne'beard_thin'-or$houseStructure.use_expansion_hack-ne$false){Add-Failure 'Stage 10A Mushroom House structure differs from the final jigsaw contract'}
+}
+$houseSetPath=Join-Path $builtData 'biomemakeover/worldgen/structure_set/mushroom_houses.json'
+if(Test-Path $houseSetPath){$houseSet=Get-Content $houseSetPath -Raw|ConvertFrom-Json;$placement=$houseSet.placement;if($houseSet.structures.Count-ne1-or$houseSet.structures[0].structure-ne'biomemakeover:mushroom_house'-or$houseSet.structures[0].weight-ne1-or$placement.type-ne'minecraft:random_spread'-or$placement.spacing-ne12-or$placement.separation-ne6-or$placement.salt-ne6942069-or$placement.spread_type-ne'linear'){Add-Failure 'Stage 10A Mushroom House placement differs from spacing 12/separation 6/salt 6942069 linear'}}
+$housePoolPath=Join-Path $builtData 'biomemakeover/worldgen/template_pool/mushroom_house/house.json'
+if(Test-Path $housePoolPath){$housePool=Get-Content $housePoolPath -Raw|ConvertFrom-Json;$houseElement=$housePool.elements[0];if($housePool.fallback-ne'minecraft:village/plains/terminators'-or$housePool.elements.Count-ne1-or$houseElement.weight-ne15-or$houseElement.element.element_type-ne'minecraft:single_pool_element'-or$houseElement.element.location-ne'biomemakeover:mushroom_house/house/house_1'-or$houseElement.element.processors-ne'biomemakeover:mushroom_house'-or$houseElement.element.projection-ne'rigid'){Add-Failure 'Stage 10A Mushroom House single-template pool differs from final source'}}
+$houseProcessorPath=Join-Path $builtData 'biomemakeover/worldgen/processor_list/mushroom_house.json'
+if(Test-Path $houseProcessorPath){
+ $houseProcessor=Get-Content $houseProcessorPath -Raw|ConvertFrom-Json
+ $processor=$houseProcessor.processors[0]
+ if($houseProcessor.processors.Count-ne1-or$processor.processor_type-ne'biomemakeover:replace_selection'-or$processor.target-ne$stage10a.processor.target-or$processor.output.type-ne'minecraft:weighted_state_provider'){Add-Failure 'Stage 10A local weighted flower-pot processor header differs from final semantics'}
+ $actualWeights=@{};foreach($entry in @($processor.output.entries)){$actualWeights[[string]$entry.data.Name]=[int]$entry.weight}
+ foreach($expected in $stage10a.processor.outputs.PSObject.Properties){if(-not$actualWeights.ContainsKey($expected.Name)-or$actualWeights[$expected.Name]-ne[int]$expected.Value){Add-Failure "Stage 10A flower-pot processor weight differs: $($expected.Name)"}}
+ if($actualWeights.Count-ne@($stage10a.processor.outputs.PSObject.Properties).Count-or(@($actualWeights.Values)|Measure-Object -Sum).Sum-ne$stage10a.processor.total_weight){Add-Failure 'Stage 10A flower-pot outputs must be exactly seven states totaling weight 16'}
+}
+$processorJava=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/worldgen/ReplaceSelectionProcessor.java') -Raw
+foreach($required in @('RecordCodecBuilder\.mapCodec','BuiltInRegistries\.BLOCK\.byNameCodec\(\)\.fieldOf\("target"\)','BlockStateProvider\.CODEC\.fieldOf\("output"\)','current\.state\(\)\.is\(target\)','settings\.getRandom\(current\.pos\(\)\)','BMStructureProcessors\.REPLACE_SELECTION')){if($processorJava-notmatch$required){Add-Failure "Stage 10A local processor implementation missing: $required"}}
+$productionSource=(Get-ChildItem (Join-Path $RepositoryRoot 'src/main') -Recurse -File|Where-Object{$_.Extension-in@('.java','.json','.mcmeta')}|Get-Content -Raw)-join"`n"
+if($productionSource-match'party\.lemons\.taniwha|taniwha:'){Add-Failure 'Stage 10A restored a Taniwha runtime type/resource reference'}
+
+$mushroomTagPath=Join-Path $builtData 'biomemakeover/tags/worldgen/biome/mushroom_fields.json'
+if(Test-Path $mushroomTagPath){$mushroomTag=Get-Content $mushroomTagPath -Raw|ConvertFrom-Json;$tagEntry=$mushroomTag.values[0];if($mushroomTag.values.Count-ne1-or$tagEntry.id-ne'#c:is_mushroom'-or$tagEntry.required-ne$false){Add-Failure 'Stage 10A Mushroom Fields tag must translate final convention routing to optional #c:is_mushroom'}}
+$houseTagPath=Join-Path $builtData 'biomemakeover/tags/worldgen/biome/has_structure/mushroom_house.json'
+if(Test-Path $houseTagPath){$houseTag=Get-Content $houseTagPath -Raw|ConvertFrom-Json;if($houseTag.values.Count-ne1-or$houseTag.values[0]-ne'#biomemakeover:mushroom_fields'){Add-Failure 'Stage 10A structure biome tag chain is incomplete'}}
+
+$houseTemplatePath=Join-Path $builtData 'biomemakeover/structures/mushroom_house/house/house_1.nbt'
+if(Test-Path $houseTemplatePath){$templateFile=Get-Item $houseTemplatePath;$templateHash=(Get-FileHash $houseTemplatePath -Algorithm SHA256).Hash;if($templateFile.Length-ne$stage10a.template.bytes-or$templateHash-ne$stage10a.template.sha256){Add-Failure 'Stage 10A packaged house template is not the exact audited 11x10x11 final binary'}}
+$houseLootPath=Join-Path $builtData 'biomemakeover/loot_table/mushroom_house.json'
+if(Test-Path $houseLootPath){
+ $houseLoot=Get-Content $houseLootPath -Raw|ConvertFrom-Json
+ if($houseLoot.type-ne'minecraft:chest'-or$houseLoot.random_sequence-ne'biomemakeover:mushroom_house'-or$houseLoot.pools.Count-ne3){Add-Failure 'Stage 10A Mushroom House loot header differs from final source'}else{
+  $poolA=$houseLoot.pools[0];$poolB=$houseLoot.pools[1];$poolC=$houseLoot.pools[2]
+  if($poolA.rolls-ne8-or(@($poolA.entries.name|Sort-Object)-join',')-ne'minecraft:brown_mushroom,minecraft:red_mushroom'){Add-Failure 'Stage 10A Mushroom House primary eight-roll mushroom pool differs'}
+  if($poolB.rolls-ne1-or$poolB.entries.Count-ne1-or$poolB.entries[0].name-ne'biomemakeover:button_mushrooms_music_disk'){Add-Failure 'Stage 10A house chest must guarantee exactly one Button Mushrooms disc pool'}
+  $expectedSecondary=@('biomemakeover:blighted_balsa_sapling','biomemakeover:cooked_glowfish','biomemakeover:glowfish','biomemakeover:glowshroom_stew','biomemakeover:green_glowshroom','biomemakeover:orange_glowshroom','biomemakeover:purple_glowshroom','biomemakeover:tall_brown_mushroom','biomemakeover:tall_red_mushroom','minecraft:mushroom_stew')|Sort-Object
+  if($poolC.rolls.type-ne'minecraft:uniform'-or$poolC.rolls.min-ne5-or$poolC.rolls.max-ne9-or(@($poolC.entries.name|Sort-Object)-join',')-ne($expectedSecondary-join',')){Add-Failure 'Stage 10A Mushroom House secondary 5-9 roll loot pool differs'}
+ }
+}
+$traderLootPath=Join-Path $builtData 'biomemakeover/loot_table/entities/mushroom_trader.json'
+if(Test-Path $traderLootPath){$traderLoot=Get-Content $traderLootPath -Raw|ConvertFrom-Json;if($traderLoot.type-ne'minecraft:entity'-or$traderLoot.pools.Count-ne0){Add-Failure 'Stage 10A Mushroom Trader loot must remain empty'}}
+
+$traderSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/entity/MushroomTraderEntity.java') -Raw
+$commonTradeBody=[regex]::Match($traderSource,'(?s)private static VillagerTrades\.ItemListing\[\] commonTrades\(\).*?return new VillagerTrades\.ItemListing\[\] \{(.*?)\n\s*\};').Groups[1].Value
+if(([regex]::Matches($commonTradeBody,'standardTrade\(')).Count-ne$stage10a.trades.common_entries){Add-Failure 'Stage 10A offerless Mushroom Trader must retain all 23 final common listings including duplicate Glowshroom Stem weighting'}
+foreach($required in @('addOffersFromItemListings\(offers, common, 5\)','stewTrades\(\)\.get\(random\.nextInt\(stewTrades\(\)\.size\(\)\)\)','standardTrade\(8, BMItems\.BUTTON_MUSHROOMS_MUSIC_DISK, 1, 4\)','removeWhenFarAway\(double distance\) \{ return false; \}','return Mob\.createMobAttributes\(\)','return false; \}\s*@Override public boolean removeWhenFarAway','BMEffects\.NOCTURNAL, 320','DataComponents\.SUSPICIOUS_STEW_EFFECTS')){if($traderSource-notmatch$required){Add-Failure "Stage 10A Mushroom Trader source contract missing: $required"}}
+$worldgenSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMWorldgen.java') -Raw
+if($worldgenSource-match'MUSHROOM_TRADER'){Add-Failure 'Stage 10A must not re-enable free Mushroom Trader biome spawning'}
+if($entitiesSource-match'(?s)SpawnPlacements\.register\(\s*MUSHROOM_TRADER'){Add-Failure 'Stage 10A must not register a natural Mushroom Trader spawn placement'}
+$traderRendererPath=Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/render/MushroomTraderRenderer.java'
+if(-not(Test-Path $traderRendererPath)){Add-Failure 'Stage 10A Mushroom Trader renderer missing'}else{$traderRenderer=Get-Content $traderRendererPath -Raw;foreach($required in @('ModelLayers\.VILLAGER','mushrooming_trader_inner\.png','mushrooming_trader_outer\.png','poseStack\.scale\(0\.9375F','CustomHeadLayer','CrossedArmsItemLayer','coloredCutoutModelCopyLayerRender')){if($traderRenderer-notmatch$required){Add-Failure "Stage 10A two-texture trader renderer missing: $required"}}}
+if($clientInit-notmatch'EntityRenderers\.register\(BMEntities\.MUSHROOM_TRADER, MushroomTraderRenderer::new\)'){Add-Failure 'Stage 10A Mushroom Trader renderer is not registered client-side'}
+if((Get-ChildItem(Join-Path $RepositoryRoot 'src/main/java')-Recurse-File-Filter'*.java'|Get-Content -Raw)-match'client\.render\.MushroomTraderRenderer'){Add-Failure 'Stage 10A Mushroom Trader renderer leaked into common Java'}
+
+$discSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw
+foreach($required in @('BUTTON_MUSHROOMS_SONG[\s\S]{0,180}Registries\.JUKEBOX_SONG','BUTTON_MUSHROOMS_MUSIC_DISK = register\("button_mushrooms_music_disk"','stacksTo\(1\)\.rarity\(Rarity\.RARE\)\.jukeboxPlayable\(BUTTON_MUSHROOMS_SONG\)')){if($discSource-notmatch$required){Add-Failure "Stage 10A Button Mushrooms item contract missing: $required"}}
+$songPath=Join-Path $builtData 'biomemakeover/jukebox_song/button_mushrooms.json'
+if(Test-Path $songPath){$song=Get-Content $songPath -Raw|ConvertFrom-Json;if($song.sound_event-ne$stage10a.disc.song-or$song.length_in_seconds-ne$stage10a.disc.length_seconds-or$song.comparator_output-ne$stage10a.disc.comparator_output-or$song.description.translate-ne'item.biomemakeover.button_mushrooms_music_disk.desc'){Add-Failure 'Stage 10A Button Mushrooms jukebox-song metadata differs from final 115-second/signal-14 contract'}}
+$oggPath=Join-Path $builtAssets 'sounds/button_mushrooms.ogg'
+if(Test-Path $oggPath){$ogg=Get-Item $oggPath;$oggHash=(Get-FileHash $oggPath -Algorithm SHA256).Hash;if($ogg.Length-ne$stage10a.disc.ogg_bytes-or$oggHash-ne$stage10a.disc.ogg_sha256){Add-Failure 'Stage 10A Button Mushrooms OGG differs from the exact final source asset'}}
+$soundsJson=Get-Content (Join-Path $builtAssets 'sounds.json') -Raw|ConvertFrom-Json
+$discSound=$soundsJson.button_mushrooms;if($null-eq$discSound-or$discSound.sounds.Count-ne1-or$discSound.sounds[0].name-ne'biomemakeover:button_mushrooms'-or$discSound.sounds[0].stream-ne$true){Add-Failure 'Stage 10A Button Mushrooms sound must be one streamed, non-looping original asset'}
+foreach($asset in @('models/item/button_mushrooms_music_disk.json','items/button_mushrooms_music_disk.json','textures/item/music_disk_button_mushrooms.png','models/item/mushroom_trader_spawn_egg.json','items/mushroom_trader_spawn_egg.json','textures/item/mushroom_trader_spawn_egg.png','textures/entity/mushrooming_trader_inner.png','textures/entity/mushrooming_trader_outer.png')){if(-not(Test-Path(Join-Path $builtAssets $asset))){Add-Failure "Stage 10A packaged asset missing: $asset"}}
+$discAdvancementPath=Join-Path $builtData 'biomemakeover/advancement/biomemakeover/mushroom_disc.json'
+if(Test-Path $discAdvancementPath){$discAdvancement=Get-Content $discAdvancementPath -Raw|ConvertFrom-Json;if($discAdvancement.parent-ne'biomemakeover:biomemakeover/enter_mushroom_fields'-or$discAdvancement.display.icon.id-ne'biomemakeover:button_mushrooms_music_disk'-or$discAdvancement.display.frame-ne'goal'-or$discAdvancement.display.show_toast-ne$true-or$discAdvancement.display.announce_to_chat-ne$true-or$discAdvancement.display.hidden-ne$false-or$discAdvancement.criteria.get_disc.trigger-ne'minecraft:inventory_changed'-or$discAdvancement.criteria.get_disc.conditions.items[0].items-ne'biomemakeover:button_mushrooms_music_disk'){Add-Failure 'Stage 10A Button Mushrooms advancement differs from final inventory-changed goal'}}
+$creeperDiscTag=Join-Path $builtData 'minecraft/tags/item/creeper_drop_music_discs.json'
+if((Test-Path $creeperDiscTag) -and (Get-Content $creeperDiscTag -Raw)-match'button_mushrooms_music_disk'){Add-Failure 'Stage 10A disc must not enter vanilla Creeper music-disc drops'}
+
 # Resolve every custom curse hook against the actual named Minecraft classes
 # used by Loom, then verify the production JAR contains the expected remapped
 # intermediary selectors. This catches inherited-method owner mistakes that
@@ -778,6 +871,27 @@ if($null-ne$productionJar){
    'party/lemons/biomemakeover/mixin/ItemCombinerMenuAccessor.class'=@('field_22482','field_22480','field_22479')
   }
   foreach($classPath in $selectorContracts.Keys){$entry=$zip.GetEntry($classPath);if($null-eq$entry){Add-Failure "Packaged curse mixin class missing: $classPath";continue};$stream=$entry.Open();try{$memory=[IO.MemoryStream]::new();$stream.CopyTo($memory);$classText=[Text.Encoding]::ASCII.GetString($memory.ToArray())}finally{$stream.Dispose()};foreach($selector in $selectorContracts[$classPath]){if(-not$classText.Contains($selector)){Add-Failure "Packaged curse mixin selector missing: $classPath -> $selector"}}}
+  foreach($entryPath in @(
+   'party/lemons/biomemakeover/worldgen/ReplaceSelectionProcessor.class',
+   'party/lemons/biomemakeover/entity/MushroomTraderEntity.class',
+   'party/lemons/biomemakeover/client/render/MushroomTraderRenderer.class',
+   'data/biomemakeover/worldgen/structure/mushroom_house.json',
+   'data/biomemakeover/worldgen/structure_set/mushroom_houses.json',
+   'data/biomemakeover/worldgen/template_pool/mushroom_house/house.json',
+   'data/biomemakeover/worldgen/processor_list/mushroom_house.json',
+   'data/biomemakeover/structures/mushroom_house/house/house_1.nbt',
+   'data/biomemakeover/loot_table/mushroom_house.json',
+   'data/biomemakeover/jukebox_song/button_mushrooms.json',
+   'assets/biomemakeover/sounds/button_mushrooms.ogg',
+   'assets/biomemakeover/textures/entity/mushrooming_trader_inner.png',
+   'assets/biomemakeover/textures/entity/mushrooming_trader_outer.png'
+  )){if($null-eq$zip.GetEntry($entryPath)){Add-Failure "Packaged Stage 10A entry missing: $entryPath"}}
+  foreach($hashContract in @(
+   @('data/biomemakeover/structures/mushroom_house/house/house_1.nbt',$stage10a.template.sha256),
+   @('assets/biomemakeover/sounds/button_mushrooms.ogg',$stage10a.disc.ogg_sha256)
+  )){
+   $entry=$zip.GetEntry($hashContract[0]);if($null-ne$entry){$stream=$entry.Open();$algorithm=[Security.Cryptography.SHA256]::Create();try{$entryHash=([BitConverter]::ToString($algorithm.ComputeHash($stream))).Replace('-','')}finally{$algorithm.Dispose();$stream.Dispose()};if($entryHash-ne$hashContract[1]){Add-Failure "Packaged Stage 10A binary hash differs: $($hashContract[0])"}}
+  }
  }finally{$zip.Dispose()}
 }
 $blackThistleSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/BlackThistleBlock.java') -Raw

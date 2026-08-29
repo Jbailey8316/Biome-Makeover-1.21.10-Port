@@ -32,10 +32,14 @@ import party.lemons.biomemakeover.item.GlowfishBucketItem;
 import party.lemons.biomemakeover.item.LightningBottleItem;
 import party.lemons.biomemakeover.item.StuntPowderItem;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.JukeboxSong;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.tags.TagKey;
 
 public final class BMItems {
     public static final TagKey<Item> CURSE_FUEL = TagKey.create(Registries.ITEM, BiomeMakeover.id("curse_fuel"));
+    public static final ResourceKey<JukeboxSong> BUTTON_MUSHROOMS_SONG = ResourceKey.create(
+        Registries.JUKEBOX_SONG, BiomeMakeover.id("button_mushrooms"));
     public static final Item LEAF_LITTER = register("leaf_litter");
     public static final Item OWL_EGG = register("owl_egg");
     private static final FoodProperties GLOWFISH_FOOD = new FoodProperties(1, 0.1F, true);
@@ -89,6 +93,8 @@ public final class BMItems {
     public static final Item ROASTED_BULBUS_ROOT = register("roasted_bulbus_root", p -> new Item(p.food(new FoodProperties(5, 0.8F, false))));
     public static final Item MOTH_SCALES = register("moth_scales");
     public static final Item STUNT_POWDER = register("stunt_powder", StuntPowderItem::new);
+    public static final Item BUTTON_MUSHROOMS_MUSIC_DISK = register("button_mushrooms_music_disk",
+        p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(BUTTON_MUSHROOMS_SONG)));
 
     private BMItems() {}
 
@@ -119,6 +125,7 @@ public final class BMItems {
             entries.accept(BLUE_BUD); entries.accept(BROWN_BUD); entries.accept(CYAN_BUD); entries.accept(GRAY_BUD);
             entries.accept(LIGHT_BLUE_BUD); entries.accept(PURPLE_BUD); entries.accept(ROOTLING_SEEDS);
             entries.accept(BULBUS_ROOT); entries.accept(ROASTED_BULBUS_ROOT); entries.accept(MOTH_SCALES); entries.accept(STUNT_POWDER);
+            entries.accept(BUTTON_MUSHROOMS_MUSIC_DISK);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

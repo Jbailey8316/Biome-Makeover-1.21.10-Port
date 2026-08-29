@@ -50,8 +50,8 @@
   "custom_feature_types": ["grass_patch", "huge_green_glowshroom", "huge_orange_glowshroom", "huge_purple_glowshroom", "orange_glowshroom"],
   "custom_trunk_placers": ["blighted_balsa"],
   "deferred_released_ids": [
-    "blighted_balsa_boat", "blighted_balsa_chest_boat", "button_mushrooms_music_disk"
+    "blighted_balsa_boat", "blighted_balsa_chest_boat"
   ],
   "excluded_unreachable_entities": ["blightbat"],
-  "deferred_structure_owned_entities": ["mushroom_trader"]
+  "deferred_structure_owned_entities": []
 }

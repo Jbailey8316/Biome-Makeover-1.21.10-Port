@@ -1,6 +1,8 @@
 # Stage 10A - Mushroom House and Button Mushrooms Source Audit
 
-Status: **AUDITED / AWAITING IMPLEMENTATION AUTHORIZATION**
+Audit status: **COMPLETE**
+
+Implementation status: **IMPLEMENTED / AWAITING RUNTIME VALIDATION**
 
 Audit date: 2026-08-29
 
@@ -8,7 +10,7 @@ Authority: final Biome Makeover 1.20.1-1.11.4 source at `2f314c0596af095a4890995
 
 Port checkpoint: `f13cce0086a9af220e3e3a346608ff2daac7fea1`
 
-This is an implementation contract only. No Stage 10A production Java or resource was added. Final released 1.20.1 source is authoritative over showcase material and earlier revisions.
+This document remains the authoritative Stage 10A source contract. The corresponding 1.21.10 implementation is recorded in `STAGE_10A_MUSHROOM_HOUSE_BUTTON_MUSHROOMS_RESTORATION.md`; final released 1.20.1 source remains authoritative over showcase material and earlier revisions.
 
 ## Executive disposition
 

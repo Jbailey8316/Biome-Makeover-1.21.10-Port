@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "historical_source_commit": "2f314c0596af095a4890995a465f308f69476b4a",
+  "items": ["button_mushrooms_music_disk"],
+  "entities": ["mushroom_trader"],
+  "spawn_eggs": ["mushroom_trader_spawn_egg"],
+  "sounds": ["button_mushrooms"],
+  "structure_processors": ["replace_selection"],
+  "structures": ["mushroom_house"],
+  "structure_sets": ["mushroom_houses"],
+  "template_pools": ["mushroom_house/house"],
+  "processor_lists": ["mushroom_house"],
+  "templates": ["mushroom_house/house/house_1"],
+  "loot_tables": ["mushroom_house", "entities/mushroom_trader"],
+  "advancements": ["biomemakeover/mushroom_disc"],
+  "jukebox_songs": ["button_mushrooms"],
+  "biome_tags": ["has_structure/mushroom_house", "mushroom_fields"],
+  "template": {
+    "dimensions": [11, 10, 11],
+    "sha256": "8CDD1C997FCE691FE7D57FA1EAC863E4A00042EEAAC688B21F2CB49D5A639567",
+    "bytes": 5277,
+    "embedded_traders": 1,
+    "loot_chests": 1,
+    "flower_pots": 4
+  },
+  "processor": {
+    "target": "minecraft:flower_pot",
+    "total_weight": 16,
+    "outputs": {
+      "biomemakeover:potted_mycelium_roots": 2,
+      "minecraft:potted_red_mushroom": 3,
+      "minecraft:potted_brown_mushroom": 3,
+      "biomemakeover:potted_wild_mushrooms": 2,
+      "biomemakeover:potted_green_glowshroom": 2,
+      "biomemakeover:potted_purple_glowshroom": 2,
+      "biomemakeover:potted_orange_glowshroom": 2
+    }
+  },
+  "trades": {
+    "common_entries": 23,
+    "common_selected": 5,
+    "stew_entries": 2,
+    "stew_selected": 1,
+    "rare_entries": 1,
+    "rare_emerald_cost": 8,
+    "rare_max_uses": 4,
+    "embedded_offers": 6
+  },
+  "disc": {
+    "song": "biomemakeover:button_mushrooms",
+    "length_seconds": 115.0,
+    "comparator_output": 14,
+    "ogg_bytes": 244688,
+    "ogg_sha256": "B4A3770107E7163F7A57A71F6D92E259C3E96BFA248447E49E0B3A66290D8D03"
+  }
+}
