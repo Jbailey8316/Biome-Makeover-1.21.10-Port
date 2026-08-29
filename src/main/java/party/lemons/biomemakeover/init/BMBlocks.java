@@ -509,7 +509,7 @@ public final class BMBlocks {
             entries.accept(ANCIENT_OAK_PRESSURE_PLATE); entries.accept(ANCIENT_OAK_BUTTON);
         });
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(entries -> {
-            entries.accept(WILD_MUSHROOMS); entries.accept(BLACK_THISTLE); entries.accept(FOXGLOVE); entries.accept(IVY); entries.accept(ITCHING_IVY); entries.accept(MOTH_BLOSSOM);
+            entries.accept(WILD_MUSHROOMS); entries.accept(BLACK_THISTLE); entries.accept(FOXGLOVE); entries.accept(IVY); entries.accept(ITCHING_IVY); entries.accept(MOTH_BLOSSOM); entries.accept(SUSPICIOUS_RED_SAND);
             entries.accept(ILLUNITE_BLOCK); entries.accept(BUDDING_ILLUNITE); entries.accept(SMALL_ILLUNITE_BUD); entries.accept(MEDIUM_ILLUNITE_BUD); entries.accept(LARGE_ILLUNITE_BUD); entries.accept(ILLUNITE_CLUSTER);
             entries.accept(ANCIENT_OAK_LEAVES); entries.accept(ANCIENT_OAK_SAPLING);
             entries.accept(PURPLE_GLOWSHROOM); entries.accept(GREEN_GLOWSHROOM); entries.accept(ORANGE_GLOWSHROOM);

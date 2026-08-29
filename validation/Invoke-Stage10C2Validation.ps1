@@ -8,15 +8,19 @@ Require-Text 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java' 'new 
 Require-Path 'src/main/resources/assets/biomemakeover/blockstates/suspicious_red_sand.json'
 Require-Path 'src/main/resources/assets/biomemakeover/models/item/suspicious_red_sand.json'
 Require-Path 'src/main/resources/assets/biomemakeover/textures/block/suspicious_red_sand_0.png'
-Require-Path 'src/main/resources/data/biomemakeover/loot_table/archaeology/ghost_town.json'
 Require-Path 'src/main/resources/data/biomemakeover/loot_table/archaeology/ghost_town_junk.json'
 Require-Path 'src/main/resources/data/biomemakeover/loot_table/archaeology/ghost_town_horse_armor.json'
 Require-Path 'src/main/resources/data/biomemakeover/loot_table/blocks/suspicious_red_sand.json'
 Require-Text 'src/main/resources/assets/biomemakeover/lang/en_us.json' 'block.biomemakeover.suspicious_red_sand'
-$table = Get-Content (Join-Path $Root 'src/main/resources/data/biomemakeover/loot_table/archaeology/ghost_town.json') -Raw | ConvertFrom-Json
-if ($table.type -ne 'minecraft:archaeology' -or @($table.pools).Count -ne 1) { throw 'Ghost Town archaeology table header mismatch' }
-$names = @($table.pools[0].entries | ForEach-Object { $_.name })
-foreach ($id in @('biomemakeover:refined_pottery_sherd','biomemakeover:worker_pottery_sherd','biomemakeover:whinny_pottery_sherd','biomemakeover:crude_fragment','biomemakeover:ghost_town_music_disk')) { if ($names -notcontains $id) { throw "Missing archaeology entry: $id" } }
+Require-Text 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java' 'entries.accept(WILD_MUSHROOMS); entries.accept(BLACK_THISTLE); entries.accept(FOXGLOVE); entries.accept(IVY); entries.accept(ITCHING_IVY); entries.accept(MOTH_BLOSSOM); entries.accept(SUSPICIOUS_RED_SAND)'
+$deferred = Join-Path $Root 'src/main/resources/data/biomemakeover/loot_table/archaeology/ghost_town.json'
+if (Test-Path $deferred) { throw 'Dependency-invalid Ghost Town archaeology table must remain deferred until Stage 10C.4' }
+$junk = Get-Content (Join-Path $Root 'src/main/resources/data/biomemakeover/loot_table/archaeology/ghost_town_junk.json') -Raw | ConvertFrom-Json
+$armor = Get-Content (Join-Path $Root 'src/main/resources/data/biomemakeover/loot_table/archaeology/ghost_town_horse_armor.json') -Raw | ConvertFrom-Json
+if ($junk.type -ne 'minecraft:archaeology' -or $armor.type -ne 'minecraft:archaeology') { throw 'Nested archaeology table type mismatch' }
+$junkNames = @($junk.pools[0].entries | ForEach-Object { $_.name })
+if ($junkNames -contains 'minecraft:chain') { throw 'Obsolete minecraft:chain item reference remains' }
+if ($junkNames -notcontains 'minecraft:iron_chain') { throw 'Modern iron_chain migration missing' }
 if (Test-Path (Join-Path $Root 'src/main/resources/data/biomemakeover/structures')) { throw 'Obsolete plural structure directory leaked into Stage 10C.2' }
 foreach ($needle in @('ectoplasm_composter','poltergeist','ghost_town/','ghosttown')) { $hits = Get-ChildItem (Join-Path $Root 'src/main/resources') -Recurse -File | Select-String -Pattern $needle -SimpleMatch; if ($hits -and $needle -ne 'ghost_town/') { throw "Deferred Stage 10C resource leaked: $needle" } }
 Write-Output 'STAGE 10C.2 VALIDATION PASSED'

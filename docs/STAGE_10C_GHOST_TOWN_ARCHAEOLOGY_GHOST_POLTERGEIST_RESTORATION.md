@@ -175,12 +175,17 @@ handling are retained by the current engine.
 
 The released blockstate, four brushed-stage models/textures, item model, and
 English translation are restored at modern paths. The block item is included
-in the shovel-mineable tag. The archaeology resources are
+in the shovel-mineable tag. The final archaeology resources are
 `biomemakeover:archaeology/ghost_town` plus its nested horse-armor and junk
-tables, preserving the single-roll released entries (BM pottery sherds,
-iron, gold, Crude Fragment, nested tables, Ghost Town disc, and damaged/
-optionally enchanted leather boots). Assignment to placed blocks is owned by
-Ghost Town processors and remains deferred to Stage 10C.4.
+tables. The top-level table preserves the released single-roll entries (BM
+pottery sherds, iron, gold, Crude Fragment, nested tables, Ghost Town disc,
+and damaged/optionally enchanted leather boots), but its active registration
+is intentionally deferred until Stage 10C.4 because those later-owned BM item
+IDs are not yet registered. The two nested tables remain active and valid;
+their released `minecraft:chain` entry is translated to the current
+`minecraft:iron_chain` item ID. Assignment to placed blocks is owned by Ghost
+Town processors and also remains deferred to Stage 10C.4. The complete source
+table is retained in the audit/reference contract for exact restoration then.
 
 No archaeology advancement is independent of Ghost Town in the final
 contract, so none is restored here. `Invoke-Stage10C2Validation.ps1` checks
@@ -193,7 +198,8 @@ falling, and persistence tests.
 
 Use `/give @s biomemakeover:suspicious_red_sand`, place it on a temporary
 platform, brush through the dust stages, and confirm conversion to red sand.
-Save/reload between brush attempts to verify persistence. Archaeology loot
-assignment remains a Stage 10C.4 processor concern; test it only through a
-temporary data-only block-entity setup, without adding debug production
+Save/reload between brush attempts to verify persistence. The dependency-
+invalid top-level archaeology table is not active in this substage; its
+complete source form is restored with Ghost Town in Stage 10C.4. The nested
+tables can be codec-tested independently, without adding debug production
 content.

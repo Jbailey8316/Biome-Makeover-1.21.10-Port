@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.block.entity.LightningBugBottleBlockEntity;
 import party.lemons.biomemakeover.block.entity.AltarBlockEntity;
+import party.lemons.biomemakeover.mixin.BlockEntityTypeAccessor;
 
 public final class BMBlockEntities {
     private static final ResourceKey<BlockEntityType<?>> KEY=ResourceKey.create(Registries.BLOCK_ENTITY_TYPE,BiomeMakeover.id("lightning_bug_bottle"));
@@ -18,5 +19,11 @@ public final class BMBlockEntities {
     public static final BlockEntityType<AltarBlockEntity> ALTAR=Registry.register(
         BuiltInRegistries.BLOCK_ENTITY_TYPE,ALTAR_KEY,FabricBlockEntityTypeBuilder.create(AltarBlockEntity::new,BMBlocks.ALTAR).build());
     private BMBlockEntities() {}
-    public static void initialize() {}
+    public static void initialize() {
+        // Vanilla BrushableBlockEntity validates its BlockEntityType against a
+        // closed valid-block set. Extend that set for the source-equivalent
+        // custom BrushableBlock without duplicating vanilla archaeology logic.
+        ((BlockEntityTypeAccessor) (Object) BlockEntityType.BRUSHABLE_BLOCK)
+            .biomemakeover$getValidBlocks().add(BMBlocks.SUSPICIOUS_RED_SAND);
+    }
 }
