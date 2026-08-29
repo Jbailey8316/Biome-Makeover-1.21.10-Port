@@ -45,6 +45,7 @@ def stage6GeneratedResources = layout.buildDirectory.dir('generated/stage6Resour
 def stage8GeneratedResources = layout.buildDirectory.dir('generated/stage8Resources')
 def stage10aGeneratedResources = layout.buildDirectory.dir('generated/stage10aResources')
 def stage10aValidatorClasses = layout.buildDirectory.dir('classes/java/stage10aValidator')
+def stage10bAuditClasses = layout.buildDirectory.dir('classes/java/stage10bAudit')
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
     outputs.dir(stage3GeneratedResources)
@@ -281,6 +282,21 @@ tasks.register('validateStage10ATemplateRuntime', JavaExec) {
     classpath = files(stage10aValidatorClasses) + sourceSets.main.output + sourceSets.main.compileClasspath
     mainClass = 'Stage10ATemplateRuntimeValidator'
     args file('src/main/resources').absolutePath
+}
+
+tasks.register('compileStage10BSourceTemplateAudit', JavaCompile) {
+    dependsOn tasks.named('classes')
+    source file('validation/java/Stage10BSourceTemplateAudit.java')
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath
+    destinationDirectory = stage10bAuditClasses
+    options.release = 21
+}
+
+tasks.register('auditStage10BSourceTemplates', JavaExec) {
+    dependsOn tasks.named('compileStage10BSourceTemplateAudit')
+    classpath = files(stage10bAuditClasses) + sourceSets.main.output + sourceSets.main.compileClasspath
+    mainClass = 'Stage10BSourceTemplateAudit'
+    args file('reference/Biome-Makeover-1.20/common/src/main/resources').absolutePath
 }
 
 tasks.named('check') {
