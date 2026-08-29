@@ -203,3 +203,31 @@ invalid top-level archaeology table is not active in this substage; its
 complete source form is restored with Ghost Town in Stage 10C.4. The nested
 tables can be codec-tested independently, without adding debug production
 content.
+
+## Stage 10C.2 final runtime acceptance
+
+Stage 10C.2 is complete and runtime accepted. Prism confirmed that
+`biomemakeover:suspicious_red_sand` is visible through the expected Creative
+inventory exposure, is obtainable with `/give`, places without error, and
+uses a compatible vanilla `BrushableBlockEntity`. Brushing, all dust stages,
+and final conversion to red sand passed. Unsupported/falling behavior matched
+vanilla Suspicious Sand and is accepted without custom persistence logic; no
+runtime errors were observed.
+
+No archaeology loot appears from a manually placed block in this substage,
+which is expected: Ghost Town processor assignment and the dependency-bearing
+top-level `biomemakeover:archaeology/ghost_town` table remain deferred to
+Stage 10C.4. That table must later restore the exact released entries after
+auditing and registering its Ghost Town disc, three pottery sherds, and Crude
+Fragment dependencies; early item registration does not authorize later Crude
+gameplay. The valid nested tables remain active, with `minecraft:chain`
+translated to modern `minecraft:iron_chain`.
+
+The original placement crash was caused by the custom block not being a member
+of vanilla `BRUSHABLE_BLOCK`'s valid-block set. Final 1.20.1 used
+Taniwha's `BlockEntityHooks.addAdditionalBlock`; the narrow 1.21.10
+translation adds only Suspicious Red Sand to that set and leaves all vanilla
+brush, seed, save/reload, falling, and conversion behavior intact. The
+Stage 10C.2 validator now checks this compatibility, Creative exposure,
+packaged assets, active nested loot references, and explicit top-level loot
+deferral.
