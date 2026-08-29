@@ -20,6 +20,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.block.state.BlockState;
 import party.lemons.biomemakeover.init.BMSounds;
+import party.lemons.biomemakeover.init.BMEnchantments;
 
 /** Released amphibious zombie contract, translated onto the modern Drowned navigation implementation. */
 public final class DecayedEntity extends Drowned {
@@ -29,7 +30,13 @@ public final class DecayedEntity extends Drowned {
     public static boolean checkSpawnRules(EntityType<DecayedEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         return level.getDifficulty() != Difficulty.PEACEFUL && random.nextInt(3) == 0 && Drowned.checkDrownedSpawnRules((EntityType)type, level, reason, pos, random);
     }
-    @Override protected void populateDefaultEquipmentSlots(RandomSource random, net.minecraft.world.DifficultyInstance difficulty) { super.populateDefaultEquipmentSlots(random, difficulty); setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.SHIELD)); }
+    @Override protected void populateDefaultEquipmentSlots(RandomSource random, net.minecraft.world.DifficultyInstance difficulty) {
+        super.populateDefaultEquipmentSlots(random, difficulty);
+        ItemStack shield = new ItemStack(Items.SHIELD);
+        BMEnchantments.holder(registryAccess(), BMEnchantments.DECAY_CURSE)
+            .ifPresent(decay -> shield.enchant(decay, 1 + random.nextInt(4)));
+        setItemSlot(EquipmentSlot.OFFHAND, shield);
+    }
     @Override protected boolean convertsInWater() { return false; }
     @Override protected SoundEvent getAmbientSound(){return isInWater()?BMSounds.DECAYED_AMBIENT_WATER:BMSounds.DECAYED_AMBIENT;}
     @Override protected SoundEvent getHurtSound(DamageSource source){return isInWater()?BMSounds.DECAYED_HURT_WATER:BMSounds.DECAYED_HURT;}

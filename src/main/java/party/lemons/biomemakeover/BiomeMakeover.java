@@ -39,6 +39,6 @@ public final class BiomeMakeover implements ModInitializer {
         BMEntities.initialize();
         BMWorldgen.initialize();
         BMWorldEvents.initialize();
-        LOGGER.info("Biome Makeover Stage 9A functional utilities build loaded.");
+        LOGGER.info("Biome Makeover Stage 9B.1 ten-curse engine build loaded.");
     }
 }

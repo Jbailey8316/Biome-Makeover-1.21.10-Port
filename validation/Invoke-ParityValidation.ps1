@@ -632,6 +632,40 @@ $peatAdvancement=Join-Path $builtData 'biomemakeover/advancement/biomemakeover/c
 $mixinConfig=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.mixins.json') -Raw
 foreach($required in @('AgeableMobMixin','PointedDripstoneBlockMixin','ComposterBlockMixin')){if($mixinConfig-notmatch$required){Add-Failure "Stage 9A mixin not wired: $required"}}
 foreach($forbidden in @('altar','witch_hat','ectoplasm','poltergeist','tapestry','crude_fragment','cladded_stone','stone_golem','adjudicator','mimic')){if($items-contains$forbidden-or$entities-contains$forbidden-or$blocks-contains$forbidden){Add-Failure "Stage 9B+ registry leaked into Stage 9A: $forbidden"}}
+
+# Stage 9B.1: dynamic-registry definitions and exact source-level hooks for all
+# ten final curses. Altar resources and the removed Sliding curse stay absent.
+$curseSpecs=@{
+ 'decay_curse'=@(5,'#minecraft:enchantable/durability','any',1)
+ 'insomnia_curse'=@(5,'#minecraft:enchantable/armor','armor',5)
+ 'conductivity_curse'=@(5,'#minecraft:enchantable/armor','armor',5)
+ 'enfeeblement_curse'=@(5,'#minecraft:enchantable/vanishing','any',5)
+ 'depth_curse'=@(3,'#minecraft:enchantable/foot_armor','feet',5)
+ 'flammability_curse'=@(3,'#minecraft:enchantable/armor','armor',5)
+ 'suffocation_curse'=@(3,'#minecraft:enchantable/head_armor','head',5)
+ 'unwieldiness_curse'=@(3,'#biomemakeover:enchantable/unwieldiness','mainhand',5)
+ 'inaccuracy_curse'=@(3,'#minecraft:enchantable/bow','mainhand',5)
+ 'buckling_curse'=@(3,'#minecraft:enchantable/leg_armor','legs',5)
+}
+foreach($entry in $curseSpecs.GetEnumerator()){
+ $path=Join-Path $builtData "biomemakeover/enchantment/$($entry.Key).json"
+ if(-not(Test-Path $path)){Add-Failure "Stage 9B.1 enchantment definition missing: $($entry.Key)";continue}
+ $definition=Get-Content $path -Raw|ConvertFrom-Json;$spec=$entry.Value
+ if($definition.max_level-ne$spec[0]-or$definition.supported_items-ne$spec[1]-or$spec[2]-notin@($definition.slots)-or$definition.weight-ne$spec[3]-or
+    $definition.min_cost.base-ne25-or$definition.min_cost.per_level_above_first-ne0-or$definition.max_cost.base-ne50-or$definition.max_cost.per_level_above_first-ne0){
+   Add-Failure "Stage 9B.1 definition contract differs for $($entry.Key)"
+ }
+}
+$curseTagPath=Join-Path $builtData 'minecraft/tags/enchantment/curse.json';$treasureTagPath=Join-Path $builtData 'minecraft/tags/enchantment/treasure.json'
+foreach($tagPath in @($curseTagPath,$treasureTagPath)){if(-not(Test-Path $tagPath)){Add-Failure "Stage 9B.1 enchantment tag missing: $tagPath"}else{$tag=Get-Content $tagPath -Raw|ConvertFrom-Json;foreach($id in $curseSpecs.Keys){$expectedCurseId="biomemakeover:$id";if(@($tag.values)-notcontains$expectedCurseId){Add-Failure "Stage 9B.1 tag omits $expectedCurseId from $tagPath"}}}}
+$curseKeys=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMEnchantments.java') -Raw
+$curseEffects=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/item/enchantment/BMCurseEffects.java') -Raw
+foreach($id in $curseSpecs.Keys){if($curseKeys-notmatch[regex]::Escape("key(`"$id`"") ){Add-Failure "Stage 9B.1 canonical ResourceKey missing: $id"}}
+foreach($required in @('11000 - level \* 1000','0\.05D \* level','300\.0F / \(level \* 1\.5F\)','ticks \+ \(int\)\(ticks \* \(level / 2\.0F\)\)','distance >= 3\.0D \? distance \+ level','level \* 1\.3F')){if($curseEffects-notmatch$required){Add-Failure "Stage 9B.1 pure calculation contract missing: $required"}}
+$curseMixins=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.mixins.json') -Raw
+foreach($required in @('curse.LivingEntityCurseMixin','curse.EntityCurseMixin','curse.BowItemCurseMixin')){if($curseMixins-notmatch[regex]::Escape($required)){Add-Failure "Stage 9B.1 mixin not wired: $required"}}
+if(Test-Path(Join-Path $builtData 'biomemakeover/enchantment/sliding_curse.json')){Add-Failure 'Historical/removed Sliding curse was registered'}
+if((Test-Path(Join-Path $builtData 'biomemakeover/loot_table/blocks/altar.json'))-or(Test-Path(Join-Path $builtData 'biomemakeover/recipe/altar.json'))-or$blocks-contains'altar'-or$items-contains'altar'){Add-Failure 'Stage 9B.2 Altar leaked into Stage 9B.1'}
 $blackThistleSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/BlackThistleBlock.java') -Raw
 if($blackThistleSource -notmatch '(?s)entityInside\(BlockState\s+state,\s*Level\s+level,\s*BlockPos\s+pos,\s*Entity\s+entity,\s*InsideBlockEffectApplier\s+effects,\s*boolean' -or
    $blackThistleSource -notmatch 'DoubleBlockHalf\.UPPER' -or $blackThistleSource -notmatch 'MobEffects\.WEAKNESS,\s*110,\s*0' -or

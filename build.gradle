@@ -811,7 +811,9 @@ processResources {
         if (minecraftTags.exists()) {
             fileTree(minecraftTags).matching { include '**/*.json' }.files.each { tagFile ->
                 def tag = new JsonSlurper().parse(tagFile)
-                if (tag.values instanceof List) {
+                // Dynamic enchantments are data-pack registry entries, not entries
+                // in the static block/item/entity allow-list used by earlier stages.
+                if (tag.values instanceof List && !tagFile.toPath().toString().replace('\\','/').contains('/tags/enchantment/')) {
                     tag.values = tag.values.findAll { entry ->
                         def id = entry instanceof Map ? entry.id : entry
                         if (id == '#biomemakeover:tapestries') return false
