@@ -32,8 +32,10 @@ import party.lemons.biomemakeover.item.GlowfishBucketItem;
 import party.lemons.biomemakeover.item.LightningBottleItem;
 import party.lemons.biomemakeover.item.StuntPowderItem;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.tags.TagKey;
 
 public final class BMItems {
+    public static final TagKey<Item> CURSE_FUEL = TagKey.create(Registries.ITEM, BiomeMakeover.id("curse_fuel"));
     public static final Item LEAF_LITTER = register("leaf_litter");
     public static final Item OWL_EGG = register("owl_egg");
     private static final FoodProperties GLOWFISH_FOOD = new FoodProperties(1, 0.1F, true);

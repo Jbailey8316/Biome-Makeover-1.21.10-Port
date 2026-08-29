@@ -2,7 +2,7 @@
 
 Stage 9A closure follow-up: `STAGE_9A_INDEPENDENT_FUNCTIONAL_UTILITIES.md` records the dependency-closed Stunt Powder and Peat Composter implementation and successful Prism runtime acceptance. Stage 9A is complete; Stage 9B and later scopes remain unstarted.
 
-Stage 9B audit follow-up: `STAGE_9B_ALTAR_CURSE_PRE_IMPLEMENTATION_AUDIT.md` reconstructs the complete final Altar/ten-curse contract and recommends a two-checkpoint implementation (`9B.1` complete curse engine, then `9B.2` complete Altar). No Stage 9B production work has begun.
+Stage 9B audit follow-up: `STAGE_9B_ALTAR_CURSE_PRE_IMPLEMENTATION_AUDIT.md` reconstructs the complete final Altar/ten-curse contract and recommended two checkpoints. Stage 9B.1 is complete/runtime accepted; `STAGE_9B_2_ALTAR_RESTORATION.md` records the implemented/static-validated Altar candidate awaiting Prism acceptance.
 
 Audit date: 2026-08-29  
 Authority: final Biome Makeover 1.20.1-1.11.4 source at `2f314c0596af095a4890995a465f308f69476b4a`  

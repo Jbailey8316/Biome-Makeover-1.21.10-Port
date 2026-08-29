@@ -1,0 +1,19 @@
+{
+  "blocks_with_items": ["altar"],
+  "block_entities": ["altar"],
+  "menus": ["altar"],
+  "sounds": ["altar_cursing"],
+  "recipes": ["altar"],
+  "loot_tables": ["blocks/altar"],
+  "advancements": ["biomemakeover/altar"],
+  "item_tags": ["curse_fuel"],
+  "enchantment_tags": ["altar_cant_upgrade", "altar_curse_excluded"],
+  "textures": [
+    "block/altar_1.png",
+    "block/altar_2.png",
+    "block/altar_3.png",
+    "block/altar_4.png",
+    "block/altar_5.png",
+    "gui/altar.png"
+  ]
+}

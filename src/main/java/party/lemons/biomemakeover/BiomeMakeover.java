@@ -16,6 +16,7 @@ import party.lemons.biomemakeover.init.BMBlockEntities;
 import party.lemons.biomemakeover.init.BMEffects;
 import party.lemons.biomemakeover.init.BMPotions;
 import party.lemons.biomemakeover.level.BMWorldEvents;
+import party.lemons.biomemakeover.init.BMMenus;
 
 public final class BiomeMakeover implements ModInitializer {
     public static final String MOD_ID = "biomemakeover";
@@ -29,6 +30,7 @@ public final class BiomeMakeover implements ModInitializer {
     public void onInitialize() {
         BMBlocks.initialize();
         BMBlockEntities.initialize();
+        BMMenus.initialize();
         BMItems.initialize();
         BMSounds.initialize();
         BMParticles.initialize();
@@ -39,6 +41,6 @@ public final class BiomeMakeover implements ModInitializer {
         BMEntities.initialize();
         BMWorldgen.initialize();
         BMWorldEvents.initialize();
-        LOGGER.info("Biome Makeover Stage 9B.1 ten-curse engine build loaded.");
+        LOGGER.info("Biome Makeover Stage 9B.2 Altar restoration build loaded.");
     }
 }

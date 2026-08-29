@@ -47,6 +47,7 @@ public final class BMSounds {
     public static final SoundEvent MOTH_DEATH = register("moth_death");
     public static final SoundEvent MOTH_BITE = register("moth_bite");
     public static final SoundEvent MOTH_HURT = register("moth_hurt");
+    public static final SoundEvent ALTAR_CURSING = register("altar_cursing");
 
     private BMSounds() {}
 

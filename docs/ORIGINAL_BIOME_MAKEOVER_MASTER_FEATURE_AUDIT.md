@@ -11,6 +11,8 @@ with the current port are maintained separately:
 - `docs/SHOWCASE_INFORMED_DARK_FOREST_AUDIT.md`
 - `docs/SHOWCASE_INFORMED_WOODLAND_MANSION_AUDIT.md`
 
+Current-port checkpoint note: `docs/STAGE_9B_2_ALTAR_RESTORATION.md` records the complete Altar implementation candidate. The ten-curse engine is already runtime accepted; the Altar is implemented/static validated and awaits Prism runtime acceptance.
+
 The Dark Forest/Mansion follow-up directly inventories the pinned Mansion
 resource tree at 168 NBT files and records the older `228` description as a
 count discrepancy to resolve before Stage 11, not as permission to omit or

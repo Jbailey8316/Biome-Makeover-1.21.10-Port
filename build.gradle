@@ -421,6 +421,27 @@ processResources {
         include 'assets/biomemakeover/textures/item/stunt_powder.png'
     }
 
+    // Stage 9B.2 complete final-release Altar presentation and data. The
+    // Witch, structure, Mansion and all later progression assets stay absent.
+    from('reference/Biome-Makeover-1.20/common/src/main/resources') {
+        include 'assets/biomemakeover/blockstates/altar.json'
+        include 'assets/biomemakeover/models/block/altar.json'
+        include 'assets/biomemakeover/models/item/altar.json'
+        include 'assets/biomemakeover/textures/block/altar_*.png'
+        include 'assets/biomemakeover/textures/gui/altar.png'
+        include 'assets/biomemakeover/sounds/altar_cursing.ogg'
+        include 'data/biomemakeover/recipes/altar.json'
+        include 'data/biomemakeover/loot_tables/blocks/altar.json'
+        include 'data/biomemakeover/advancements/biomemakeover/altar.json'
+        include 'data/biomemakeover/tags/items/curse_fuel.json'
+        include 'data/biomemakeover/tags/enchantment/altar_curse_excluded.json'
+        include 'data/biomemakeover/tags/enchantment/altar_cant_upgrade.json'
+        eachFile { details ->
+            details.path = details.path.replace('/recipes/','/recipe/').replace('/loot_tables/','/loot_table/')
+                .replace('/advancements/','/advancement/').replace('/tags/items/','/tags/item/')
+        }
+    }
+
     // Stage 6 Dark Forest physical resources. Entity gameplay, Altar/curses,
     // Mansion content, music, boats and later-stage progression stay excluded.
     from('reference/Biome-Makeover-1.20/common/src/main/resources') {
@@ -807,6 +828,7 @@ processResources {
             stage4Contract.registry.blocks_with_items + stage4Contract.registry.no_item_blocks + stage4Contract.registry.items +
             stage4Contract.registry.spawn_eggs + stage4Contract.registry.entities + stage5Contract.blocks_with_items +
             stage5Contract.no_item_blocks + stage5Contract.special_items + stage5Contract.spawn_eggs + stage5Contract.entities) as Set
+        allowed.add('altar')
         def minecraftTags = destinationDir.toPath().resolve('data/minecraft/tags').toFile()
         if (minecraftTags.exists()) {
             fileTree(minecraftTags).matching { include '**/*.json' }.files.each { tagFile ->

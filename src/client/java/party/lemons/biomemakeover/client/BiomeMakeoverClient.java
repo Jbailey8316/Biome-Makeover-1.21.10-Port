@@ -43,6 +43,13 @@ import party.lemons.biomemakeover.client.render.LightningBugBottleRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import party.lemons.biomemakeover.client.render.RootlingRenderer;
 import party.lemons.biomemakeover.client.render.MothRenderer;
+import party.lemons.biomemakeover.client.render.AltarRenderer;
+import party.lemons.biomemakeover.client.screen.AltarScreen;
+import party.lemons.biomemakeover.client.sound.AltarCursingSound;
+import party.lemons.biomemakeover.block.entity.AltarBlockEntity;
+import party.lemons.biomemakeover.init.BMMenus;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.MenuScreens;
 
 public final class BiomeMakeoverClient implements ClientModInitializer {
     private static final TagKey<Biome> SWAMPS = TagKey.create(Registries.BIOME, BiomeMakeover.id("swamps"));
@@ -54,6 +61,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
             BMBlocks.ANCIENT_OAK_LEAVES, BMBlocks.ANCIENT_OAK_SAPLING,
             BMBlocks.ANCIENT_OAK_DOOR, BMBlocks.ANCIENT_OAK_TRAPDOOR,
             BMBlocks.SMALL_ILLUNITE_BUD, BMBlocks.MEDIUM_ILLUNITE_BUD, BMBlocks.LARGE_ILLUNITE_BUD, BMBlocks.ILLUNITE_CLUSTER);
+        BlockRenderLayerMap.putBlock(BMBlocks.ALTAR, ChunkSectionLayer.CUTOUT);
         BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT,
             BMBlocks.PURPLE_GLOWSHROOM, BMBlocks.GREEN_GLOWSHROOM, BMBlocks.ORANGE_GLOWSHROOM,
             BMBlocks.MYCELIUM_SPROUTS, BMBlocks.MYCELIUM_ROOTS, BMBlocks.TALL_BROWN_MUSHROOM,
@@ -90,6 +98,10 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         EntityRenderers.register(BMEntities.ROOTLING, RootlingRenderer::new);
         EntityRenderers.register(BMEntities.MOTH, MothRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.LIGHTNING_BUG_BOTTLE,LightningBugBottleRenderer::new);
+        BlockEntityRenderers.register(BMBlockEntities.ALTAR,AltarRenderer::new);
+        MenuScreens.register(BMMenus.ALTAR,AltarScreen::new);
+        AltarBlockEntity.setClientSoundStarter(altar -> Minecraft.getInstance().getSoundManager().play(
+            new AltarCursingSound(altar, altar.getLevel() == null ? net.minecraft.util.RandomSource.create() : altar.getLevel().random)));
         ParticleFactoryRegistry.getInstance().register(BMParticles.LIGHTNING_SPARK,LightningSparkParticle.Provider::new);
         ParticleFactoryRegistry.getInstance().register(BMParticles.BLOSSOM,BlossomParticle.Provider::new);
         ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->{

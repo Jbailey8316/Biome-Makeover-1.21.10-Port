@@ -54,6 +54,7 @@ import party.lemons.biomemakeover.block.LightningBugBottleBlock;
 import party.lemons.biomemakeover.block.WillowingBranchesBlock;
 import party.lemons.biomemakeover.block.PeatFarmlandBlock;
 import party.lemons.biomemakeover.block.PeatComposterBlock;
+import party.lemons.biomemakeover.block.AltarBlock;
 
 public final class BMBlocks {
     public static final net.minecraft.tags.TagKey<Block> MOTH_ATTRACTIVE = net.minecraft.tags.TagKey.create(
@@ -112,6 +113,9 @@ public final class BMBlocks {
         illuniteCluster(13));
     public static final Block ILLUNITE_CLUSTER = register("illunite_cluster", p -> new IlluniteClusterBlock(7, 3, p),
         illuniteCluster(15));
+    public static final Block ALTAR = register("altar", AltarBlock::new,
+        BlockBehaviour.Properties.of().strength(5.0F).requiresCorrectToolForDrops().instrument(NoteBlockInstrument.BASEDRUM)
+            .mapColor(MapColor.COLOR_BLACK).noOcclusion().lightLevel(state -> state.getValue(AltarBlock.ACTIVE) ? 5 : 1));
 
     public static final Block BLACK_THISTLE = register("black_thistle", BlackThistleBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
@@ -507,6 +511,7 @@ public final class BMBlocks {
             entries.accept(MYCELIUM_SPROUTS); entries.accept(MYCELIUM_ROOTS); entries.accept(TALL_BROWN_MUSHROOM); entries.accept(TALL_RED_MUSHROOM);
             entries.accept(BLIGHTED_BALSA_LEAVES); entries.accept(BLIGHTED_BALSA_SAPLING);
         });
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS).register(entries -> entries.accept(ALTAR));
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.BUILDING_BLOCKS).register(entries -> {
             MUSHROOM_DECORATION.values().forEach(entries::accept);
             BLIGHTED_BALSA.values().forEach(entries::accept);

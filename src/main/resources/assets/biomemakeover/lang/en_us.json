@@ -1,5 +1,8 @@
 {
   "block.biomemakeover.mesmerite": "Mesmerite",
+  "block.biomemakeover.altar": "Altar",
+  "advancements.biomemakeover.altar.title": "Cursed",
+  "advancements.biomemakeover.altar.description": "Obtain an Altar",
   "block.biomemakeover.mesmerite_stairs": "Mesmerite Stairs",
   "block.biomemakeover.mesmerite_slab": "Mesmerite Slab",
   "block.biomemakeover.mesmerite_wall": "Mesmerite Wall",

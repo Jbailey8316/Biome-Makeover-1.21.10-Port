@@ -17,5 +17,6 @@
   "moth_flap":{"sounds":["biomemakeover:moth_flap_1","biomemakeover:moth_flap_2","biomemakeover:moth_flap_3","biomemakeover:moth_flap_4"]},
   "moth_death":{"sounds":["biomemakeover:moth_death_1","biomemakeover:moth_death_2"]},
   "moth_bite":{"sounds":["biomemakeover:moth_bite_1","biomemakeover:moth_bite_2","biomemakeover:moth_bite_3"]},
-  "moth_hurt":{"sounds":["biomemakeover:moth_hurt_1","biomemakeover:moth_hurt_2","biomemakeover:moth_hurt_3"]}
+  "moth_hurt":{"sounds":["biomemakeover:moth_hurt_1","biomemakeover:moth_hurt_2","biomemakeover:moth_hurt_3"]},
+  "altar_cursing":{"sounds":["biomemakeover:altar_cursing"]}
 }

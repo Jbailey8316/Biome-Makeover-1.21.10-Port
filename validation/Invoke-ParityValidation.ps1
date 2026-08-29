@@ -40,6 +40,7 @@ $stage5Path = Join-Path $RepositoryRoot 'validation/foundations/stage_5_swamp_co
 $stage6Path = Join-Path $RepositoryRoot 'validation/foundations/stage_6_dark_forest_contract.json'
 $stage8Path = Join-Path $RepositoryRoot 'validation/foundations/stage_8_rootling_moth_contract.json'
 $stage9aPath = Join-Path $RepositoryRoot 'validation/foundations/stage_9a_functional_utilities_contract.json'
+$stage9b2Path = Join-Path $RepositoryRoot 'validation/foundations/stage_9b2_altar_contract.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
 $dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
@@ -51,6 +52,7 @@ $stage5 = Get-Content $stage5Path -Raw | ConvertFrom-Json
 $stage6 = Get-Content $stage6Path -Raw | ConvertFrom-Json
 $stage8 = Get-Content $stage8Path -Raw | ConvertFrom-Json
 $stage9a = Get-Content $stage9aPath -Raw | ConvertFrom-Json
+$stage9b2 = Get-Content $stage9b2Path -Raw | ConvertFrom-Json
 
 foreach ($setName in @('blocks','no_item_blocks','standalone_items','entities','spawn_eggs','configured_features','placed_features')) {
     $values = @($stage3.$setName)
@@ -72,6 +74,7 @@ foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','ite
 }
 foreach ($setName in @('blocks_with_items','no_item_blocks','items','spawn_eggs','entities','sounds','mob_effects','potions','recipes')) { $values=@($stage8.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 8 contract set $setName"} }
 foreach ($setName in @('blocks_with_items','no_item_blocks','items','recipes','advancements')) { $values=@($stage9a.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 9A contract set $setName"} }
+foreach ($setName in @('blocks_with_items','block_entities','menus','sounds','recipes','loot_tables','advancements','item_tags','enchantment_tags','textures')) { $values=@($stage9b2.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 9B.2 contract set $setName"} }
 
 foreach ($property in $baseline.registries.PSObject.Properties) {
     $values = @($property.Value)
@@ -100,12 +103,12 @@ foreach ($deferred in $stage3.deferred_released_ids) {
     }
 }
 
-Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks) + @($stage9a.no_item_blocks))) $blocks
-Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items))) $items
+Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks) + @($stage9a.no_item_blocks) + @($stage9b2.blocks_with_items))) $blocks
+Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items) + @($stage9b2.blocks_with_items))) $items
 Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities) + @($stage8.entities))) $entities
-Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds))) $sounds
+Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds) + @($stage9b2.sounds))) $sounds
 Assert-EqualSet 'particle registry IDs' (Sorted (@($baseline.registries.particle_type) + @($stage5.particles) + @($stage6.particles))) $particles
-Assert-EqualSet 'Stage 5 block-entity registry IDs' @($stage5.block_entities) $blockEntities
+Assert-EqualSet 'block-entity registry IDs' (Sorted (@($stage5.block_entities) + @($stage9b2.block_entities))) $blockEntities
 
 $configured = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/configured_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/configured_feature') | Where-Object { $_ -ne 'dark_forest/owl_nest' })
 $placed = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/placed_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/placed_feature') | Where-Object { $_ -ne 'dark_forest/owl_nest' })
@@ -631,10 +634,10 @@ $peatLoot=Join-Path $builtData 'biomemakeover/loot_table/blocks/peat_composter.j
 $peatAdvancement=Join-Path $builtData 'biomemakeover/advancement/biomemakeover/create_peat.json';if(-not(Test-Path $peatAdvancement)){Add-Failure 'Stage 9A create_peat advancement missing'}else{$adv=Get-Content -Raw $peatAdvancement|ConvertFrom-Json;if($adv.criteria.create_peat.trigger-ne'biomemakeover:peat_compost'){Add-Failure 'Stage 9A create_peat advancement trigger differs from released contract'}}
 $mixinConfig=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.mixins.json') -Raw
 foreach($required in @('AgeableMobMixin','PointedDripstoneBlockMixin','ComposterBlockMixin')){if($mixinConfig-notmatch$required){Add-Failure "Stage 9A mixin not wired: $required"}}
-foreach($forbidden in @('altar','witch_hat','ectoplasm','poltergeist','tapestry','crude_fragment','cladded_stone','stone_golem','adjudicator','mimic')){if($items-contains$forbidden-or$entities-contains$forbidden-or$blocks-contains$forbidden){Add-Failure "Stage 9B+ registry leaked into Stage 9A: $forbidden"}}
+foreach($forbidden in @('witch_hat','ectoplasm','poltergeist','tapestry','crude_fragment','cladded_stone','stone_golem','adjudicator','mimic')){if($items-contains$forbidden-or$entities-contains$forbidden-or$blocks-contains$forbidden){Add-Failure "Stage 10+ registry leaked into Stage 9B.2: $forbidden"}}
 
 # Stage 9B.1: dynamic-registry definitions and exact source-level hooks for all
-# ten final curses. Altar resources and the removed Sliding curse stay absent.
+# ten final curses. The removed Sliding curse stays absent.
 $curseSpecs=@{
  'decay_curse'=@(5,'#minecraft:enchantable/durability','any',1)
  'insomnia_curse'=@(5,'#minecraft:enchantable/armor','armor',5)
@@ -680,7 +683,28 @@ if($decayedCurseSource-notmatch '(?s)BMEnchantments\.holder\(registryAccess\(\),
 $curseMixins=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.mixins.json') -Raw
 foreach($required in @('curse.LivingEntityCurseMixin','curse.EntityCurseMixin','curse.BowItemCurseMixin')){if($curseMixins-notmatch[regex]::Escape($required)){Add-Failure "Stage 9B.1 mixin not wired: $required"}}
 if(Test-Path(Join-Path $builtData 'biomemakeover/enchantment/sliding_curse.json')){Add-Failure 'Historical/removed Sliding curse was registered'}
-if((Test-Path(Join-Path $builtData 'biomemakeover/loot_table/blocks/altar.json'))-or(Test-Path(Join-Path $builtData 'biomemakeover/recipe/altar.json'))-or$blocks-contains'altar'-or$items-contains'altar'){Add-Failure 'Stage 9B.2 Altar leaked into Stage 9B.1'}
+
+# Stage 9B.2: the complete final Altar loop. These checks cover acquisition,
+# inventory/process semantics, modern item components, client isolation, and
+# every packaged direct resource without pretending to prove random outcomes.
+if('altar'-notin$blocks-or'altar'-notin$items-or'altar'-notin$blockEntities-or'altar_cursing'-notin$sounds){Add-Failure 'Stage 9B.2 Altar registry surface is incomplete'}
+$menuSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMMenus.java') -Raw
+if($menuSource-notmatch 'Registries\.MENU, BiomeMakeover\.id\("altar"\)' -or $menuSource-notmatch 'new MenuType<>\(AltarMenu::new'){Add-Failure 'Stage 9B.2 Altar menu registration is missing'}
+$altarBlockSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/AltarBlock.java') -Raw
+$altarEntitySource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/entity/AltarBlockEntity.java') -Raw
+$altarCursingSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/item/AltarCursing.java') -Raw
+foreach($required in @('ACTIVE','WATERLOGGED','getAnalogOutputSignal','AbstractContainerMenu\.getRedstoneSignalFromBlockEntity','SimpleWaterloggedBlock','Containers\.updateNeighboursAfterDestroy','preRemoveSideEffects spills every Container')){if($altarBlockSource-notmatch$required){Add-Failure "Stage 9B.2 Altar block contract missing: $required"}}
+if($altarBlockSource-match'Containers\.dropContents'){Add-Failure 'Stage 9B.2 Altar must not duplicate the 1.21.10 BlockEntity container spill hook'}
+foreach($required in @('MAX_TIME = 300','withSize\(2','Progress','direction\.getAxis\(\) == Direction\.Axis\.Y \? new int\[\]\{0\} : new int\[\]\{1\}','BMItems\.CURSE_FUEL','Block\.popResource','setItem\(0, ItemStack\.EMPTY\)','progress = 0')){if($altarEntitySource-notmatch$required){Add-Failure "Stage 9B.2 Altar inventory/process contract missing: $required"}}
+foreach($required in @('DataComponents\.STORED_ENCHANTMENTS','DataComponents\.ENCHANTMENTS','DataComponents\.CUSTOM_DATA','BMCursed','DataComponents\.REPAIR_COST, REPAIR_COST','attempts >= RANDOM_ATTEMPTS','maximum == 1 \? 1 : 1 \+ random\.nextInt\(maximum - 1\)')){if($altarCursingSource-notmatch$required){Add-Failure "Stage 9B.2 Altar cursing contract missing: $required"}}
+$altarRecipePath=Join-Path $builtData 'biomemakeover/recipe/altar.json'
+if(-not(Test-Path $altarRecipePath)){Add-Failure 'Stage 9B.2 Altar recipe missing'}else{$altarRecipe=Get-Content $altarRecipePath -Raw|ConvertFrom-Json;if(($altarRecipe.pattern-join'/')-ne' B /ICI/MCM'-or$altarRecipe.key.B-ne'minecraft:book'-or$altarRecipe.key.I-ne'biomemakeover:illunite_shard'-or$altarRecipe.key.C-ne'minecraft:crying_obsidian'-or$altarRecipe.key.M-ne'biomemakeover:mesmerite'-or$altarRecipe.result.id-ne'biomemakeover:altar'){Add-Failure 'Stage 9B.2 Altar recipe differs from the final two-Crying-Obsidian contract'}}
+foreach($resource in @($stage9b2.loot_tables|ForEach-Object{"biomemakeover/loot_table/$_.json"})+@($stage9b2.advancements|ForEach-Object{"biomemakeover/advancement/$_.json"})+@($stage9b2.item_tags|ForEach-Object{"biomemakeover/tags/item/$_.json"})+@($stage9b2.enchantment_tags|ForEach-Object{"biomemakeover/tags/enchantment/$_.json"})){if(-not(Test-Path(Join-Path $builtData $resource))){Add-Failure "Stage 9B.2 packaged data resource missing: $resource"}}
+foreach($texture in $stage9b2.textures){if(-not(Test-Path(Join-Path $builtAssets "textures/$texture"))){Add-Failure "Stage 9B.2 packaged texture missing: $texture"}}
+foreach($asset in @('blockstates/altar.json','models/block/altar.json','models/item/altar.json','items/altar.json','sounds/altar_cursing.ogg')){if(-not(Test-Path(Join-Path $builtAssets $asset))){Add-Failure "Stage 9B.2 packaged asset missing: $asset"}}
+$clientInit=Get-Content (Join-Path $RepositoryRoot 'src/client/java/party/lemons/biomemakeover/client/BiomeMakeoverClient.java') -Raw
+foreach($required in @('MenuScreens\.register\(BMMenus\.ALTAR','BlockEntityRenderers\.register\(BMBlockEntities\.ALTAR','AltarBlockEntity\.setClientSoundStarter')){if($clientInit-notmatch$required){Add-Failure "Stage 9B.2 client-only registration missing: $required"}}
+if((Get-ChildItem(Join-Path $RepositoryRoot 'src/main/java')-Recurse-File-Filter'*.java'|Get-Content -Raw)-match'client\.screen\.AltarScreen|client\.render\.AltarRenderer|client\.sound\.AltarCursingSound'){Add-Failure 'Stage 9B.2 client classes leaked into common Java sources'}
 
 # Resolve every custom curse hook against the actual named Minecraft classes
 # used by Loom, then verify the production JAR contains the expected remapped
