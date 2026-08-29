@@ -407,7 +407,7 @@ unreleased dev content or activate Mythas additions by default.
 | 8 | Remaining simple entities and Beach ecology | Attributes/spawn/loot/render inventory | AI, despawn, animation, sound tests |
 | 9 | Functional blocks, five block entities, menus and packets | Codec/NBT/menu/packet round trips | Save/reload, multiplayer interaction tests |
 
-Stage 9 is subdivided by the source-audited dependency graph. Stage 9A is complete/runtime accepted. Stage 9B.1 now restores the ten data-driven curses and their runtime engine and awaits Prism acceptance; Stage 9B.2 (Altar and `BMCursed` processing) is not started. No Altar registration or resource is part of 9B.1.
+Stage 9 is subdivided by the source-audited dependency graph. Stage 9A and Stage 9B.1 are complete/runtime accepted; Stage 9B.1 restores the ten data-driven curses and their runtime engine. Stage 9B.2 (Altar and `BMCursed` processing) is not started. No Altar registration or resource is part of 9B.1.
 | 10 | Mushroom House, Sunken Ruins, Ghost Town/archaeology | Template/processor/loot references | Locate/generate in new chunks; archaeology tests |
 | 11 | Mansion foundation, 228 templates and layout/processors | Template reachability and deterministic layout tests | Locate/generate mansion in disposable new region |
 | 12 | Illager progression, Adjudicator, Mimic, Golem, quests/curses | State-machine, loot, packet, advancement tests | Full multiplayer progression playthrough |

@@ -1,6 +1,6 @@
 # Stage 9B.1 — Final Ten-Curse Engine
 
-Status: **IMPLEMENTED / AWAITING RUNTIME ACCEPTANCE**. Stage 9B.2 (Altar) is **NOT STARTED**.
+Status: **COMPLETE / RUNTIME ACCEPTED**. Stage 9B.2 (Altar) is **NOT STARTED**.
 
 ## Authority and architecture
 
@@ -50,3 +50,21 @@ Prism confirmed Decay, Insomnia, Depths, Flammability, Suffocation, Unwieldiness
 - **Conductivity remains source-correct and runtime-inconclusive only because it is random.** The server tick loops all four armor slots. Each enchanted stack independently resolves its own level and rolls `nextInt(11000 - 1000 * level)`. Only a successful roll continues through thunder and `isRainingAt(getOnPos())`; it then creates and adds a real `LIGHTNING_BOLT` at the block-bottom center. Four level-V pieces therefore use four independent 1/6000 rolls per tick. Clear weather, sheltered positions, dry biomes and dimensions without qualifying weather cannot strike. No probability or debug behavior was changed.
 
 Shared vanilla behavior remains data-driven: curse tags preserve grindstone behavior and red tooltip semantics; normal/stored enchantment components preserve items and books through anvils, saves, containers, drops and dimension travel. The ten definitions remain omitted from enchanting-table, trading, random-loot and mob-equipment acquisition tags.
+
+## Final runtime acceptance
+
+Prism runtime acceptance on Minecraft 1.21.10 confirmed:
+
+- Decay III added three durability damage to a normal one-point event (`250 -> 246`).
+- Insomnia accelerated `TIME_SINCE_REST`, with multiple equipped pieces stacking.
+- Enfeeblement II produced `20 -> 16 -> 12` maximum health with clean restoration; held cursed armor also activated, matching the released VANISHABLE/all-slot contract.
+- Depths II forced strong downward water motion and prevented swimming only while the boots were equipped.
+- Flammability III substantially extended new fire duration only while armor was equipped.
+- Suffocation levels reduced air capacity; the apparent live-equip delay matches the released query-time clamp rather than an equipment callback.
+- Unwieldiness III visibly reduced attack speed by its `-0.75` modifier.
+- Inaccuracy III produced the released severe independent pitch/yaw scatter.
+- Buckling III increased damage from a controlled five-block fall.
+
+Conductivity's finite manual sample did not produce a strike, which is not evidence of failure for an independent 1/6000 level-V roll. Its complete per-piece server tick, exact denominator, thunder/local-rain gates and real-lightning spawn path are source-, mapping- and package-validated and are accepted without changing probability.
+
+There are no remaining Stage 9B.1 production blockers. No Altar, `BMCursed`, debug probability, Sliding Curse, or later-stage content was introduced.
