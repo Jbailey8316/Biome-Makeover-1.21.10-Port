@@ -39,6 +39,7 @@ $stage4Path = Join-Path $RepositoryRoot 'validation/foundations/stage_4_badlands
 $stage5Path = Join-Path $RepositoryRoot 'validation/foundations/stage_5_swamp_contract.json'
 $stage6Path = Join-Path $RepositoryRoot 'validation/foundations/stage_6_dark_forest_contract.json'
 $stage8Path = Join-Path $RepositoryRoot 'validation/foundations/stage_8_rootling_moth_contract.json'
+$stage9aPath = Join-Path $RepositoryRoot 'validation/foundations/stage_9a_functional_utilities_contract.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
 $dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
@@ -49,6 +50,7 @@ $stage4 = Get-Content $stage4Path -Raw | ConvertFrom-Json
 $stage5 = Get-Content $stage5Path -Raw | ConvertFrom-Json
 $stage6 = Get-Content $stage6Path -Raw | ConvertFrom-Json
 $stage8 = Get-Content $stage8Path -Raw | ConvertFrom-Json
+$stage9a = Get-Content $stage9aPath -Raw | ConvertFrom-Json
 
 foreach ($setName in @('blocks','no_item_blocks','standalone_items','entities','spawn_eggs','configured_features','placed_features')) {
     $values = @($stage3.$setName)
@@ -69,6 +71,7 @@ foreach ($setName in @('blocks_with_items','no_item_blocks','special_items','ite
     if ((Sorted $values).Count -ne $values.Count) { Add-Failure "Duplicate ID in Stage 6 contract set $setName" }
 }
 foreach ($setName in @('blocks_with_items','no_item_blocks','items','spawn_eggs','entities','sounds','mob_effects','potions','recipes')) { $values=@($stage8.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 8 contract set $setName"} }
+foreach ($setName in @('blocks_with_items','no_item_blocks','items','recipes','advancements')) { $values=@($stage9a.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 9A contract set $setName"} }
 
 foreach ($property in $baseline.registries.PSObject.Properties) {
     $values = @($property.Value)
@@ -76,12 +79,12 @@ foreach ($property in $baseline.registries.PSObject.Properties) {
 }
 
 $parsedBlocks = @(Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMBlocks.java' | Where-Object { $_ -ne 'stripped_' })
-$blocks = Sorted (@($parsedBlocks) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.blocks_with_items) + @($stage8.no_item_blocks))
+$blocks = Sorted (@($parsedBlocks) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.blocks_with_items) + @($stage8.no_item_blocks) + @($stage9a.blocks_with_items) + @($stage9a.no_item_blocks))
 $standaloneItems = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMItems.java'
 $entityFileIds = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java'
 $entities = @($entityFileIds | Where-Object { $_ -notlike '*_spawn_egg' })
 $spawnEggs = @($entityFileIds | Where-Object { $_ -like '*_spawn_egg' })
-$allNoItemBlocks = @($stage3.no_item_blocks) + @($stage4.registry.no_item_blocks) + @($stage5.no_item_blocks) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks)
+$allNoItemBlocks = @($stage3.no_item_blocks) + @($stage4.registry.no_item_blocks) + @($stage5.no_item_blocks) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks) + @($stage9a.no_item_blocks)
 $items = Sorted (@($blocks | Where-Object { $_ -notin $allNoItemBlocks }) + @($standaloneItems) + @($spawnEggs))
 $sounds = Java-RegisterIds 'src/main/java/party/lemons/biomemakeover/init/BMSounds.java'
 $particleText=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/init/BMParticles.java') -Raw
@@ -97,8 +100,8 @@ foreach ($deferred in $stage3.deferred_released_ids) {
     }
 }
 
-Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks))) $blocks
-Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs))) $items
+Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks) + @($stage9a.no_item_blocks))) $blocks
+Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items))) $items
 Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities) + @($stage8.entities))) $entities
 Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds))) $sounds
 Assert-EqualSet 'particle registry IDs' (Sorted (@($baseline.registries.particle_type) + @($stage5.particles) + @($stage6.particles))) $particles
@@ -609,7 +612,26 @@ if($mothSource -notmatch 'getLastHurtByMob\(\)==null' -or $mothSource -notmatch 
 $mothTag=Join-Path $builtData 'biomemakeover/tags/block/moth_attractive.json';if(-not(Test-Path $mothTag) -or (Get-Content $mothTag -Raw) -notmatch 'biomemakeover:moth_blossom'){Add-Failure 'Moth-attractive block tag is missing Moth Blossom'}
 foreach($recipe in @('roasted_bulbus_root','roasted_bulbus_root_from_smoking','roasted_bulbus_root_from_campfire_cooking','blue_dye_from_blue_bud','brown_dye_from_brown_bud','cyan_dye_from_cyan_bud','gray_dye_from_gray_bud','light_blue_dye_from_light_blue_bud','purple_dye_from_purple_bud')){if(-not(Test-Path (Join-Path $builtData "biomemakeover/recipe/$recipe.json"))){Add-Failure "Stage 8 recipe missing: $recipe"}}
 foreach($color in @('blue','brown','cyan','gray','light_blue','purple')){$recipePath=Join-Path $builtData "biomemakeover/recipe/${color}_dye_from_${color}_bud.json";if(Test-Path $recipePath){$recipe=Get-Content -Raw $recipePath|ConvertFrom-Json;if($recipe.type-ne'minecraft:crafting_shaped'-or@($recipe.pattern).Count-ne1-or$recipe.pattern[0]-ne'#'-or$recipe.key.'#'-ne"biomemakeover:${color}_bud"){Add-Failure "Stage 8 bud dye recipe lost released one-slot shaped contract: $color"}}}
-if($items -contains 'stunt_powder' -or $entities -contains 'ghost' -or (Test-Path (Join-Path $builtData 'biomemakeover/recipe/phantom_membrane.json'))){Add-Failure 'Later Stunt Powder/Ectoplasm progression leaked into Stage 8'}
+if($entities -contains 'ghost' -or (Test-Path (Join-Path $builtData 'biomemakeover/recipe/phantom_membrane.json'))){Add-Failure 'Later Ectoplasm progression leaked into Stage 8'}
+$stuntRecipePath=Join-Path $builtData 'biomemakeover/recipe/stunt_powder.json'
+if(-not(Test-Path $stuntRecipePath)){Add-Failure 'Stage 9A Stunt Powder recipe missing'}else{$recipe=Get-Content -Raw $stuntRecipePath|ConvertFrom-Json;$ingredients=@($recipe.ingredients|ForEach-Object{if($_-is[string]){$_}else{$_.item}}|Sort-Object);if($recipe.type-ne'minecraft:crafting_shapeless'-or($ingredients -join ',')-ne'biomemakeover:bulbus_root,biomemakeover:illunite_shard'-or$recipe.result.id-ne'biomemakeover:stunt_powder'-or$recipe.result.count-ne2){Add-Failure 'Stage 9A Stunt Powder recipe differs from released contract'}}
+$stuntSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/item/StuntPowderItem.java') -Raw
+$ageSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/AgeableMobMixin.java') -Raw
+foreach($required in @('instanceof Stuntable','isBaby\(\)','isAlwaysBaby\(\)','isStunted\(\)','WARPED_SPORE','15','0\.2D','consume\(1, player\)')){if($stuntSource-notmatch$required){Add-Failure "Stage 9A Stunt Powder interaction contract missing: $required"}}
+foreach($required in @('bm_IsStunted','-6000','@Mixin\(AgeableMob\.class\)','method = "setAge"','ValueOutput','ValueInput','self\.setAge\(BIOMEMAKEOVER_STUNTED_AGE\)')){if($ageSource-notmatch$required){Add-Failure "Stage 9A persistent age contract missing: $required"}}
+$peatSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/PeatComposterBlock.java') -Raw
+foreach($required in @('return 9;','new ItemStack\(BMBlocks\.PEAT\)','Blocks\.COMPOSTER\.defaultBlockState\(\)','side == Direction\.DOWN','BMAdvancements\.PEAT_COMPOST\.trigger')){if($peatSource-notmatch$required){Add-Failure "Stage 9A Peat Composter contract missing: $required"}}
+$dripSource=(Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/PointedDripstoneBlockMixin.java') -Raw)+(Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/mixin/ComposterBlockMixin.java') -Raw)
+foreach($required in @('Fluids\.WATER','ComposterBlock\.READY','scheduleTick','BMBlocks\.PEAT_COMPOSTER')){if($dripSource-notmatch$required){Add-Failure "Stage 9A drip conversion contract missing: $required"}}
+if($standaloneItems-notcontains'stunt_powder'){Add-Failure 'Stage 9A Stunt Powder item is not registered'}
+if($blocks-notcontains'peat_composter'){Add-Failure 'Stage 9A Peat Composter block is not registered'}
+if($items-contains'peat_composter'){Add-Failure 'Stage 9A Peat Composter must not have an item registration'}
+if(Test-Path(Join-Path $builtData 'biomemakeover/recipe/peat_composter.json')){Add-Failure 'Stage 9A Peat Composter must not have a recipe'}
+$peatLoot=Join-Path $builtData 'biomemakeover/loot_table/blocks/peat_composter.json';if(-not(Test-Path $peatLoot)){Add-Failure 'Stage 9A Peat Composter loot missing'}elseif((Get-Content -Raw $peatLoot)-notmatch'minecraft:composter'){Add-Failure 'Stage 9A Peat Composter must break into vanilla Composter'}
+$peatAdvancement=Join-Path $builtData 'biomemakeover/advancement/biomemakeover/create_peat.json';if(-not(Test-Path $peatAdvancement)){Add-Failure 'Stage 9A create_peat advancement missing'}else{$adv=Get-Content -Raw $peatAdvancement|ConvertFrom-Json;if($adv.criteria.create_peat.trigger-ne'biomemakeover:peat_compost'){Add-Failure 'Stage 9A create_peat advancement trigger differs from released contract'}}
+$mixinConfig=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.mixins.json') -Raw
+foreach($required in @('AgeableMobMixin','PointedDripstoneBlockMixin','ComposterBlockMixin')){if($mixinConfig-notmatch$required){Add-Failure "Stage 9A mixin not wired: $required"}}
+foreach($forbidden in @('altar','witch_hat','ectoplasm','poltergeist','tapestry','crude_fragment','cladded_stone','stone_golem','adjudicator','mimic')){if($items-contains$forbidden-or$entities-contains$forbidden-or$blocks-contains$forbidden){Add-Failure "Stage 9B+ registry leaked into Stage 9A: $forbidden"}}
 $blackThistleSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/BlackThistleBlock.java') -Raw
 if($blackThistleSource -notmatch '(?s)entityInside\(BlockState\s+state,\s*Level\s+level,\s*BlockPos\s+pos,\s*Entity\s+entity,\s*InsideBlockEffectApplier\s+effects,\s*boolean' -or
    $blackThistleSource -notmatch 'DoubleBlockHalf\.UPPER' -or $blackThistleSource -notmatch 'MobEffects\.WEAKNESS,\s*110,\s*0' -or

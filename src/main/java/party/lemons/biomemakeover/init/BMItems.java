@@ -30,6 +30,7 @@ import net.minecraft.sounds.SoundEvents;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.item.GlowfishBucketItem;
 import party.lemons.biomemakeover.item.LightningBottleItem;
+import party.lemons.biomemakeover.item.StuntPowderItem;
 import net.minecraft.world.item.BlockItem;
 
 public final class BMItems {
@@ -85,6 +86,7 @@ public final class BMItems {
     public static final Item BULBUS_ROOT = register("bulbus_root", p -> new Item(p.food(new FoodProperties(2, 0.6F, false))));
     public static final Item ROASTED_BULBUS_ROOT = register("roasted_bulbus_root", p -> new Item(p.food(new FoodProperties(5, 0.8F, false))));
     public static final Item MOTH_SCALES = register("moth_scales");
+    public static final Item STUNT_POWDER = register("stunt_powder", StuntPowderItem::new);
 
     private BMItems() {}
 
@@ -114,7 +116,7 @@ public final class BMItems {
             entries.accept(ANCIENT_OAK_SIGN); entries.accept(ANCIENT_OAK_HANGING_SIGN);
             entries.accept(BLUE_BUD); entries.accept(BROWN_BUD); entries.accept(CYAN_BUD); entries.accept(GRAY_BUD);
             entries.accept(LIGHT_BLUE_BUD); entries.accept(PURPLE_BUD); entries.accept(ROOTLING_SEEDS);
-            entries.accept(BULBUS_ROOT); entries.accept(ROASTED_BULBUS_ROOT); entries.accept(MOTH_SCALES);
+            entries.accept(BULBUS_ROOT); entries.accept(ROASTED_BULBUS_ROOT); entries.accept(MOTH_SCALES); entries.accept(STUNT_POWDER);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

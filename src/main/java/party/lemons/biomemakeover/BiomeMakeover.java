@@ -39,6 +39,6 @@ public final class BiomeMakeover implements ModInitializer {
         BMEntities.initialize();
         BMWorldgen.initialize();
         BMWorldEvents.initialize();
-        LOGGER.info("Biome Makeover Stage 8 Dark Forest ecology build loaded.");
+        LOGGER.info("Biome Makeover Stage 9A functional utilities build loaded.");
     }
 }

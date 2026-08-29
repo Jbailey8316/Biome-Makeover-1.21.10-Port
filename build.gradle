@@ -413,6 +413,14 @@ processResources {
         eachFile { details -> details.path=details.path.replace('/advancements/','/advancement/') }
     }
 
+    // Stage 9A dependency-closed functional utilities. The Peat Composter
+    // remains itemless; its existing Stage 5 wildcard resources provide only
+    // the released blockstate/model/loot assets.
+    from('reference/Biome-Makeover-1.20/common/src/main/resources') {
+        include 'assets/biomemakeover/models/item/stunt_powder.json'
+        include 'assets/biomemakeover/textures/item/stunt_powder.png'
+    }
+
     // Stage 6 Dark Forest physical resources. Entity gameplay, Altar/curses,
     // Mansion content, music, boats and later-stage progression stay excluded.
     from('reference/Biome-Makeover-1.20/common/src/main/resources') {

@@ -135,4 +135,8 @@
   ,"advancements.biomemakeover.moth_scales.description":"Obtain some Moth Scales"
   ,"advancements.biomemakeover.nocturnal_potion.title":"All Nighter"
   ,"advancements.biomemakeover.nocturnal_potion.description":"Consume a Nocturnal Potion"
+  ,"item.biomemakeover.stunt_powder":"Stunt Powder"
+  ,"block.biomemakeover.peat_composter":"Composter"
+  ,"advancements.biomemakeover.create_peat.title":"Re-Peat"
+  ,"advancements.biomemakeover.create_peat.description":"Create some brand new peat by dripping Water into a full Composter"
 }

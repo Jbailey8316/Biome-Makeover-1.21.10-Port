@@ -1,0 +1,7 @@
+{
+  "blocks_with_items": [],
+  "no_item_blocks": ["peat_composter"],
+  "items": ["stunt_powder"],
+  "recipes": ["stunt_powder"],
+  "advancements": ["biomemakeover/create_peat"]
+}

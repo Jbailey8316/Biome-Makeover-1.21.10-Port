@@ -53,6 +53,7 @@ import party.lemons.biomemakeover.block.WaterSaplingBlock;
 import party.lemons.biomemakeover.block.LightningBugBottleBlock;
 import party.lemons.biomemakeover.block.WillowingBranchesBlock;
 import party.lemons.biomemakeover.block.PeatFarmlandBlock;
+import party.lemons.biomemakeover.block.PeatComposterBlock;
 
 public final class BMBlocks {
     public static final net.minecraft.tags.TagKey<Block> MOTH_ATTRACTIVE = net.minecraft.tags.TagKey.create(
@@ -122,6 +123,9 @@ public final class BMBlocks {
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollision().noOcclusion().randomTicks().strength(0.25F).speedFactor(0.5F).sound(SoundType.VINE));
     public static final Block ROOTLING_CROP = registerNoItem("rootling_crop", RootlingCropBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().randomTicks().instabreak().sound(SoundType.CROP).pushReaction(PushReaction.DESTROY));
+    public static final Block PEAT_COMPOSTER = registerNoItem("peat_composter", PeatComposterBlock::new,
+        BlockBehaviour.Properties.of().strength(0.6F).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD)
+            .ignitedByLava().mapColor(MapColor.WOOD));
     public static final Block FOXGLOVE = register("foxglove", TallFlowerBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
     public static final Block OWL_NEST = register("owl_nest", OwlNestBlock::new,
