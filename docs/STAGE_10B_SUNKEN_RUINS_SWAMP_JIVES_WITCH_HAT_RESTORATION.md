@@ -68,7 +68,7 @@ Every template remains DataVersion 2584 with one palette, zero embedded entities
 
 `biomemakeover:sunken_ruin` is one chest pool with uniform 2-8 rolls, no bonus rolls or conditions, and total weight 58. Weight-6 entries are Charcoal 1-3, Glass Bottle 1-3, Water Potion, Awkward Potion, Water Splash Potion, Red Mushroom 1-4, Brown Mushroom 1-4, and Sugar 1-6. Weight-3 entries are Poison Potion, Witch Hat, and Bottle o' Lightning 1-2. Swamp Jives has weight 1. Obsolete potion NBT is translated to native `minecraft:set_potion` functions; weights and outcomes are unchanged. Witch Hat remains 3/58 and Swamp Jives 1/58 per roll, with neither guaranteed.
 
-The visible `biomemakeover:biomemakeover/sunken_ruin` advancement is parented to `enter_swamp` and uses a vanilla location criterion for the canonical structure. It retains the Cauldron icon, `Sinking Feeling`, `Find a sunken ruin`, task frame, toast, chat announcement, and visible state.
+The visible `biomemakeover:biomemakeover/sunken_ruin` advancement is parented to `enter_swamp` and uses a vanilla location criterion for the canonical structure. The 1.20.1 JSON used `location.structure`; 1.21.10's `LocationPredicate` codec exposes the equivalent registry-entry list as plural `location.structures`, so the port uses `["biomemakeover:sunken_ruin"]` and validates that the singular key is absent. It retains the Cauldron icon, `Sinking Feeling`, `Find a sunken ruin`, task frame, toast, chat announcement, and visible state.
 
 ## Swamp Jives
 
@@ -111,3 +111,17 @@ The implementation candidate passes the clean offline build, integrated parity v
 9. In existing worlds, test only newly generated eligible chunks; already-generated chunks remain unchanged and no retro-generation occurs.
 
 Stage 10B is implemented and awaits this runtime matrix. Stage 10C is not started.
+
+## Runtime remediation - Sinking Feeling
+
+The first Prism candidate awarded `Sinking Feeling` immediately when a player logged into a desert, before locating or entering a ruin. The final 1.20.1 advancement uses the vanilla `minecraft:location` trigger with an `entity_properties` player predicate whose location is restricted to the `biomemakeover:sunken_ruin` structure. It is awarded when the player enters/intersects a generated ruin; it is not a login, proximity, chest-opening, or biome-only event.
+
+The defect was a schema translation error. The 1.20.1 JSON key is singular `location.structure`, but the actual 1.21.10 mapped `LocationPredicate` codec has an optional `structures` registry-entry list. The obsolete singular key was ignored during advancement decoding, leaving an empty location predicate that matched the desert login. The remediation changes only this field to `"structures": ["biomemakeover:sunken_ruin"]`. The semantic validator now requires the plural list, canonical structure ID, vanilla location trigger, and absence of the singular key; it also rejects any custom login/player-tick path or Taniwha dependency.
+
+No structure generation, loot, Witch, Hat, disc, renderer, or other Stage 10B behavior changed. To retest, revoke `biomemakeover:biomemakeover/sunken_ruin`, log in away from a ruin and confirm no toast, then teleport into a generated ruin and confirm `Sinking Feeling` awards. The exact command is:
+
+```text
+/advancement revoke @s only biomemakeover:biomemakeover/sunken_ruin
+```
+
+This remediation remains local and awaits final Prism validation.
