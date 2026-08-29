@@ -732,7 +732,7 @@ foreach($resource in @(
  'biomemakeover/worldgen/structure_set/mushroom_houses.json',
  'biomemakeover/worldgen/template_pool/mushroom_house/house.json',
  'biomemakeover/worldgen/processor_list/mushroom_house.json',
- 'biomemakeover/structures/mushroom_house/house/house_1.nbt',
+ 'biomemakeover/structure/mushroom_house/house/house_1.nbt',
  'biomemakeover/tags/worldgen/biome/has_structure/mushroom_house.json',
  'biomemakeover/tags/worldgen/biome/mushroom_fields.json',
  'biomemakeover/loot_table/mushroom_house.json',
@@ -769,8 +769,10 @@ if(Test-Path $mushroomTagPath){$mushroomTag=Get-Content $mushroomTagPath -Raw|Co
 $houseTagPath=Join-Path $builtData 'biomemakeover/tags/worldgen/biome/has_structure/mushroom_house.json'
 if(Test-Path $houseTagPath){$houseTag=Get-Content $houseTagPath -Raw|ConvertFrom-Json;if($houseTag.values.Count-ne1-or$houseTag.values[0]-ne'#biomemakeover:mushroom_fields'){Add-Failure 'Stage 10A structure biome tag chain is incomplete'}}
 
-$houseTemplatePath=Join-Path $builtData 'biomemakeover/structures/mushroom_house/house/house_1.nbt'
+$houseTemplatePath=Join-Path $builtData 'biomemakeover/structure/mushroom_house/house/house_1.nbt'
 if(Test-Path $houseTemplatePath){$templateFile=Get-Item $houseTemplatePath;$templateHash=(Get-FileHash $houseTemplatePath -Algorithm SHA256).Hash;if($templateFile.Length-ne$stage10a.template.bytes-or$templateHash-ne$stage10a.template.sha256){Add-Failure 'Stage 10A packaged house template is not the exact audited 11x10x11 final binary'}}
+$legacyHouseTemplatePath=Join-Path $builtData 'biomemakeover/structures/mushroom_house/house/house_1.nbt'
+if(Test-Path $legacyHouseTemplatePath){Add-Failure 'Stage 10A template is packaged under obsolete 1.20.1 structures/ instead of the 1.21.10 structure/ resource directory'}
 $houseLootPath=Join-Path $builtData 'biomemakeover/loot_table/mushroom_house.json'
 if(Test-Path $houseLootPath){
  $houseLoot=Get-Content $houseLootPath -Raw|ConvertFrom-Json
@@ -823,7 +825,9 @@ if($null-eq$minecraftCommonJar){Add-Failure 'Cannot locate mapped Minecraft comm
  $livingMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.entity.LivingEntity 2>$null|Out-String)
  $bowMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.item.BowItem 2>$null|Out-String)
   $anvilMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.inventory.AnvilMenu 2>$null|Out-String)
-  $combinerMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.inventory.ItemCombinerMenu 2>$null|Out-String)
+ $combinerMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.inventory.ItemCombinerMenu 2>$null|Out-String)
+  $templateManagerCode=(& javap -classpath $minecraftCommonJar.FullName -p -c net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager 2>$null|Out-String)
+  $jigsawPlacementCode=(& javap -classpath $minecraftCommonJar.FullName -p -c net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement 2>$null|Out-String)
  }finally{$ErrorActionPreference=$savedErrorPreference}
  foreach($contract in @(
    @('Entity.setRemainingFireTicks','public void setRemainingFireTicks\(int\);[\s\S]*?descriptor: \(I\)V',$entityMethods),
@@ -839,6 +843,13 @@ if($null-eq$minecraftCommonJar){Add-Failure 'Cannot locate mapped Minecraft comm
    @('ItemCombinerMenu.inputSlots','protected final net\.minecraft\.world\.Container inputSlots;[\s\S]*?descriptor: Lnet/minecraft/world/Container;',$combinerMethods),
    @('ItemCombinerMenu.resultSlots','protected final net\.minecraft\.world\.inventory\.ResultContainer resultSlots;[\s\S]*?descriptor: Lnet/minecraft/world/inventory/ResultContainer;',$combinerMethods)
  )){if($contract[2]-notmatch$contract[1]){Add-Failure "Stage 9B.1 named runtime target missing or descriptor changed: $($contract[0])"}}
+ if($templateManagerCode-notmatch'(?s)String structure.{0,400}String \.nbt.{0,400}FileToIdConverter\."<init>"'){
+  Add-Failure 'Stage 10A cannot verify the actual 1.21.10 StructureTemplateManager structure/.nbt resource converter'
+ }
+ if($jigsawPlacementCode-notmatch'(?s)new\s+#\d+\s+// class net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece' -or
+    $jigsawPlacementCode-notmatch'(?s)method_39824.*?Lists\.newArrayList.*?List\.add.*?ifgt'){
+  Add-Failure 'Stage 10A cannot verify 1.21.10 jigsaw root-piece construction before connector traversal'
+ }
 }
 $mappingRoot=Join-Path $env:USERPROFILE '.gradle/caches/fabric-loom/1.21.10'
 $mappingFile=Get-ChildItem $mappingRoot -Recurse -File -Filter 'mappings.tiny' -ErrorAction SilentlyContinue|Where-Object{$_.FullName-like'*layered*'}|Select-Object -First 1
@@ -879,7 +890,7 @@ if($null-ne$productionJar){
    'data/biomemakeover/worldgen/structure_set/mushroom_houses.json',
    'data/biomemakeover/worldgen/template_pool/mushroom_house/house.json',
    'data/biomemakeover/worldgen/processor_list/mushroom_house.json',
-   'data/biomemakeover/structures/mushroom_house/house/house_1.nbt',
+   'data/biomemakeover/structure/mushroom_house/house/house_1.nbt',
    'data/biomemakeover/loot_table/mushroom_house.json',
    'data/biomemakeover/jukebox_song/button_mushrooms.json',
    'assets/biomemakeover/sounds/button_mushrooms.ogg',
@@ -887,11 +898,12 @@ if($null-ne$productionJar){
    'assets/biomemakeover/textures/entity/mushrooming_trader_outer.png'
   )){if($null-eq$zip.GetEntry($entryPath)){Add-Failure "Packaged Stage 10A entry missing: $entryPath"}}
   foreach($hashContract in @(
-   @('data/biomemakeover/structures/mushroom_house/house/house_1.nbt',$stage10a.template.sha256),
+   @('data/biomemakeover/structure/mushroom_house/house/house_1.nbt',$stage10a.template.sha256),
    @('assets/biomemakeover/sounds/button_mushrooms.ogg',$stage10a.disc.ogg_sha256)
   )){
    $entry=$zip.GetEntry($hashContract[0]);if($null-ne$entry){$stream=$entry.Open();$algorithm=[Security.Cryptography.SHA256]::Create();try{$entryHash=([BitConverter]::ToString($algorithm.ComputeHash($stream))).Replace('-','')}finally{$algorithm.Dispose();$stream.Dispose()};if($entryHash-ne$hashContract[1]){Add-Failure "Packaged Stage 10A binary hash differs: $($hashContract[0])"}}
   }
+  if($null-ne$zip.GetEntry('data/biomemakeover/structures/mushroom_house/house/house_1.nbt')){Add-Failure 'Packaged JAR retains the obsolete plural Stage 10A template path'}
  }finally{$zip.Dispose()}
 }
 $blackThistleSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/BlackThistleBlock.java') -Raw

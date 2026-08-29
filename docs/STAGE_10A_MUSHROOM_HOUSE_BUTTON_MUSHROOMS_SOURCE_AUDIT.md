@@ -208,7 +208,7 @@ The final advancement is a visible goal titled `Badger Badger Badger`, parented 
 
 The owning final files are:
 
-- Worldgen/data: `worldgen/structure/mushroom_house.json`, `worldgen/structure_set/mushroom_houses.json`, `worldgen/template_pool/mushroom_house/house.json`, `worldgen/processor_list/mushroom_house.json`, `structures/mushroom_house/house/house_1.nbt`, `tags/worldgen/biome/has_structure/mushroom_house.json`, and `tags/worldgen/biome/mushroom_fields.json`.
+- Final 1.20.1 worldgen/data: `worldgen/structure/mushroom_house.json`, `worldgen/structure_set/mushroom_houses.json`, `worldgen/template_pool/mushroom_house/house.json`, `worldgen/processor_list/mushroom_house.json`, legacy `structures/mushroom_house/house/house_1.nbt`, `tags/worldgen/biome/has_structure/mushroom_house.json`, and `tags/worldgen/biome/mushroom_fields.json`. The audited 1.21.10 translation requirement below changes only the template resource directory to singular `structure/`.
 - Loot/progression/trades: `loot_tables/mushroom_house.json`, empty `loot_tables/entities/mushroom_trader.json`, `trade_lists/mushroom_trader.json`, and `advancements/biomemakeover/mushroom_disc.json`.
 - Disc assets: `models/item/button_mushrooms_music_disk.json`, `textures/item/music_disk_button_mushrooms.png`, `sounds/button_mushrooms.ogg`, plus shared `sounds.json` and language files.
 - Trader assets: `models/item/mushroom_trader_spawn_egg.json`, `textures/entity/mushrooming_trader_inner.png`, and `textures/entity/mushrooming_trader_outer.png`, plus shared language files.

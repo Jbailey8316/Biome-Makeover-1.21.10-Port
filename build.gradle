@@ -44,6 +44,7 @@ def stage5GeneratedResources = layout.buildDirectory.dir('generated/stage5Resour
 def stage6GeneratedResources = layout.buildDirectory.dir('generated/stage6Resources')
 def stage8GeneratedResources = layout.buildDirectory.dir('generated/stage8Resources')
 def stage10aGeneratedResources = layout.buildDirectory.dir('generated/stage10aResources')
+def stage10aValidatorClasses = layout.buildDirectory.dir('classes/java/stage10aValidator')
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
     outputs.dir(stage3GeneratedResources)
@@ -265,6 +266,25 @@ tasks.register('generateStage10AItemResources') {
             ImageIO.write(image, 'png', new File(textureOutput, 'mushroom_trader_spawn_egg.png'))
         }
     }
+}
+
+tasks.register('compileStage10ATemplateValidator', JavaCompile) {
+    dependsOn tasks.named('classes')
+    source file('validation/java/Stage10ATemplateRuntimeValidator.java')
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath
+    destinationDirectory = stage10aValidatorClasses
+    options.release = 21
+}
+
+tasks.register('validateStage10ATemplateRuntime', JavaExec) {
+    dependsOn tasks.named('compileStage10ATemplateValidator')
+    classpath = files(stage10aValidatorClasses) + sourceSets.main.output + sourceSets.main.compileClasspath
+    mainClass = 'Stage10ATemplateRuntimeValidator'
+    args file('src/main/resources').absolutePath
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('validateStage10ATemplateRuntime')
 }
 
 processResources {

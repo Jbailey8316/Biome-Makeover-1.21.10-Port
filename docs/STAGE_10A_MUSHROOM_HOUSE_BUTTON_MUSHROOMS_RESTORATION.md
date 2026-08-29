@@ -1,6 +1,6 @@
 # Stage 10A - Mushroom House, Mushroom Trader, and Button Mushrooms Restoration
 
-Status: **IMPLEMENTED / AWAITING RUNTIME VALIDATION**
+Status: **REMEDIATED / AWAITING STRUCTURE RUNTIME RETEST**
 
 Implementation date: 2026-08-29
 
@@ -26,7 +26,7 @@ Stage 10B and later content remain unstarted. No Mythas gameplay enhancement was
 
 The port uses native 1.21.10 jigsaw/structure-set data. No custom structure type and no Fabric biome-injection hook are required. The random-spread placement is linear, spacing 12, separation 6, salt 6942069. The jigsaw uses `WORLD_SURFACE_WG`, `surface_structures`, `beard_thin`, size 3, and maximum center distance 80.
 
-The exact final binary `house_1` template is packaged unchanged: 11 x 10 x 11, four flower pots, one loot chest, and one embedded Mushroom Trader. It contains no jigsaw block or data marker. Newly generated eligible chunks can receive the structure; already-generated chunks are not rewritten.
+The exact final binary `house_1` template is packaged unchanged under the modern `data/biomemakeover/structure/` directory: 11 x 10 x 11, four flower pots, one loot chest, and one embedded Mushroom Trader. It contains no jigsaw block or data marker. Newly generated eligible chunks can receive the structure; already-generated chunks are not rewritten.
 
 ## Local weighted flower-pot processor
 
@@ -108,7 +108,19 @@ The visible `biomemakeover:biomemakeover/mushroom_disc` advancement restores the
 
 ## Static validation contract
 
-The Stage 10A foundation validator checks the registrations, exact structure parameters and tag chain, exact binary template hash/dimensions/entity/chest contract, seven processor outputs and weight 16, no Taniwha runtime reference, all three loot pools, merchant class/trades/persistence/no natural spawn, client-only renderer/assets, native jukebox song/component, original audio hash, advancement, and packaged-JAR reachability. The existing Stage 9B.1 and Stage 9B.2 contracts remain enforced by the same parity validator.
+The Stage 10A foundation validator checks the registrations, exact structure parameters and tag chain, exact binary template hash/dimensions/entity/chest contract, modern singular template path, seven processor outputs and weight 16, no Taniwha runtime reference, all three loot pools, merchant class/trades/persistence/no natural spawn, client-only renderer/assets, native jukebox song/component, original audio hash, advancement, and packaged-JAR reachability. The existing Stage 9B.1 and Stage 9B.2 contracts remain enforced by the same parity validator.
+
+The dedicated `validateStage10ATemplateRuntime` task additionally uses the actual 1.21.10 `FileToIdConverter`, server-data resource manager, compressed-NBT reader, Structure data fixer, registered block lookup, and `StructureTemplate.load`. It proves the template resolves from `biomemakeover:structure/mushroom_house/house/house_1.nbt`, data-fixes from DataVersion 3337, decodes to 11 x 10 x 11 with 1,098 blocks, one chest, four pot targets, zero jigsaw connectors, one Mushroom Trader, six persisted offers, and the persisted disc offer. This improves resource/runtime-codec coverage without claiming to replace natural-worldgen testing.
+
+## Runtime remediation 1 - missing generated house
+
+The first Prism candidate successfully booted and `/locate structure biomemakeover:mushroom_house` found a Mushroom Fields candidate, but the destination contained no house. The registry, structure set, biome tag, and start pool were therefore reachable.
+
+The exact failure was the Minecraft 1.21 data-directory rename. Final 1.20.1 stores binary templates below `data/<namespace>/structures/` (plural), while the actual 1.21.10 `StructureTemplateManager` initializes `FileToIdConverter("structure", ".nbt")` (singular). The initial port copied the binary unchanged into the legacy plural directory. Consequently `SinglePoolElement` asked the manager for `biomemakeover:mushroom_house/house/house_1`, the manager found no resource, and `getOrCreate` supplied a new empty `StructureTemplate`.
+
+Actual 1.21.10 `JigsawPlacement` constructs the selected `PoolElementStructurePiece` and adds that root piece before connector traversal. A root template with no jigsaw blocks is therefore still supported. The failed candidate had a structure start/root-piece path, but that piece referenced the empty-template fallback and placed no blocks or entities. Its processor, embedded trader NBT, chest NBT, and block palette were never reached. Start-height projection remained the source-correct `absolute: 0` plus `WORLD_SURFACE_WG` calculation and was not implicated.
+
+The remediation moves only the unchanged 5,277-byte binary from legacy `data/biomemakeover/structures/mushroom_house/house/house_1.nbt` to modern `data/biomemakeover/structure/mushroom_house/house/house_1.nbt`. The SHA-256 remains `8CDD1C997FCE691FE7D57FA1EAC863E4A00042EEAAC688B21F2CB49D5A639567`; no NBT field, palette state, block entity, embedded entity, position, offer, or layout changed.
 
 Final implementation validation passed the clean offline build, integrated parity/Stage 10A/Stage 9B contracts, JSON/resource/reference/package checks, loot/advancement/tag/model/texture/sound audits, sidedness checks, changed-path Stage 10B+ leakage scan, Sliding Curse scan, Taniwha runtime-reference scan, and `git diff --check`. Gradle reports `compileTestJava`, `processTestResources`, `testClasses`, and `test` as `NO-SOURCE`/up-to-date because this repository has no Java test source set.
 
@@ -131,4 +143,4 @@ The offline dedicated-server launch was attempted. Loom reached `runServer` but 
 9. Obtain the disc through final gameplay and confirm the `Badger Badger Badger` advancement.
 10. Optionally use an accepted existing world and explore new Mushroom Fields chunks; old generated chunks must remain unchanged.
 
-Stage 10A remains runtime-open until these targeted checks pass.
+Stage 10A remains runtime-open. The shortest next gate is `/locate structure biomemakeover:mushroom_house` in fresh eligible chunks: the complete surface house and its one Mushroom Trader must now be visible before broader Stage 10A testing resumes.

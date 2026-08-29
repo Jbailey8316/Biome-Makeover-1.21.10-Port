@@ -16,6 +16,8 @@
   "jukebox_songs": ["button_mushrooms"],
   "biome_tags": ["has_structure/mushroom_house", "mushroom_fields"],
   "template": {
+    "resource_path": "data/biomemakeover/structure/mushroom_house/house/house_1.nbt",
+    "legacy_resource_path": "data/biomemakeover/structures/mushroom_house/house/house_1.nbt",
     "dimensions": [11, 10, 11],
     "sha256": "8CDD1C997FCE691FE7D57FA1EAC863E4A00042EEAAC688B21F2CB49D5A639567",
     "bytes": 5277,
