@@ -38,9 +38,10 @@
   },
   "excluded_registered_or_source_ids": {
     "historical_dead_unreachable": [
-      "entity_type:blightbat", "entity_type:mushroom_trader", "block_entity_type:directional_data",
+      "entity_type:blightbat", "block_entity_type:directional_data",
       "entity_type:adjudicator_mimic_when_not_reached_by_phase"
     ],
+    "active_final_deferred_by_stage": ["entity_type:mushroom_trader"],
     "historical_reachability_needs_runtime_verification": ["entity_type:toad", "entity_type:tadpole"],
     "historical_dev_only": [
       "dust_devil", "grinding", "reinforcement", "caravanning", "succulents", "large_pots",

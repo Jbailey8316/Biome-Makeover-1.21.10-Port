@@ -310,7 +310,7 @@ The registry contains 21 entity types: 18 distinct mob classes, the non-mob Tumb
 | Lightning Bottle | Reachable by item use; throwable projectile creates lightning/effects using network packets. |
 | Glowfish | Natural Mushroom Fields water-ambient spawn; Salmon-derived movement, bucket capture, custom glowfish renderer/food/loot. |
 | Blight Bat | Registered, rendered, attributed, loot/assets present; natural spawn lines commented out. Spawn egg hidden. Implemented but normally unreachable except commands/templates: DEAD/UNUSED IN NORMAL GAMEPLAY. |
-| Mushroom Trader | Registered villager-like merchant, renderer/trade list/house assets; natural spawn line commented out. Spawn egg exists. Structure-marker reachability needs runtime verification. |
+| Mushroom Trader | Registered villager-like merchant, renderer/trade list/spawn egg; free natural spawn line commented out. Binary template inspection confirms `mushroom_house/house/house_1.nbt` embeds one trader directly, making the entity active survival content through Mushroom Houses. |
 | Scuttler | Natural Badlands animal; flower finding/eating, rattling warning, player avoidance until passive, food-tag temptation/healing/breeding, offspring, tail loot and antidote brewing ingredient. |
 | Ghost | Reachable in Ghost Town spawn overrides and structure markers; neutral anger, flying/charging, Poltergeist interaction, custom immunity tag, sounds and ectoplasm loot. |
 | Cowboy | Reachable by Badlands patrol replacement and a permission-2 developer `/pillager` command; Pillager-derived mounted patrol, leader banner/horse hat, custom renderer/loot. |
@@ -426,7 +426,7 @@ No new terrain biome/noise settings are registered. Environmental ambience chang
    - Ghost spawn override and archaeology/suspicious-red-sand content
 3. Mushroom House
    - vanilla jigsaw type, Mushroom Fields restriction, spacing 12/separation 6
-   - house pool, processor and NBT template; Mushroom Trader integration requires runtime verification
+   - house pool, processor and one 11 x 10 x 11 NBT template; the template directly embeds one Mushroom Trader and one loot chest
 4. Sunken Ruin
    - custom structure type/piece, Swamp restriction, spacing 24/separation 9
    - cluster probability 0.8, large probability 0.6; nine NBT templates
@@ -676,7 +676,7 @@ Suggested later restoration dependency order, without performing restoration: re
 ## U. Areas needing historical runtime verification
 
 1. Exact vanilla inherited Owl shoulder-transfer behavior and shoulder rendering on both loaders.
-2. Mushroom Trader survival reachability from Mushroom House markers despite commented natural spawn.
+2. Mushroom Trader runtime trade/persistence verification after its direct Mushroom House NBT reachability was source-proven during the Stage 10A audit.
 3. Toad/Tadpole initial acquisition and complete metamorphosis flow with `TadpoleMixin`.
 4. Blight Bat reachability through any Mansion/template marker not obvious from Java registration.
 5. Mansion room-marker selection, omitted template files and actual boss/dungeon frequency.

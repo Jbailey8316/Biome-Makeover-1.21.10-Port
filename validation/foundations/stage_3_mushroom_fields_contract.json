@@ -52,5 +52,6 @@
   "deferred_released_ids": [
     "blighted_balsa_boat", "blighted_balsa_chest_boat", "button_mushrooms_music_disk"
   ],
-  "excluded_unreachable_entities": ["blightbat", "mushroom_trader"]
+  "excluded_unreachable_entities": ["blightbat"],
+  "deferred_structure_owned_entities": ["mushroom_trader"]
 }
