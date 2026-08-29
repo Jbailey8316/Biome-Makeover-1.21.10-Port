@@ -1,6 +1,6 @@
 # Stage 10A - Mushroom House, Mushroom Trader, and Button Mushrooms Restoration
 
-Status: **REMEDIATED / AWAITING STRUCTURE RUNTIME RETEST**
+Status: **COMPLETE / RUNTIME ACCEPTED**
 
 Implementation date: 2026-08-29
 
@@ -122,7 +122,15 @@ Actual 1.21.10 `JigsawPlacement` constructs the selected `PoolElementStructurePi
 
 The remediation moves only the unchanged 5,277-byte binary from legacy `data/biomemakeover/structures/mushroom_house/house/house_1.nbt` to modern `data/biomemakeover/structure/mushroom_house/house/house_1.nbt`. The SHA-256 remains `8CDD1C997FCE691FE7D57FA1EAC863E4A00042EEAAC688B21F2CB49D5A639567`; no NBT field, palette state, block entity, embedded entity, position, offer, or layout changed.
 
-Final implementation validation passed the clean offline build, integrated parity/Stage 10A/Stage 9B contracts, JSON/resource/reference/package checks, loot/advancement/tag/model/texture/sound audits, sidedness checks, changed-path Stage 10B+ leakage scan, Sliding Curse scan, Taniwha runtime-reference scan, and `git diff --check`. Gradle reports `compileTestJava`, `processTestResources`, `testClasses`, and `test` as `NO-SOURCE`/up-to-date because this repository has no Java test source set.
+## Prism runtime acceptance
+
+The remediated candidate (`B39E1A5E19A632E36D16DE74ECAB718299A158E3166868ABB76D4FA1F58C51A4`) was accepted in Prism Launcher on Minecraft 1.21.10. `/locate structure biomemakeover:mushroom_house` resolved a real generated surface house rather than the previous empty logical start. The complete house, exactly one embedded Mushroom Trader, trader interaction, mushroom and mushroom-block trades, the Button Mushrooms trade, guaranteed chest disc, coherent secondary chest loot, and visibly processed potted-mushroom outcomes all passed. The pot result proves the local `biomemakeover:replace_selection` processor executes during natural structure placement.
+
+A separately spawned Mushroom Trader also passed rendering, merchant behavior, generated-offer, and general-functionality checks. The Button Mushrooms disc played successfully in a jukebox, stopped normally, and did not loop.
+
+Comparator signal 14 and the `Badger Badger Badger` advancement toast were not separately observed during the manual pass. Their native jukebox-song and advancement definitions remain covered by the Stage 10A static/package contract; inspection found no discrepancy, so neither is held open as a runtime blocker.
+
+Final implementation and runtime-acceptance closure validation passed the clean offline build, integrated parity/Stage 10A/Stage 9B contracts, JSON/resource/reference/package checks, loot/advancement/tag/model/texture/sound audits, sidedness checks, changed-path Stage 10B+ leakage scan, Sliding Curse scan, Taniwha runtime-reference scan, and `git diff --check`. Gradle reports `compileTestJava`, `processTestResources`, `testClasses`, and `test` as `NO-SOURCE`/up-to-date because this repository has no Java test source set.
 
 Final registry totals are 262 blocks, 275 items, 13 entities, 2 block entities, 42 sounds, 2 particles, and 1 local structure processor. Relative to the accepted Stage 9B.2 checkpoint, Stage 10A adds two items (disc and spawn egg), one entity, one sound, and one structure processor; it removes or renames no registry entry.
 
@@ -130,17 +138,4 @@ The candidate JAR packages 279 blockstates, 601 block models, 275 item definitio
 
 The offline dedicated-server launch was attempted. Loom reached `runServer` but could not resolve the already-known uncached `net.fabricmc:fabric-log4j-util:1.0.2` artifact in offline mode, before Minecraft bootstrap. Dependencies were not changed to mask that environment limitation.
 
-## Prism runtime checklist
-
-1. Start a client/world and confirm datapacks decode without registry or worldgen errors.
-2. Run `/locate structure biomemakeover:mushroom_house`, travel to it, and verify a complete surface house in Mushroom Fields with valid rotation and no missing blocks.
-3. Inspect flower pots across a few houses: every result must be one of the seven restored states; visible variation is enough, not a statistical distribution test.
-4. Open the one chest. Confirm mushrooms, coherent secondary loot, and exactly one guaranteed Button Mushrooms disc.
-5. Confirm one Mushroom Trader in a naturally generated house. Trade, save/reload, and verify the same entity/offers remain with no duplicate; confirm its 8-Emerald disc offer.
-6. Observe Mushroom Fields normally; the trader must not have a free biome-spawn source. Static registration already proves the negative contract, so no prolonged waiting test is required.
-7. Use the Mushroom Trader spawn egg. Confirm its two-layer appearance, movement/AI, merchant UI, five common offers, one stew offer, and rare disc path when present.
-8. Inspect the disc item and credit, insert it into a jukebox, verify the original non-looping track, comparator signal 14, and normal stop at about 115 seconds.
-9. Obtain the disc through final gameplay and confirm the `Badger Badger Badger` advancement.
-10. Optionally use an accepted existing world and explore new Mushroom Fields chunks; old generated chunks must remain unchanged.
-
-Stage 10A remains runtime-open. The shortest next gate is `/locate structure biomemakeover:mushroom_house` in fresh eligible chunks: the complete surface house and its one Mushroom Trader must now be visible before broader Stage 10A testing resumes.
+Stage 10A is complete and runtime accepted. Stage 10B and later stages remain unstarted.
