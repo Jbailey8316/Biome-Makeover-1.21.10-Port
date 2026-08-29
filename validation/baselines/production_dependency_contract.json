@@ -10,6 +10,7 @@
   "forbidden_runtime_dependencies": ["taniwha"],
   "allowed_legacy_plural_tag_files": [
     "src/main/resources/data/minecraft/tags/blocks/saplings.json",
-    "src/main/resources/data/minecraft/tags/items/saplings.json"
+    "src/main/resources/data/minecraft/tags/items/saplings.json",
+    "src/main/resources/data/minecraft/tags/blocks/mineable/shovel.json"
   ]
 }

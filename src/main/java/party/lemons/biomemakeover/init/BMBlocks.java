@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.sounds.SoundEvents;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.block.OwlNestBlock;
 import party.lemons.biomemakeover.block.BlackThistleBlock;
@@ -178,7 +179,11 @@ public final class BMBlocks {
     public static final Block POTTED_BLIGHTED_BALSA_SAPLING = potted("potted_blighted_balsa_sapling", BLIGHTED_BALSA_SAPLING, 0);
     public static final Block POTTED_WILD_MUSHROOMS = potted("potted_wild_mushrooms", WILD_MUSHROOMS, 0);
 
-    // Reachable released Badlands content. Suspicious red sand and archaeology rewards remain Stage 10C-owned.
+    // Reachable released Badlands content. Suspicious red sand is the standalone 10C.2 archaeology foundation.
+    public static final Block SUSPICIOUS_RED_SAND = register("suspicious_red_sand", p -> new BrushableBlock(
+        Blocks.RED_SAND, SoundEvents.BRUSH_SAND, SoundEvents.BRUSH_SAND_COMPLETED, p),
+        BlockBehaviour.Properties.of().mapColor(MapColor.SAND).instrument(NoteBlockInstrument.SNARE).strength(0.25F)
+            .sound(SoundType.SUSPICIOUS_SAND).pushReaction(PushReaction.DESTROY));
     public static final Block PAYDIRT = register("paydirt", Block::new, BlockBehaviour.Properties.of().strength(1.4F)
         .requiresCorrectToolForDrops().sound(SoundType.GRAVEL).mapColor(MapColor.TERRACOTTA_GRAY));
     public static final Block TUMBLEWEED = registerNoItem("tumbleweed", Block::new,

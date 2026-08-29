@@ -10,7 +10,7 @@
       "ancient_oak_wood", "black_thistle", "foxglove", "itching_ivy", "mesmerite",
       "mesmerite_slab", "mesmerite_stairs", "mesmerite_wall", "owl_nest", "polished_mesmerite",
       "polished_mesmerite_slab", "polished_mesmerite_stairs", "polished_mesmerite_wall",
-      "stripped_ancient_oak_log", "stripped_ancient_oak_wood", "wild_mushrooms"
+      "stripped_ancient_oak_log", "stripped_ancient_oak_wood", "suspicious_red_sand", "wild_mushrooms"
     ],
     "item": [
       "ancient_oak_button", "ancient_oak_door", "ancient_oak_fence", "ancient_oak_fence_gate",
@@ -19,7 +19,7 @@
       "ancient_oak_wood", "black_thistle", "foxglove", "itching_ivy", "leaf_litter", "mesmerite",
       "mesmerite_slab", "mesmerite_stairs", "mesmerite_wall", "owl_egg", "owl_nest", "owl_spawn_egg",
       "polished_mesmerite", "polished_mesmerite_slab", "polished_mesmerite_stairs",
-      "polished_mesmerite_wall", "stripped_ancient_oak_log", "stripped_ancient_oak_wood", "wild_mushrooms"
+      "polished_mesmerite_wall", "stripped_ancient_oak_log", "stripped_ancient_oak_wood", "suspicious_red_sand", "wild_mushrooms"
     ],
     "entity_type": ["owl"],
     "sound_event": [

@@ -160,3 +160,40 @@ It is now packaged at the native 1.21.10 mob-effect texture path; no item
 model indirection or artwork changes are involved. The Stage 10C.1 validator
 requires the source icon path and non-empty packaged asset. Runtime icon
 acceptance remains pending Prism retest.
+
+## Stage 10C.2 — Ghost Town archaeology foundation
+
+The final 1.20.1 archaeology block is `biomemakeover:suspicious_red_sand`, a
+vanilla `BrushableBlock` which turns into `minecraft:red_sand` after brushing
+and uses the vanilla suspicious-sand brush sounds, sand map colour, snare
+instrument, 0.25 strength, suspicious sound, and destroy push reaction. It
+uses the native 1.21.10 `BrushableBlockEntity` and
+`BlockEntityType.BRUSHABLE_BLOCK` path; no custom block entity, Charmony
+dependency, recipe, or standalone survival acquisition was added. Vanilla
+brush progress, loot-table seed, item payload, save/reload, and falling-block
+handling are retained by the current engine.
+
+The released blockstate, four brushed-stage models/textures, item model, and
+English translation are restored at modern paths. The block item is included
+in the shovel-mineable tag. The archaeology resources are
+`biomemakeover:archaeology/ghost_town` plus its nested horse-armor and junk
+tables, preserving the single-roll released entries (BM pottery sherds,
+iron, gold, Crude Fragment, nested tables, Ghost Town disc, and damaged/
+optionally enchanted leather boots). Assignment to placed blocks is owned by
+Ghost Town processors and remains deferred to Stage 10C.4.
+
+No archaeology advancement is independent of Ghost Town in the final
+contract, so none is restored here. `Invoke-Stage10C2Validation.ps1` checks
+registration, BrushableBlock construction, modern assets, translation,
+archaeology table shape/entries, nested tables, and absence of later-stage
+production leakage. These static checks do not replace runtime brushing,
+falling, and persistence tests.
+
+### 10C.2 Prism test procedure
+
+Use `/give @s biomemakeover:suspicious_red_sand`, place it on a temporary
+platform, brush through the dust stages, and confirm conversion to red sand.
+Save/reload between brush attempts to verify persistence. Archaeology loot
+assignment remains a Stage 10C.4 processor concern; test it only through a
+temporary data-only block-entity setup, without adding debug production
+content.
