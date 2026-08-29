@@ -115,3 +115,22 @@ The Stage 10C.1 validator now checks the NeutralMob contract, anger goal
 gating/persistence, randomized anger duration, invulnerability hook, and the
 exact eight-entry tag. These checks are semantic source-contract guards, not
 a substitute for runtime AI/damage testing.
+
+## Possessed effect audit and icon remediation
+
+The final effect is `biomemakeover:possessed`, a harmful MobEffect with color
+`0x20c09e`. Its intrinsic tick cadence is every ten ticks, with active windows
+`duration % 10 < min(amplifier + 1, 8)`. The released effect's tick invokes
+`PoltergeistHandler` repeatedly (up to `min(amplifier + 1, 20)` actions), so
+that world interaction is Poltergeist-owned and remains deferred to 10C.3;
+there is no independent Ghost targeting, damage, movement, or generic player
+application behavior in 10C.1. The already-restored particles and effect
+application remain accepted, while full gameplay interaction awaits 10C.3.
+
+The Prism failure was a missing status-effect icon. The final asset is the
+unchanged `assets/biomemakeover/textures/mob_effect/possessed.png` (418 bytes,
+SHA-256 `EDFD60E81985F0FD1BE8E234CAAEB1AA6201E6C252254FBCE902646CEBCD75B1`).
+It is now packaged at the native 1.21.10 mob-effect texture path; no item
+model indirection or artwork changes are involved. The Stage 10C.1 validator
+requires the source icon path and non-empty packaged asset. Runtime icon
+acceptance remains pending Prism retest.

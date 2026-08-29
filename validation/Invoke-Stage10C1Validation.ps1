@@ -34,8 +34,12 @@ $expectedImmune = @('minecraft:lava','minecraft:in_wall','minecraft:cactus','min
 if (((@($immune.values) | Sort-Object) -join ',') -ne (($expectedImmune | Sort-Object) -join ',')) { throw 'Ghost immunity tag differs from the exact released eight-entry blacklist' }
 @('ghost_angry.ogg','ghost_charge_1.ogg','ghost_charge_2.ogg','ghost_death_1.ogg','ghost_death_2.ogg','ghost_hurt_1.ogg','ghost_hurt_2.ogg','ghost_hurt_3.ogg','ghost_idle_1.ogg','ghost_idle_2.ogg','ghost_idle_3.ogg') | ForEach-Object { Require-Path "src/main/resources/assets/biomemakeover/sounds/$_" }
 Require-Path 'src/main/resources/assets/biomemakeover/textures/item/ectoplasm.png'
+Require-Path 'src/main/resources/assets/biomemakeover/textures/mob_effect/possessed.png'
 Require-Path 'src/main/resources/assets/biomemakeover/textures/entity/ghost.png'
 if ((Get-Item (Join-Path $Root 'src/main/resources/assets/biomemakeover/textures/entity/ghost.png')).Length -le 0) { throw 'Ghost texture is empty' }
+if ((Get-Item (Join-Path $Root 'src/main/resources/assets/biomemakeover/textures/mob_effect/possessed.png')).Length -le 0) { throw 'Possessed effect icon is empty' }
+$packagedPossessedIcon = Join-Path $Root 'build/resources/main/assets/biomemakeover/textures/mob_effect/possessed.png'
+if (!(Test-Path $packagedPossessedIcon) -or (Get-Item $packagedPossessedIcon).Length -le 0) { throw 'Packaged Possessed effect icon is missing or empty' }
 Require-Text 'src/main/resources/assets/biomemakeover/items/ghost_spawn_egg.json' 'biomemakeover:item/ghost_spawn_egg'
 $generatedGhostModel = Join-Path $Root 'build/resources/main/assets/biomemakeover/models/item/ghost_spawn_egg.json'
 if (!(Test-Path $generatedGhostModel) -or !(Select-String -LiteralPath $generatedGhostModel -Pattern 'minecraft:item/generated' -Quiet)) { throw 'Packaged Ghost spawn-egg model is missing or not native item/generated' }
