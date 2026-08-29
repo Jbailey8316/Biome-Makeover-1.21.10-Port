@@ -7,6 +7,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -29,7 +30,11 @@ public final class GhostEntity extends Monster {
         setNoGravity(true);
     }
     /** The final source registered the vanilla Monster attribute set. */
-    public static AttributeSupplier.Builder createAttributes() { return Monster.createMonsterAttributes(); }
+    public static AttributeSupplier.Builder createAttributes() {
+        // 1.20.1 inherited this through the flying movement stack; 1.21.10's
+        // FlyingMoveControl reads the attribute explicitly.
+        return Monster.createMonsterAttributes().add(Attributes.FLYING_SPEED, 0.6D);
+    }
     @Override protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.0, false));

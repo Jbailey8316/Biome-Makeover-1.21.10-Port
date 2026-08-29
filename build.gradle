@@ -265,7 +265,27 @@ tasks.register('generateStage10AItemResources') {
                 image.setRGB(x, y, (alpha << 24) | (red << 16) | (green << 8) | blue)
             }
             ImageIO.write(image, 'png', new File(textureOutput, 'mushroom_trader_spawn_egg.png'))
+            // Native 1.21.10 no longer resolves minecraft:item/template_spawn_egg
+            // from custom item definitions. Generate the Ghost egg through the
+            // same established tinted vanilla spawn-egg pipeline.
+            int ghostPrimary = 0x566b6b, ghostSecondary = 0xb5fffe
+            def ghost = new BufferedImage(template.width, template.height, BufferedImage.TYPE_INT_ARGB)
+            for (int x = 0; x < template.width; x++) for (int y = 0; y < template.height; y++) {
+                int argb = template.getRGB(x, y), alpha = (argb >>> 24) & 255
+                if (alpha == 0) { ghost.setRGB(x, y, 0); continue }
+                int brightness = (((argb >>> 16) & 255) + ((argb >>> 8) & 255) + (argb & 255)) / 3
+                int target = brightness < 190 ? ghostSecondary : ghostPrimary
+                float shade = brightness / 220F
+                int red = Math.min(255, Math.round(((target >>> 16) & 255) * shade))
+                int green = Math.min(255, Math.round(((target >>> 8) & 255) * shade))
+                int blue = Math.min(255, Math.round((target & 255) * shade))
+                ghost.setRGB(x, y, (alpha << 24) | (red << 16) | (green << 8) | blue)
+            }
+            ImageIO.write(ghost, 'png', new File(textureOutput, 'ghost_spawn_egg.png'))
         }
+        def ghostModel = stage10aGeneratedResources.get().dir('assets/biomemakeover/models/item').file('ghost_spawn_egg.json').asFile
+        ghostModel.parentFile.mkdirs()
+        ghostModel.text = JsonOutput.prettyPrint(JsonOutput.toJson([parent:'minecraft:item/generated', textures:[layer0:'biomemakeover:item/ghost_spawn_egg']])) + System.lineSeparator()
     }
 }
 

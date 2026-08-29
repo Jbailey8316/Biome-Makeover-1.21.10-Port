@@ -44,3 +44,22 @@ Ghost assets, client/common separation, and absence of deferred resources.
 Runtime acceptance is still pending: startup, controlled Ghost spawn, flying
 AI/combat/audio, Ectoplasm drop, save/reload, Phantom Membrane crafting, and
 any fully independent 10C.1 advancement are the required Prism checks.
+
+## 10C.1 first runtime remediation
+
+The first Prism candidate booted, but exposed two deterministic migration
+defects. The Ghost spawn egg item definition referenced the obsolete
+`minecraft:item/template_spawn_egg` model, which is not resolved by the
+1.21.10 item-model path. It now points to a packaged `item/generated` model;
+the existing build-time tinted vanilla spawn-egg pipeline emits the matching
+Ghost texture using the final source colours.
+
+The first `/summon biomemakeover:ghost` also crashed on its first tick because
+1.21.10's `FlyingMoveControl` reads `Attributes.FLYING_SPEED` while the old
+Monster attribute set no longer supplies it implicitly. The modern Ghost
+attribute builder now adds the source-effective flying speed `0.6`; no global
+movement change or exception suppression was introduced.
+
+The remediation is committed as `750fd6b` and remains awaiting Prism runtime
+validation. The shortest retest is: inspect the Ghost egg sprite, summon a
+Ghost, wait 20–30 seconds, and verify stable ticking, rendering, and movement.

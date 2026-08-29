@@ -6,6 +6,7 @@ function Require-Text([string]$p,[string]$pattern) { $f=Join-Path $Root $p; if (
 Require-Text 'src/main/java/party/lemons/biomemakeover/init/BMItems.java' 'ECTOPLASM'
 Require-Text 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java' 'EntityType<GhostEntity>'
 Require-Text 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java' 'GHOST_SPAWN_EGG'
+Require-Text 'src/main/java/party/lemons/biomemakeover/entity/GhostEntity.java' 'Attributes.FLYING_SPEED'
 Require-Text 'src/main/java/party/lemons/biomemakeover/init/BMEffects.java' 'POSSESSED'
 Require-Path 'src/main/resources/data/biomemakeover/recipe/phantom_membrane.json'
 Require-Path 'src/main/resources/data/biomemakeover/loot_table/entities/ghost.json'
@@ -18,6 +19,9 @@ if (($ids | Where-Object { $_ -eq 'biomemakeover:ectoplasm' }).Count -ne 1 -or (
 @('ghost_angry.ogg','ghost_charge_1.ogg','ghost_charge_2.ogg','ghost_death_1.ogg','ghost_death_2.ogg','ghost_hurt_1.ogg','ghost_hurt_2.ogg','ghost_hurt_3.ogg','ghost_idle_1.ogg','ghost_idle_2.ogg','ghost_idle_3.ogg') | ForEach-Object { Require-Path "src/main/resources/assets/biomemakeover/sounds/$_" }
 Require-Path 'src/main/resources/assets/biomemakeover/textures/item/ectoplasm.png'
 Require-Path 'src/main/resources/assets/biomemakeover/textures/entity/ghost.png'
+Require-Text 'src/main/resources/assets/biomemakeover/items/ghost_spawn_egg.json' 'biomemakeover:item/ghost_spawn_egg'
+$generatedGhostModel = Join-Path $Root 'build/resources/main/assets/biomemakeover/models/item/ghost_spawn_egg.json'
+if (!(Test-Path $generatedGhostModel) -or !(Select-String -LiteralPath $generatedGhostModel -Pattern 'minecraft:item/generated' -Quiet)) { throw 'Packaged Ghost spawn-egg model is missing or not native item/generated' }
 $forbidden = @('suspicious_red_sand','ectoplasm_composter','poltergeist','ghost_town','ghosttown','badlands_disc')
 foreach ($needle in $forbidden) { $hits = Get-ChildItem (Join-Path $Root 'src/main/resources') -Recurse -File -ErrorAction SilentlyContinue | Select-String -Pattern $needle -SimpleMatch; if ($hits) { throw "Deferred Stage 10C resource leaked: $needle" } }
 $taniwha = Get-ChildItem (Join-Path $Root 'src/main/java') -Recurse -File | Select-String -Pattern 'taniwha' -SimpleMatch | Where-Object { $_.Path -match 'Ghost|Ectoplasm|Possessed' }; if ($taniwha) { throw 'Taniwha runtime dependency leaked into 10C.1 foundation' }
