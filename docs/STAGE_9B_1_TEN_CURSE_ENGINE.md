@@ -34,3 +34,9 @@ The existing released shield equipment path now enchants its shield through the 
 Use `/enchant @s biomemakeover:<id> <level>` while holding a compatible item, then equip/use it. Test component persistence through save/reload, drop/pickup, containers, dimension travel, enchanted books/anvils, and verify a grindstone preserves every BM curse. Detailed numeric tests are in the implementation report handed to Prism testing.
 
 Runtime-open: every curse effect, per-piece stacking, RNG behavior, persistence, vanilla curse interoperability, Decayed equipment, and dedicated-server bootstrap. The Altar, `BMCursed`, curse selection/upgrading, its block entity/menu/screen/renderer/packets/resources and all Stage 10+ systems remain absent.
+
+## Runtime remediation 1 — maximum-air hook ownership
+
+The first Prism launch exposed a mixin-owner migration error before gameplay began. In 1.21.10, `getMaxAirSupply()I` is declared by `Entity` (`class_1297.method_5748`), not `LivingEntity` (`class_1309`). The named source compiled because the method is inherited, and Loom remapped the selector correctly, but Mixin only searches the declared target class during injection. The required Suffocation injection now lives in `EntityCurseMixin`, matching the final 1.20.1 owner pattern and retaining exact 200/100/66 values plus current-air clamping.
+
+The complete curse hook set was rechecked against the actual 1.21.10 named classes and intermediary mapping table. Packaged selectors are also validated after remapping. The loader's “No refMap loaded” diagnostic is expected for this project: Loom rewrites selectors directly into the remapped production classes, as demonstrated by the failing named selector appearing at runtime as `method_5748`. Existing accepted mixins use the same architecture; no global refmap change is required.

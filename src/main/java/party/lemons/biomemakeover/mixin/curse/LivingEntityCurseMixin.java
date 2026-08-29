@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import party.lemons.biomemakeover.init.BMEnchantments;
 import party.lemons.biomemakeover.item.enchantment.BMCurseEffects;
 
@@ -28,15 +27,4 @@ abstract class LivingEntityCurseMixin {
         return BMCurseEffects.buckledDistance(distance, level);
     }
 
-    @Inject(method = "getMaxAirSupply", at = @At("HEAD"), cancellable = true)
-    private void biomemakeover$limitAir(CallbackInfoReturnable<Integer> cir) {
-        LivingEntity self = (LivingEntity)(Object)this;
-        if (self.tickCount <= 20) return;
-        int level = BMEnchantments.equippedLevel(self, EquipmentSlot.HEAD, BMEnchantments.SUFFOCATION_CURSE);
-        if (level > 0) {
-            int maximum = BMCurseEffects.maximumAir(level);
-            if (self.getAirSupply() > maximum) self.setAirSupply(maximum);
-            cir.setReturnValue(maximum);
-        }
-    }
 }

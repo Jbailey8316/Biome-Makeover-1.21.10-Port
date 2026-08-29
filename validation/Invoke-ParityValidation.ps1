@@ -666,6 +666,55 @@ $curseMixins=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemak
 foreach($required in @('curse.LivingEntityCurseMixin','curse.EntityCurseMixin','curse.BowItemCurseMixin')){if($curseMixins-notmatch[regex]::Escape($required)){Add-Failure "Stage 9B.1 mixin not wired: $required"}}
 if(Test-Path(Join-Path $builtData 'biomemakeover/enchantment/sliding_curse.json')){Add-Failure 'Historical/removed Sliding curse was registered'}
 if((Test-Path(Join-Path $builtData 'biomemakeover/loot_table/blocks/altar.json'))-or(Test-Path(Join-Path $builtData 'biomemakeover/recipe/altar.json'))-or$blocks-contains'altar'-or$items-contains'altar'){Add-Failure 'Stage 9B.2 Altar leaked into Stage 9B.1'}
+
+# Resolve every custom curse hook against the actual named Minecraft classes
+# used by Loom, then verify the production JAR contains the expected remapped
+# intermediary selectors. This catches inherited-method owner mistakes that
+# Java compilation alone cannot detect.
+$minecraftCommonJar=Get-ChildItem (Join-Path $RepositoryRoot '.gradle/loom-cache/minecraftMaven') -Recurse -File -Filter 'minecraft-common-*.jar'|Select-Object -First 1
+if($null-eq$minecraftCommonJar){Add-Failure 'Cannot locate mapped Minecraft common JAR for curse mixin target validation'}else{
+ $savedErrorPreference=$ErrorActionPreference;$ErrorActionPreference='Continue'
+ try{
+  $entityMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.entity.Entity 2>$null|Out-String)
+  $livingMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.entity.LivingEntity 2>$null|Out-String)
+  $bowMethods=(& javap -classpath $minecraftCommonJar.FullName -p -s net.minecraft.world.item.BowItem 2>$null|Out-String)
+ }finally{$ErrorActionPreference=$savedErrorPreference}
+ foreach($contract in @(
+   @('Entity.setRemainingFireTicks','public void setRemainingFireTicks\(int\);[\s\S]*?descriptor: \(I\)V',$entityMethods),
+   @('Entity.updateSwimming','public void updateSwimming\(\);[\s\S]*?descriptor: \(\)V',$entityMethods),
+   @('Entity.getMaxAirSupply','public int getMaxAirSupply\(\);[\s\S]*?descriptor: \(\)I',$entityMethods),
+   @('LivingEntity.tick','public void tick\(\);[\s\S]*?descriptor: \(\)V',$livingMethods),
+   @('LivingEntity.causeFallDamage','public boolean causeFallDamage\(double, float, net\.minecraft\.world\.damagesource\.DamageSource\);[\s\S]*?descriptor: \(DFLnet/minecraft/world/damagesource/DamageSource;\)Z',$livingMethods),
+   @('LivingEntity.calculateFallDamage','protected int calculateFallDamage\(double, float\);[\s\S]*?descriptor: \(DF\)I',$livingMethods),
+   @('BowItem.shootProjectile','protected void shootProjectile\([\s\S]*?descriptor: \(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/projectile/Projectile;IFFFLnet/minecraft/world/entity/LivingEntity;\)V',$bowMethods)
+ )){if($contract[2]-notmatch$contract[1]){Add-Failure "Stage 9B.1 named runtime target missing or descriptor changed: $($contract[0])"}}
+}
+$mappingRoot=Join-Path $env:USERPROFILE '.gradle/caches/fabric-loom/1.21.10'
+$mappingFile=Get-ChildItem $mappingRoot -Recurse -File -Filter 'mappings.tiny' -ErrorAction SilentlyContinue|Where-Object{$_.FullName-like'*layered*'}|Select-Object -First 1
+if($null-eq$mappingFile){$warnings.Add('Intermediary mapping table unavailable; packaged selector audit remains authoritative')}else{
+ $mappingText=Get-Content $mappingFile.FullName -Raw
+ foreach($contract in @(
+  'm\s+\(\)I\s+\S+\s+method_5748\s+getMaxAirSupply',
+  'm\s+\(I\)V\s+\S+\s+method_20803\s+setRemainingFireTicks',
+  'm\s+\(\)V\s+\S+\s+method_5790\s+updateSwimming',
+  'm\s+\(DFL\S+;\)Z\s+\S+\s+method_5747\s+causeFallDamage',
+  'm\s+\(DF\)I\s+\S+\s+method_23329\s+calculateFallDamage',
+  'm\s+\(L\S+;L\S+;IFFFL\S+;\)V\s+\S+\s+method_7763\s+shootProjectile'
+ )){if($mappingText-notmatch$contract){Add-Failure "Stage 9B.1 intermediary mapping contract missing: $contract"}}
+}
+$productionJar=Get-ChildItem (Join-Path $RepositoryRoot 'build/libs') -File -Filter 'biomemakeover-fabric-*.jar'|Where-Object{$_.Name-notlike'*-sources.jar'}|Select-Object -First 1
+if($null-ne$productionJar){
+ Add-Type -AssemblyName System.IO.Compression.FileSystem
+ $zip=[IO.Compression.ZipFile]::OpenRead($productionJar.FullName)
+ try{
+  $selectorContracts=@{
+   'party/lemons/biomemakeover/mixin/curse/EntityCurseMixin.class'=@('method_20803','method_5790','method_5748')
+   'party/lemons/biomemakeover/mixin/curse/LivingEntityCurseMixin.class'=@('method_5773','method_5747','method_23329')
+   'party/lemons/biomemakeover/mixin/curse/BowItemCurseMixin.class'=@('method_7763')
+  }
+  foreach($classPath in $selectorContracts.Keys){$entry=$zip.GetEntry($classPath);if($null-eq$entry){Add-Failure "Packaged curse mixin class missing: $classPath";continue};$stream=$entry.Open();try{$memory=[IO.MemoryStream]::new();$stream.CopyTo($memory);$classText=[Text.Encoding]::ASCII.GetString($memory.ToArray())}finally{$stream.Dispose()};foreach($selector in $selectorContracts[$classPath]){if(-not$classText.Contains($selector)){Add-Failure "Packaged curse mixin selector missing: $classPath -> $selector"}}}
+ }finally{$zip.Dispose()}
+}
 $blackThistleSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/block/BlackThistleBlock.java') -Raw
 if($blackThistleSource -notmatch '(?s)entityInside\(BlockState\s+state,\s*Level\s+level,\s*BlockPos\s+pos,\s*Entity\s+entity,\s*InsideBlockEffectApplier\s+effects,\s*boolean' -or
    $blackThistleSource -notmatch 'DoubleBlockHalf\.UPPER' -or $blackThistleSource -notmatch 'MobEffects\.WEAKNESS,\s*110,\s*0' -or

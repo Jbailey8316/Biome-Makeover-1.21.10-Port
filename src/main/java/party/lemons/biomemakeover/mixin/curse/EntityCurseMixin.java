@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import party.lemons.biomemakeover.init.BMEnchantments;
 import party.lemons.biomemakeover.item.enchantment.BMCurseEffects;
 
@@ -34,6 +35,17 @@ abstract class EntityCurseMixin {
                 && BMEnchantments.equippedLevel(living, EquipmentSlot.FEET, BMEnchantments.DEPTH_CURSE) > 0) {
             living.setSwimming(false);
             ci.cancel();
+        }
+    }
+
+    @Inject(method = "getMaxAirSupply", at = @At("HEAD"), cancellable = true)
+    private void biomemakeover$limitAir(CallbackInfoReturnable<Integer> cir) {
+        if (!((Object)this instanceof LivingEntity living) || living.tickCount <= 20) return;
+        int level = BMEnchantments.equippedLevel(living, EquipmentSlot.HEAD, BMEnchantments.SUFFOCATION_CURSE);
+        if (level > 0) {
+            int maximum = BMCurseEffects.maximumAir(level);
+            if (living.getAirSupply() > maximum) living.setAirSupply(maximum);
+            cir.setReturnValue(maximum);
         }
     }
 
