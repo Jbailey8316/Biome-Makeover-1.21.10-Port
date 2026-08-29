@@ -1,6 +1,6 @@
 # Stage 10B - Sunken Ruins, Swamp Jives, and Witch Hat Restoration
 
-Status: **IMPLEMENTED / AWAITING RUNTIME VALIDATION**
+Status: **COMPLETE / RUNTIME ACCEPTED**
 
 Implementation date: 2026-08-29
 
@@ -110,7 +110,7 @@ The implementation candidate passes the clean offline build, integrated parity v
 8. Smoke-test that ordinary Witches do not have an active supplemental Hat drop and no Witch quest UI/system appears.
 9. In existing worlds, test only newly generated eligible chunks; already-generated chunks remain unchanged and no retro-generation occurs.
 
-Stage 10B is implemented and awaits this runtime matrix. Stage 10C is not started.
+Stage 10B is complete and runtime accepted. Stage 10C is not started.
 
 ## Runtime remediation - Sinking Feeling
 
@@ -124,4 +124,12 @@ No structure generation, loot, Witch, Hat, disc, renderer, or other Stage 10B be
 /advancement revoke @s only biomemakeover:biomemakeover/sunken_ruin
 ```
 
-This remediation remains local and awaits final Prism validation.
+This remediation was runtime accepted in Prism: away from a ruin, Sinking Feeling did not award; entering/intersecting the generated Sunken Ruin awarded it. The accepted candidate hash was `E82406AE2077696792AEA807005574CD8FC5840A4DFC27E9C19DC67DF3B43725`.
+
+## Final Prism acceptance
+
+The final disposable-world pass confirmed successful bootstrap, `/locate structure biomemakeover:sunken_ruin`, physical ruin generation at the located position, acceptable swamp terrain fitting, chest markers and coherent observed loot (Charcoal, Awkward Potion, and Red Mushrooms), Witch markers and real Witches, and clean save/reload. The Witch Hat equipped and rendered with the accepted four-tier model; `Which Witch?` fired only on actual head-slot equip. Swamp Jives acquisition, `Swamp Shuffle`, jukebox playback, and comparator signal 1 all passed. The earlier Sinking Feeling login failure was absent after the plural `structures` remediation, and entry into the generated ruin awarded the advancement.
+
+The full weighted loot table, exact rare-entry probabilities, non-looping configured song duration, and other deterministic contracts remain covered by static/package validation; they are not overstated as individually observed natural rolls or manually timed playback. Optional terrain-blending/overgrowth polish is recorded only as a future **MYTHAS ENHANCEMENT CANDIDATE** and was not implemented.
+
+Stage 10B is **COMPLETE / RUNTIME ACCEPTED**. Stage 12A primary Witch-death Hat loot and Witch quests remain deferred, and Stage 10C remains not started.
