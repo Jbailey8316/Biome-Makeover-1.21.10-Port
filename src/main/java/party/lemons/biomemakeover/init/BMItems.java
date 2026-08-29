@@ -31,6 +31,7 @@ import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.item.GlowfishBucketItem;
 import party.lemons.biomemakeover.item.LightningBottleItem;
 import party.lemons.biomemakeover.item.StuntPowderItem;
+import party.lemons.biomemakeover.item.EctoplasmItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.Rarity;
@@ -108,6 +109,7 @@ public final class BMItems {
         p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(BUTTON_MUSHROOMS_SONG)));
     public static final Item SWAMP_JIVES_MUSIC_DISK = register("swamp_jives_music_disk",
         p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(SWAMP_JIVES_SONG)));
+    public static final Item ECTOPLASM = register("ectoplasm", EctoplasmItem::new);
 
     private BMItems() {}
 

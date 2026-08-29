@@ -30,12 +30,15 @@ import party.lemons.biomemakeover.entity.LightningBottleEntity;
 import party.lemons.biomemakeover.entity.RootlingEntity;
 import party.lemons.biomemakeover.entity.MothEntity;
 import party.lemons.biomemakeover.entity.MushroomTraderEntity;
+import party.lemons.biomemakeover.entity.GhostEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
     public static final TagKey<EntityType<?>> OWL_TARGETS = TagKey.create(Registries.ENTITY_TYPE, BiomeMakeover.id("owl_targets"));
     public static final TagKey<DamageType> TUMBLEWEED_IMMUNE_DAMAGE = TagKey.create(Registries.DAMAGE_TYPE,
         BiomeMakeover.id("tumbleweed_immune_to"));
+    public static final TagKey<DamageType> GHOST_IMMUNE_DAMAGE = TagKey.create(Registries.DAMAGE_TYPE,
+        BiomeMakeover.id("ghost_immune_to"));
     public static final EntityType<OwlEntity> OWL = registerEntity(
         "owl",
         EntityType.Builder.<OwlEntity>of(OwlEntity::new, MobCategory.CREATURE)
@@ -84,6 +87,9 @@ public final class BMEntities {
         EntityType.Builder.<MushroomTraderEntity>of(MushroomTraderEntity::new, MobCategory.AMBIENT)
             .sized(0.6F, 1.95F).clientTrackingRange(12));
     public static final Item MUSHROOM_TRADER_SPAWN_EGG = registerSpawnEgg("mushroom_trader_spawn_egg", MUSHROOM_TRADER);
+    public static final EntityType<GhostEntity> GHOST = registerEntity("ghost",
+        EntityType.Builder.<GhostEntity>of(GhostEntity::new, MobCategory.MONSTER).sized(.6F,1.95F).canSpawnFarFromPlayer().clientTrackingRange(12));
+    public static final Item GHOST_SPAWN_EGG = registerSpawnEgg("ghost_spawn_egg", GHOST);
 
     private BMEntities() {
     }
@@ -116,6 +122,7 @@ public final class BMEntities {
         FabricDefaultAttributeRegistry.register(ROOTLING, RootlingEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(MOTH, MothEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(MUSHROOM_TRADER, MushroomTraderEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(GHOST, GhostEntity.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,
@@ -135,6 +142,7 @@ public final class BMEntities {
             entries.accept(DECAYED_SPAWN_EGG); entries.accept(DRAGONFLY_SPAWN_EGG); entries.accept(LIGHTNING_BUG_SPAWN_EGG);
             entries.accept(ROOTLING_SPAWN_EGG); entries.accept(MOTH_SPAWN_EGG);
             entries.accept(MUSHROOM_TRADER_SPAWN_EGG);
+            entries.accept(GHOST_SPAWN_EGG);
         });
         SpawnPlacements.register(ROOTLING, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             (type, level, reason, pos, random) -> level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)

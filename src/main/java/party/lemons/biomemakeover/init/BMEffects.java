@@ -10,6 +10,7 @@ import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import party.lemons.biomemakeover.BiomeMakeover;
+import party.lemons.biomemakeover.mobeffect.PossessedEffect;
 
 public final class BMEffects {
     public static final Holder<MobEffect> SHOCKED = register("shocked",
@@ -17,6 +18,7 @@ public final class BMEffects {
             Attributes.MAX_HEALTH, BiomeMakeover.id("effect.shocked.max_health"), -2.0,
             AttributeModifier.Operation.ADD_VALUE));
     public static final Holder<MobEffect> NOCTURNAL = register("nocturnal", new NocturnalEffect());
+    public static final Holder<MobEffect> POSSESSED = register("possessed", new PossessedEffect());
 
     private BMEffects() {}
 

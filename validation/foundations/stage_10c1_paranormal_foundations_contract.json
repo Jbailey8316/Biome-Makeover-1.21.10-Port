@@ -1,0 +1,9 @@
+{
+  "items": ["ectoplasm"],
+  "spawn_eggs": ["ghost_spawn_egg"],
+  "entities": ["ghost"],
+  "sounds": ["ghost_angry", "ghost_charge", "ghost_death", "ghost_hurt", "ghost_idle"],
+  "recipes": ["phantom_membrane"],
+  "loot_tables": ["entities/ghost"],
+  "mob_effects": ["possessed"]
+}

@@ -167,4 +167,13 @@
   ,"advancements.biomemakeover.swamp_disc.description":"Collect the Music Disc from the Swamp biome"
   ,"advancements.biomemakeover.witch_hat.title":"Which Witch?"
   ,"advancements.biomemakeover.witch_hat.description":"Wear a witch hat"
+  ,"entity.biomemakeover.ghost":"Ghost"
+  ,"item.biomemakeover.ectoplasm":"Ectoplasm"
+  ,"item.biomemakeover.ghost_spawn_egg":"Ghost Spawn Egg"
+  ,"effect.biomemakeover.possessed":"Possessed"
+  ,"subtitles.biomemakeover.ghost.idle":"Ghost murmurs"
+  ,"subtitles.biomemakeover.ghost.hurt":"Ghost hurts"
+  ,"subtitles.biomemakeover.ghost.death":"Ghost dies"
+  ,"subtitles.biomemakeover.ghost.charge":"Ghost charges"
+  ,"subtitles.biomemakeover.ghost.angry":"Ghost cries"
 }

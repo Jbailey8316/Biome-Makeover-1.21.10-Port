@@ -50,6 +50,11 @@ public final class BMSounds {
     public static final SoundEvent ALTAR_CURSING = register("altar_cursing");
     public static final SoundEvent BUTTON_MUSHROOMS = register("button_mushrooms");
     public static final SoundEvent SWAMP_JIVES = register("swamp_jives");
+    public static final SoundEvent GHOST_IDLE = register("ghost_idle");
+    public static final SoundEvent GHOST_HURT = register("ghost_hurt");
+    public static final SoundEvent GHOST_DEATH = register("ghost_death");
+    public static final SoundEvent GHOST_CHARGE = register("ghost_charge");
+    public static final SoundEvent GHOST_ANGRY = register("ghost_angry");
 
     private BMSounds() {}
 

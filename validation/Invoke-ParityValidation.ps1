@@ -43,6 +43,7 @@ $stage9aPath = Join-Path $RepositoryRoot 'validation/foundations/stage_9a_functi
 $stage9b2Path = Join-Path $RepositoryRoot 'validation/foundations/stage_9b2_altar_contract.json'
 $stage10aPath = Join-Path $RepositoryRoot 'validation/foundations/stage_10a_mushroom_house_contract.json'
 $stage10bPath = Join-Path $RepositoryRoot 'validation/foundations/stage_10b_sunken_ruin_contract.json'
+$stage10c1Path = Join-Path $RepositoryRoot 'validation/foundations/stage_10c1_paranormal_foundations_contract.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
 $dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
@@ -57,6 +58,7 @@ $stage9a = Get-Content $stage9aPath -Raw | ConvertFrom-Json
 $stage9b2 = Get-Content $stage9b2Path -Raw | ConvertFrom-Json
 $stage10a = Get-Content $stage10aPath -Raw | ConvertFrom-Json
 $stage10b = Get-Content $stage10bPath -Raw | ConvertFrom-Json
+$stage10c1 = Get-Content $stage10c1Path -Raw | ConvertFrom-Json
 
 foreach ($setName in @('blocks','no_item_blocks','standalone_items','entities','spawn_eggs','configured_features','placed_features')) {
     $values = @($stage3.$setName)
@@ -81,6 +83,7 @@ foreach ($setName in @('blocks_with_items','no_item_blocks','items','recipes','a
 foreach ($setName in @('blocks_with_items','block_entities','menus','sounds','recipes','loot_tables','advancements','item_tags','enchantment_tags','textures')) { $values=@($stage9b2.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 9B.2 contract set $setName"} }
 foreach ($setName in @('items','entities','spawn_eggs','sounds','structure_processors','structures','structure_sets','template_pools','processor_lists','templates','loot_tables','advancements','jukebox_songs','biome_tags')) { $values=@($stage10a.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 10A contract set $setName"} }
 foreach ($setName in @('items','sounds','structure_types','structure_pieces','structures','structure_sets','templates','loot_tables','advancements','jukebox_songs','biome_tags','item_tags')) { $values=@($stage10b.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 10B contract set $setName"} }
+foreach ($setName in @('items','spawn_eggs','entities','sounds','recipes','loot_tables','mob_effects')) { $values=@($stage10c1.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 10C.1 contract set $setName"} }
 
 foreach ($property in $baseline.registries.PSObject.Properties) {
     $values = @($property.Value)
@@ -112,9 +115,9 @@ foreach ($deferred in $stage3.deferred_released_ids) {
 }
 
 Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks) + @($stage9a.no_item_blocks) + @($stage9b2.blocks_with_items))) $blocks
-Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items) + @($stage9b2.blocks_with_items) + @($stage10a.items) + @($stage10a.spawn_eggs) + @($stage10b.items))) $items
-Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities) + @($stage8.entities) + @($stage10a.entities))) $entities
-Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds) + @($stage9b2.sounds) + @($stage10a.sounds) + @($stage10b.sounds))) $sounds
+Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items) + @($stage9b2.blocks_with_items) + @($stage10a.items) + @($stage10a.spawn_eggs) + @($stage10b.items) + @($stage10c1.items) + @($stage10c1.spawn_eggs))) $items
+Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities) + @($stage8.entities) + @($stage10a.entities) + @($stage10c1.entities))) $entities
+Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds) + @($stage9b2.sounds) + @($stage10a.sounds) + @($stage10b.sounds) + @($stage10c1.sounds))) $sounds
 Assert-EqualSet 'particle registry IDs' (Sorted (@($baseline.registries.particle_type) + @($stage5.particles) + @($stage6.particles))) $particles
 Assert-EqualSet 'block-entity registry IDs' (Sorted (@($stage5.block_entities) + @($stage9b2.block_entities))) $blockEntities
 Assert-EqualSet 'structure-processor registry IDs' @($stage10a.structure_processors) $structureProcessors
@@ -245,7 +248,7 @@ if (Test-Path $builtAssets) {
             $modelPath = Join-Path $builtAssets ("models/" + $_.Groups[1].Value + '.json')
             if (-not (Test-Path $modelPath)) { Add-Failure "Missing internal model reference $($_.Groups[0].Value) from $($resourceFile.FullName.Substring($RepositoryRoot.Length + 1))" }
         }
-        if ($raw -match 'minecraft:item/template_spawn_egg') {
+        if ($resourceFile.FullName -match '[\\/]models[\\/]' -and $raw -match 'minecraft:item/template_spawn_egg') {
             Add-Failure "Obsolete 1.20 spawn-egg parent in $($resourceFile.FullName.Substring($RepositoryRoot.Length + 1))"
         }
         if ($resourceFile.FullName -match '[\\/]models[\\/]') {
@@ -624,7 +627,6 @@ if($mothSource -notmatch 'getLastHurtByMob\(\)==null' -or $mothSource -notmatch 
 $mothTag=Join-Path $builtData 'biomemakeover/tags/block/moth_attractive.json';if(-not(Test-Path $mothTag) -or (Get-Content $mothTag -Raw) -notmatch 'biomemakeover:moth_blossom'){Add-Failure 'Moth-attractive block tag is missing Moth Blossom'}
 foreach($recipe in @('roasted_bulbus_root','roasted_bulbus_root_from_smoking','roasted_bulbus_root_from_campfire_cooking','blue_dye_from_blue_bud','brown_dye_from_brown_bud','cyan_dye_from_cyan_bud','gray_dye_from_gray_bud','light_blue_dye_from_light_blue_bud','purple_dye_from_purple_bud')){if(-not(Test-Path (Join-Path $builtData "biomemakeover/recipe/$recipe.json"))){Add-Failure "Stage 8 recipe missing: $recipe"}}
 foreach($color in @('blue','brown','cyan','gray','light_blue','purple')){$recipePath=Join-Path $builtData "biomemakeover/recipe/${color}_dye_from_${color}_bud.json";if(Test-Path $recipePath){$recipe=Get-Content -Raw $recipePath|ConvertFrom-Json;if($recipe.type-ne'minecraft:crafting_shaped'-or@($recipe.pattern).Count-ne1-or$recipe.pattern[0]-ne'#'-or$recipe.key.'#'-ne"biomemakeover:${color}_bud"){Add-Failure "Stage 8 bud dye recipe lost released one-slot shaped contract: $color"}}}
-if($entities -contains 'ghost' -or (Test-Path (Join-Path $builtData 'biomemakeover/recipe/phantom_membrane.json'))){Add-Failure 'Later Ectoplasm progression leaked into Stage 8'}
 $stuntRecipePath=Join-Path $builtData 'biomemakeover/recipe/stunt_powder.json'
 if(-not(Test-Path $stuntRecipePath)){Add-Failure 'Stage 9A Stunt Powder recipe missing'}else{$recipe=Get-Content -Raw $stuntRecipePath|ConvertFrom-Json;$ingredients=@($recipe.ingredients|ForEach-Object{if($_-is[string]){$_}else{$_.item}}|Sort-Object);if($recipe.type-ne'minecraft:crafting_shapeless'-or($ingredients -join ',')-ne'biomemakeover:bulbus_root,biomemakeover:illunite_shard'-or$recipe.result.id-ne'biomemakeover:stunt_powder'-or$recipe.result.count-ne2){Add-Failure 'Stage 9A Stunt Powder recipe differs from released contract'}}
 $stuntSource=Get-Content (Join-Path $RepositoryRoot 'src/main/java/party/lemons/biomemakeover/item/StuntPowderItem.java') -Raw
@@ -643,7 +645,7 @@ $peatLoot=Join-Path $builtData 'biomemakeover/loot_table/blocks/peat_composter.j
 $peatAdvancement=Join-Path $builtData 'biomemakeover/advancement/biomemakeover/create_peat.json';if(-not(Test-Path $peatAdvancement)){Add-Failure 'Stage 9A create_peat advancement missing'}else{$adv=Get-Content -Raw $peatAdvancement|ConvertFrom-Json;if($adv.criteria.create_peat.trigger-ne'biomemakeover:peat_compost'){Add-Failure 'Stage 9A create_peat advancement trigger differs from released contract'}}
 $mixinConfig=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.mixins.json') -Raw
 foreach($required in @('AgeableMobMixin','PointedDripstoneBlockMixin','ComposterBlockMixin')){if($mixinConfig-notmatch$required){Add-Failure "Stage 9A mixin not wired: $required"}}
-foreach($forbidden in @('ectoplasm','poltergeist','tapestry','crude_fragment','cladded_stone','stone_golem','adjudicator','mimic')){if($items-contains$forbidden-or$entities-contains$forbidden-or$blocks-contains$forbidden){Add-Failure "Later-stage registry leaked through Stage 10B: $forbidden"}}
+foreach($forbidden in @('poltergeist','tapestry','crude_fragment','cladded_stone','stone_golem','adjudicator','mimic')){if($items-contains$forbidden-or$entities-contains$forbidden-or$blocks-contains$forbidden){Add-Failure "Later-stage registry leaked through current scope: $forbidden"}}
 
 # Stage 9B.1: dynamic-registry definitions and exact source-level hooks for all
 # ten final curses. The removed Sliding curse stays absent.
