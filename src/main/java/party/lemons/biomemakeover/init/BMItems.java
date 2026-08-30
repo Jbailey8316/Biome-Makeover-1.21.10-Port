@@ -36,6 +36,12 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.tags.TagKey;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorMaterials;
+import net.minecraft.world.item.equipment.ArmorType;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
 import party.lemons.biomemakeover.util.loot.BetterLootTableReference;
@@ -51,6 +57,10 @@ public final class BMItems {
         Registries.JUKEBOX_SONG, BiomeMakeover.id("ghost_town"));
     public static final ResourceKey<JukeboxSong> RED_ROSE_SONG = ResourceKey.create(
         Registries.JUKEBOX_SONG, BiomeMakeover.id("red_rose"));
+    private static final ArmorMaterial CLADDED_MATERIAL = new ArmorMaterial(
+        ArmorMaterials.IRON.durability(), ArmorMaterials.IRON.defense(), 15,
+        ArmorMaterials.LEATHER.equipSound(), 0.0F, 0.07F, ItemTags.REPAIRS_LEATHER_ARMOR,
+        EquipmentAssets.createId("cladded"));
     public static final LootPoolEntryType BETTER_LOOTTABLE_REFERENCE = Registry.register(
         BuiltInRegistries.LOOT_POOL_ENTRY_TYPE,
         ResourceKey.create(Registries.LOOT_POOL_ENTRY_TYPE, BiomeMakeover.id("loot_table")),
@@ -122,6 +132,7 @@ public final class BMItems {
         p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(SWAMP_JIVES_SONG)));
     public static final Item ECTOPLASM = register("ectoplasm", EctoplasmItem::new);
     public static final Item CRUDE_FRAGMENT = register("crude_fragment");
+    public static final Item CRUDE_CLADDING = register("crude_cladding");
     public static final Item REFINED_POTTERY_SHERD = register("refined_pottery_sherd");
     public static final Item WORKER_POTTERY_SHERD = register("worker_pottery_sherd");
     public static final Item WHINNY_POTTERY_SHERD = register("whinny_pottery_sherd");
@@ -129,6 +140,14 @@ public final class BMItems {
         p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(GHOST_TOWN_SONG)));
     public static final Item RED_ROSE_MUSIC_DISK = register("red_rose_music_disk",
         p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(RED_ROSE_SONG)));
+    public static final Item CLADDED_HELMET = register("cladded_helmet",
+        p -> new Item(p.humanoidArmor(CLADDED_MATERIAL, ArmorType.HELMET)));
+    public static final Item CLADDED_CHESTPLATE = register("cladded_chestplate",
+        p -> new Item(p.humanoidArmor(CLADDED_MATERIAL, ArmorType.CHESTPLATE)));
+    public static final Item CLADDED_LEGGINGS = register("cladded_leggings",
+        p -> new Item(p.humanoidArmor(CLADDED_MATERIAL, ArmorType.LEGGINGS)));
+    public static final Item CLADDED_BOOTS = register("cladded_boots",
+        p -> new Item(p.humanoidArmor(CLADDED_MATERIAL, ArmorType.BOOTS)));
 
     public static final ResourceKey<DecoratedPotPattern> CRACKED_PATTERN = ResourceKey.create(
         Registries.DECORATED_POT_PATTERN, BiomeMakeover.id("cracked_pottery_pattern"));
@@ -184,6 +203,8 @@ public final class BMItems {
             entries.accept(WORKER_POTTERY_SHERD); entries.accept(WHINNY_POTTERY_SHERD);
             entries.accept(GHOST_TOWN_MUSIC_DISK);
             entries.accept(RED_ROSE_MUSIC_DISK);
+            entries.accept(CLADDED_HELMET); entries.accept(CLADDED_CHESTPLATE);
+            entries.accept(CLADDED_LEGGINGS); entries.accept(CLADDED_BOOTS);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

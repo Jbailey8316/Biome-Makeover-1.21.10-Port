@@ -1,0 +1,10 @@
+{
+  "layers": {
+    "humanoid": [
+      {"texture": "biomemakeover:cladded"}
+    ],
+    "humanoid_leggings": [
+      {"texture": "biomemakeover:cladded"}
+    ]
+  }
+}

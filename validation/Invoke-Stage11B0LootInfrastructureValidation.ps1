@@ -17,6 +17,8 @@ $allTables = @(Get-ChildItem -LiteralPath $allLootRoot -Recurse -Filter '*.json'
 $customTables = @($allTables | Where-Object { (Get-Content -LiteralPath $_.FullName -Raw).IndexOf('biomemakeover:loot_table', [StringComparison]::Ordinal) -ge 0 })
 if ($allTables.Count -ne 50) { throw "Unexpected packaged BM loot table count: $($allTables.Count) (expected 50)" }
 if ($customTables.Count -ne 5) { throw "Unexpected custom loot-table reference usage: $($customTables.Count) files (expected 5)" }
-$deferred = @('biomemakeover:cladded_boots','biomemakeover:cladded_chestplate','biomemakeover:cladded_leggings','biomemakeover:crude_cladding')
+$requiredItems = @('CLADDED_BOOTS','CLADDED_CHESTPLATE','CLADDED_LEGGINGS','CRUDE_CLADDING')
+foreach ($item in $requiredItems) { if ($itemText.IndexOf("$item =", [StringComparison]::Ordinal) -lt 0) { throw "Mansion loot dependency registration missing: $item" } }
+$deferred = @()
 Write-Output "STAGE 11B.0 LOOT INFRASTRUCTURE PASSED (custom entry registered; BM loot tables=$($allTables.Count); custom-reference files=$($customTables.Count); Mansion tables=$($expected.Count); deferred item dependencies=$($deferred.Count))"
 Write-Output ('DEFERRED_DEPENDENCIES: ' + ($deferred -join ', '))
