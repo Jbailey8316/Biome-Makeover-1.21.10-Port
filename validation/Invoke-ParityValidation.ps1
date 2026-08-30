@@ -45,6 +45,7 @@ $stage10aPath = Join-Path $RepositoryRoot 'validation/foundations/stage_10a_mush
 $stage10bPath = Join-Path $RepositoryRoot 'validation/foundations/stage_10b_sunken_ruin_contract.json'
 $stage10c1Path = Join-Path $RepositoryRoot 'validation/foundations/stage_10c1_paranormal_foundations_contract.json'
 $stage10c3Path = Join-Path $RepositoryRoot 'validation/foundations/stage_10c3_interactive_contract.json'
+$stage10c4Path = Join-Path $RepositoryRoot 'validation/foundations/stage_10c4_ghost_town_contract.json'
 $baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
 $null = Get-Content $historicalPath -Raw | ConvertFrom-Json
 $dependencyContract = Get-Content $dependencyPath -Raw | ConvertFrom-Json
@@ -61,6 +62,7 @@ $stage10a = Get-Content $stage10aPath -Raw | ConvertFrom-Json
 $stage10b = Get-Content $stage10bPath -Raw | ConvertFrom-Json
 $stage10c1 = Get-Content $stage10c1Path -Raw | ConvertFrom-Json
 $stage10c3 = Get-Content $stage10c3Path -Raw | ConvertFrom-Json
+$stage10c4 = Get-Content $stage10c4Path -Raw | ConvertFrom-Json
 
 foreach ($setName in @('blocks','no_item_blocks','standalone_items','entities','spawn_eggs','configured_features','placed_features')) {
     $values = @($stage3.$setName)
@@ -87,6 +89,7 @@ foreach ($setName in @('items','entities','spawn_eggs','sounds','structure_proce
 foreach ($setName in @('items','sounds','structure_types','structure_pieces','structures','structure_sets','templates','loot_tables','advancements','jukebox_songs','biome_tags','item_tags')) { $values=@($stage10b.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 10B contract set $setName"} }
 foreach ($setName in @('items','spawn_eggs','entities','sounds','recipes','loot_tables','mob_effects')) { $values=@($stage10c1.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 10C.1 contract set $setName"} }
 foreach ($setName in @('blocks_with_items','no_item_blocks','items','sounds','particles','block_entities','recipes','loot_tables','advancements')) { $values=@($stage10c3.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 10C.3 contract set $setName"} }
+foreach ($setName in @('items','sounds','structures','structure_sets','template_pools','processor_lists','templates','loot_tables','advancements','jukebox_songs','biome_tags')) { $values=@($stage10c4.$setName);if((Sorted $values).Count-ne$values.Count){Add-Failure "Duplicate ID in Stage 10C.4 contract set $setName"} }
 
 foreach ($property in $baseline.registries.PSObject.Properties) {
     $values = @($property.Value)
@@ -118,12 +121,12 @@ foreach ($deferred in $stage3.deferred_released_ids) {
 }
 
 Assert-EqualSet 'block registry IDs' (Sorted (@($baseline.registries.block) + @($stage3.blocks) + @($stage3.no_item_blocks) + @($stage4.registry.blocks_with_items) + @($stage4.registry.no_item_blocks) + @($stage5.blocks_with_items) + @($stage5.no_item_blocks) + @($stage6.blocks_with_items) + @($stage6.no_item_blocks) + @($stage8.no_item_blocks) + @($stage9a.no_item_blocks) + @($stage9b2.blocks_with_items) + @($stage10c3.blocks_with_items) + @($stage10c3.no_item_blocks))) $blocks
-Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items) + @($stage9b2.blocks_with_items) + @($stage10a.items) + @($stage10a.spawn_eggs) + @($stage10b.items) + @($stage10b.spawn_eggs) + @($stage10c1.items) + @($stage10c1.spawn_eggs) + @($stage10c3.blocks_with_items) + @($stage10c3.items))) $items
+Assert-EqualSet 'item registry IDs' (Sorted (@($baseline.registries.item) + @($stage3.blocks) + @($stage3.standalone_items) + @($stage3.spawn_eggs) + @($stage4.registry.blocks_with_items) + @($stage4.registry.items) + @($stage4.registry.spawn_eggs) + @($stage5.blocks_with_items) + @($stage5.special_items) + @($stage5.spawn_eggs) + @($stage6.blocks_with_items) + @($stage6.special_items) + @($stage8.items) + @($stage8.spawn_eggs) + @($stage9a.items) + @($stage9b2.blocks_with_items) + @($stage10a.items) + @($stage10a.spawn_eggs) + @($stage10b.items) + @($stage10b.spawn_eggs) + @($stage10c1.items) + @($stage10c1.spawn_eggs) + @($stage10c3.blocks_with_items) + @($stage10c3.items) + @($stage10c4.items))) $items
 Assert-EqualSet 'entity registry IDs' (Sorted (@($baseline.registries.entity_type) + @($stage3.entities) + @($stage4.registry.entities) + @($stage5.entities) + @($stage8.entities) + @($stage10a.entities) + @($stage10c1.entities))) $entities
-Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds) + @($stage9b2.sounds) + @($stage10a.sounds) + @($stage10b.sounds) + @($stage10c1.sounds) + @($stage10c3.sounds))) $sounds
+Assert-EqualSet 'sound registry IDs' (Sorted (@($baseline.registries.sound_event) + @($stage4.registry.sounds) + @($stage5.sounds) + @('illunite_break','illunite_hit','illunite_place','illunite_step') + @($stage8.sounds) + @($stage9b2.sounds) + @($stage10a.sounds) + @($stage10b.sounds) + @($stage10c1.sounds) + @($stage10c3.sounds) + @($stage10c4.sounds))) $sounds
 Assert-EqualSet 'particle registry IDs' (Sorted (@($baseline.registries.particle_type) + @($stage5.particles) + @($stage6.particles) + @($stage10c3.particles))) $particles
 Assert-EqualSet 'block-entity registry IDs' (Sorted (@($stage5.block_entities) + @($stage9b2.block_entities) + @($stage10c3.block_entities))) $blockEntities
-Assert-EqualSet 'structure-processor registry IDs' @($stage10a.structure_processors) $structureProcessors
+Assert-EqualSet 'structure-processor registry IDs' (Sorted (@($stage10a.structure_processors) + @('ghost_town_loot','fill_bookshelves','suspicious_block_replacement'))) $structureProcessors
 
 $configured = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/configured_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/configured_feature') | Where-Object { $_ -ne 'dark_forest/owl_nest' })
 $placed = Sorted (@(Resource-Ids 'src/main/resources/data/biomemakeover/worldgen/placed_feature') + @(Resource-Ids 'build/resources/main/data/biomemakeover/worldgen/placed_feature') | Where-Object { $_ -ne 'dark_forest/owl_nest' })
@@ -648,7 +651,7 @@ $peatLoot=Join-Path $builtData 'biomemakeover/loot_table/blocks/peat_composter.j
 $peatAdvancement=Join-Path $builtData 'biomemakeover/advancement/biomemakeover/create_peat.json';if(-not(Test-Path $peatAdvancement)){Add-Failure 'Stage 9A create_peat advancement missing'}else{$adv=Get-Content -Raw $peatAdvancement|ConvertFrom-Json;if($adv.criteria.create_peat.trigger-ne'biomemakeover:peat_compost'){Add-Failure 'Stage 9A create_peat advancement trigger differs from released contract'}}
 $mixinConfig=Get-Content (Join-Path $RepositoryRoot 'src/main/resources/biomemakeover.mixins.json') -Raw
 foreach($required in @('AgeableMobMixin','PointedDripstoneBlockMixin','ComposterBlockMixin')){if($mixinConfig-notmatch$required){Add-Failure "Stage 9A mixin not wired: $required"}}
-foreach($forbidden in @('tapestry','crude_fragment','cladded_stone','stone_golem','adjudicator','mimic')){if($items-contains$forbidden-or$entities-contains$forbidden-or$blocks-contains$forbidden){Add-Failure "Later-stage registry leaked through current scope: $forbidden"}}
+foreach($forbidden in @('tapestry','cladded_stone','stone_golem','adjudicator','mimic')){if($items-contains$forbidden-or$entities-contains$forbidden-or$blocks-contains$forbidden){Add-Failure "Later-stage registry leaked through current scope: $forbidden"}}
 
 # Stage 9B.1: dynamic-registry definitions and exact source-level hooks for all
 # ten final curses. The removed Sliding curse stays absent.

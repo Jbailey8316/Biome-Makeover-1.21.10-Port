@@ -43,7 +43,7 @@ if (!(Test-Path $packagedPossessedIcon) -or (Get-Item $packagedPossessedIcon).Le
 Require-Text 'src/main/resources/assets/biomemakeover/items/ghost_spawn_egg.json' 'biomemakeover:item/ghost_spawn_egg'
 $generatedGhostModel = Join-Path $Root 'build/resources/main/assets/biomemakeover/models/item/ghost_spawn_egg.json'
 if (!(Test-Path $generatedGhostModel) -or !(Select-String -LiteralPath $generatedGhostModel -Pattern 'minecraft:item/generated' -Quiet)) { throw 'Packaged Ghost spawn-egg model is missing or not native item/generated' }
-$forbidden = @('ghosttown','badlands_disc')
-foreach ($needle in $forbidden) { $hits = Get-ChildItem (Join-Path $Root 'src/main/resources') -Recurse -File -ErrorAction SilentlyContinue | Select-String -Pattern $needle -SimpleMatch; if ($hits) { throw "Deferred Stage 10C resource leaked: $needle" } }
+# Stage 10C.4 activates Ghost Town resources; this regression validator now
+# checks the 10C.1 contract without treating the later bounded stage as leak.
 $taniwha = Get-ChildItem (Join-Path $Root 'src/main/java') -Recurse -File | Select-String -Pattern 'taniwha' -SimpleMatch | Where-Object { $_.Path -match 'Ghost|Ectoplasm|Possessed' }; if ($taniwha) { throw 'Taniwha runtime dependency leaked into 10C.1 foundation' }
 Write-Output 'STAGE 10C.1 VALIDATION PASSED'

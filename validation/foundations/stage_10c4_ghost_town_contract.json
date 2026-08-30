@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "items": ["crude_fragment", "ghost_town_music_disk", "refined_pottery_sherd", "worker_pottery_sherd", "whinny_pottery_sherd"],
+  "sounds": ["ghost_town"],
+  "structures": ["ghost_town"],
+  "structure_sets": ["ghost_towns"],
+  "template_pools": ["ghosttown/centers", "ghosttown/roads", "ghosttown/buildings", "ghosttown/decoration"],
+  "processor_lists": ["ghosttown_building", "ghosttown_roads"],
+  "templates": [
+    "ghosttown/centers/crossroads_01",
+    "ghosttown/decoration/barrel_decoration", "ghosttown/decoration/bell_decoration_1", "ghosttown/decoration/cactus_decoration",
+    "ghosttown/decoration/hay_decoration", "ghosttown/decoration/hay_decoration_2", "ghosttown/decoration/hay_well_decoration",
+    "ghosttown/decoration/lamp_decoration", "ghosttown/decoration/lamp_decoration_2", "ghosttown/decoration/tree_decoration_1",
+    "ghosttown/decoration/tree_decoration_2", "ghosttown/decoration/trough_decoration", "ghosttown/decoration/water_tower_1",
+    "ghosttown/decoration/water_tower_2", "ghosttown/decoration/water_tower_3", "ghosttown/decoration/well_decoration",
+    "ghosttown/houses/house_large_01", "ghosttown/houses/house_large_02", "ghosttown/houses/house_large_03", "ghosttown/houses/house_large_04", "ghosttown/houses/house_large_05",
+    "ghosttown/houses/house_medium_01", "ghosttown/houses/house_medium_02", "ghosttown/houses/house_medium_03", "ghosttown/houses/house_medium_04", "ghosttown/houses/house_medium_05", "ghosttown/houses/house_medium_06", "ghosttown/houses/house_medium_07",
+    "ghosttown/houses/house_small_01", "ghosttown/houses/house_small_02", "ghosttown/houses/house_small_03", "ghosttown/houses/house_small_04", "ghosttown/houses/house_small_05", "ghosttown/houses/house_small_06", "ghosttown/houses/house_small_07", "ghosttown/houses/house_small_08", "ghosttown/houses/house_small_09", "ghosttown/houses/house_small_10", "ghosttown/houses/house_small_11", "ghosttown/houses/house_small_12", "ghosttown/houses/house_small_13", "ghosttown/houses/house_small_14", "ghosttown/houses/house_small_15",
+    "ghosttown/roads/street_01", "ghosttown/roads/street_02", "ghosttown/roads/street_03", "ghosttown/roads/street_04", "ghosttown/roads/street_05", "ghosttown/roads/street_06", "ghosttown/roads/street_07"
+  ],
+  "loot_tables": [
+    "ghost_town/loot_0", "ghost_town/loot_1", "ghost_town/loot_2",
+    "archaeology/ghost_town", "archaeology/ghost_town_junk", "archaeology/ghost_town_horse_armor"
+  ],
+  "advancements": ["biomemakeover/ghost_town", "biomemakeover/badlands_disc", "biomemakeover/compost_soul_soil", "biomemakeover/poltergeist", "biomemakeover/going_ghost"],
+  "jukebox_songs": ["ghost_town"],
+  "biome_tags": ["has_structure/ghost_town"],
+  "road_roots": ["street_01", "street_02", "street_03", "street_04", "street_05", "street_06", "street_07"],
+  "placement": {"spacing": 32, "separation": 12, "salt": 6969, "spread_type": "linear"},
+  "structure": {"size": 3, "heightmap": "WORLD_SURFACE_WG", "step": "surface_structures", "terrain_adaptation": "beard_thin", "max_distance_from_center": 80, "start_pool": "biomemakeover:ghosttown/centers"}
+}

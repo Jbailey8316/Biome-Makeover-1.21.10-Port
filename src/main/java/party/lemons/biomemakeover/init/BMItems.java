@@ -36,6 +36,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 
 public final class BMItems {
     public static final TagKey<Item> CURSE_FUEL = TagKey.create(Registries.ITEM, BiomeMakeover.id("curse_fuel"));
@@ -44,6 +45,8 @@ public final class BMItems {
         Registries.JUKEBOX_SONG, BiomeMakeover.id("button_mushrooms"));
     public static final ResourceKey<JukeboxSong> SWAMP_JIVES_SONG = ResourceKey.create(
         Registries.JUKEBOX_SONG, BiomeMakeover.id("swamp_jives"));
+    public static final ResourceKey<JukeboxSong> GHOST_TOWN_SONG = ResourceKey.create(
+        Registries.JUKEBOX_SONG, BiomeMakeover.id("ghost_town"));
     public static final Item LEAF_LITTER = register("leaf_litter");
     public static final Item OWL_EGG = register("owl_egg");
     private static final FoodProperties GLOWFISH_FOOD = new FoodProperties(1, 0.1F, true);
@@ -110,8 +113,34 @@ public final class BMItems {
     public static final Item SWAMP_JIVES_MUSIC_DISK = register("swamp_jives_music_disk",
         p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(SWAMP_JIVES_SONG)));
     public static final Item ECTOPLASM = register("ectoplasm", EctoplasmItem::new);
+    public static final Item CRUDE_FRAGMENT = register("crude_fragment");
+    public static final Item REFINED_POTTERY_SHERD = register("refined_pottery_sherd");
+    public static final Item WORKER_POTTERY_SHERD = register("worker_pottery_sherd");
+    public static final Item WHINNY_POTTERY_SHERD = register("whinny_pottery_sherd");
+    public static final Item GHOST_TOWN_MUSIC_DISK = register("ghost_town_music_disk",
+        p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(GHOST_TOWN_SONG)));
+
+    public static final ResourceKey<DecoratedPotPattern> CRACKED_PATTERN = ResourceKey.create(
+        Registries.DECORATED_POT_PATTERN, BiomeMakeover.id("cracked_pottery_pattern"));
+    public static final ResourceKey<DecoratedPotPattern> REFINED_PATTERN = ResourceKey.create(
+        Registries.DECORATED_POT_PATTERN, BiomeMakeover.id("refined_pottery_pattern"));
+    public static final ResourceKey<DecoratedPotPattern> WORKER_PATTERN = ResourceKey.create(
+        Registries.DECORATED_POT_PATTERN, BiomeMakeover.id("worker_pottery_pattern"));
+    public static final ResourceKey<DecoratedPotPattern> WHINNY_PATTERN = ResourceKey.create(
+        Registries.DECORATED_POT_PATTERN, BiomeMakeover.id("whinny_pottery_pattern"));
 
     private BMItems() {}
+
+    static {
+        Registry.register(BuiltInRegistries.DECORATED_POT_PATTERN, CRACKED_PATTERN,
+            new DecoratedPotPattern(BiomeMakeover.id("cracked_pottery_pattern")));
+        Registry.register(BuiltInRegistries.DECORATED_POT_PATTERN, REFINED_PATTERN,
+            new DecoratedPotPattern(BiomeMakeover.id("refined_pottery_pattern")));
+        Registry.register(BuiltInRegistries.DECORATED_POT_PATTERN, WORKER_PATTERN,
+            new DecoratedPotPattern(BiomeMakeover.id("worker_pottery_pattern")));
+        Registry.register(BuiltInRegistries.DECORATED_POT_PATTERN, WHINNY_PATTERN,
+            new DecoratedPotPattern(BiomeMakeover.id("whinny_pottery_pattern")));
+    }
 
     private static Item register(String name) {
         return register(name, Item::new);
@@ -141,6 +170,9 @@ public final class BMItems {
             entries.accept(LIGHT_BLUE_BUD); entries.accept(PURPLE_BUD); entries.accept(ROOTLING_SEEDS);
             entries.accept(BULBUS_ROOT); entries.accept(ROASTED_BULBUS_ROOT); entries.accept(MOTH_SCALES); entries.accept(STUNT_POWDER);
             entries.accept(BUTTON_MUSHROOMS_MUSIC_DISK); entries.accept(SWAMP_JIVES_MUSIC_DISK);
+            entries.accept(CRUDE_FRAGMENT); entries.accept(REFINED_POTTERY_SHERD);
+            entries.accept(WORKER_POTTERY_SHERD); entries.accept(WHINNY_POTTERY_SHERD);
+            entries.accept(GHOST_TOWN_MUSIC_DISK);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

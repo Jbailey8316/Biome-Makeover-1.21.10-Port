@@ -2,6 +2,6 @@
   "required": true,
   "package": "party.lemons.biomemakeover.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["MyceliumBlockMixin", "PatrolSpawnerMixin", "PatrolSpawnerInvoker", "HorseMixin", "BoneMealItemMixin", "HoeItemMixin", "LightningBoltInvoker", "AgeableMobMixin", "PointedDripstoneBlockMixin", "ComposterBlockMixin", "InputContainerMixin_EctoCompost", "ItemCombinerMenuAccessor", "AnvilMenuMixin", "BlockEntityTypeAccessor", "DaylightDetectorBlockInvoker", "curse.LivingEntityCurseMixin", "curse.EntityCurseMixin", "curse.BowItemCurseMixin"],
+ "mixins": ["MyceliumBlockMixin", "PatrolSpawnerMixin", "PatrolSpawnerInvoker", "HorseMixin", "BoneMealItemMixin", "HoeItemMixin", "LightningBoltInvoker", "AgeableMobMixin", "PointedDripstoneBlockMixin", "ComposterBlockMixin", "InputContainerMixin_EctoCompost", "ItemCombinerMenuAccessor", "AnvilMenuMixin", "BlockEntityTypeAccessor", "DaylightDetectorBlockInvoker", "DecoratedPotPatternsMixin", "curse.LivingEntityCurseMixin", "curse.EntityCurseMixin", "curse.BowItemCurseMixin"],
   "injectors": {"defaultRequire": 1}
 }

@@ -21,6 +21,7 @@
   "altar_cursing":{"sounds":["biomemakeover:altar_cursing"]},
   "button_mushrooms":{"sounds":[{"name":"biomemakeover:button_mushrooms","stream":true}]},
   "swamp_jives":{"sounds":[{"name":"biomemakeover:swamp_jives","stream":true}]},
+  "ghost_town":{"sounds":[{"name":"biomemakeover:ghost_town","stream":true}]},
   "ghost_charge":{"subtitle":"subtitles.biomemakeover.ghost.charge","sounds":["biomemakeover:ghost_charge_1","biomemakeover:ghost_charge_2"]},
   "ghost_death":{"subtitle":"subtitles.biomemakeover.ghost.death","sounds":["biomemakeover:ghost_death_1","biomemakeover:ghost_death_2"]},
   "ghost_hurt":{"subtitle":"subtitles.biomemakeover.ghost.hurt","sounds":["biomemakeover:ghost_hurt_1","biomemakeover:ghost_hurt_2","biomemakeover:ghost_hurt_3"]},

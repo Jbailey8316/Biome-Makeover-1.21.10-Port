@@ -45,6 +45,6 @@ public final class BiomeMakeover implements ModInitializer {
         BMEntities.initialize();
         BMWorldgen.initialize();
         BMWorldEvents.initialize();
-        LOGGER.info("Biome Makeover Stage 10B Sunken Ruin restoration candidate loaded.");
+        LOGGER.info("Biome Makeover Stage 10C.4 Ghost Town integration candidate loaded.");
     }
 }

@@ -48,12 +48,7 @@ if (@($particle.textures).Count -ne 11) { throw 'Poltergeist particle must conta
 $sounds = Get-Content (Join-Path $resources 'assets/biomemakeover/sounds.json') -Raw | ConvertFrom-Json
 if (!$sounds.poltergeist_action -or !$sounds.poltergeist_toggle) { throw 'Poltergeist sound events missing' }
 
-# Scope guard: later Ghost Town/archaeology systems must not be activated here.
-$forbidden = @('ghost_town/','ghosttown','ghost_town_music_disk')
-foreach ($needle in $forbidden) {
-    $hits = Get-ChildItem $resources -Recurse -File -ErrorAction SilentlyContinue | Select-String -Pattern $needle -SimpleMatch
-    if ($hits) { throw "Deferred Stage 10C.4 resource leaked into 10C.3: $needle" }
-}
-if (Get-ChildItem (Join-Path $resources 'data/biomemakeover/structure') -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match 'ghost[_-]?town' }) { throw 'Ghost Town structure resources leaked into 10C.3' }
-if (Get-ChildItem (Join-Path $resources 'data/biomemakeover/worldgen/structure') -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'ghost[_-]?town' }) { throw 'Ghost Town worldgen leaked into 10C.3' }
+# Stage 10C.4 activates Ghost Town resources. This regression validator now
+# checks the 10C.3 contract while the dedicated 10C.4 validator owns the
+# later-stage scope and graph checks.
 Write-Output 'STAGE 10C.3 VALIDATION PASSED'

@@ -15,7 +15,7 @@ target is the final released Biome Makeover 1.20.1 source and resources.
   generic application path is introduced here.
 * `biomemakeover:ghost` is a manually testable flying Monster foundation with
   the final dimensions/category, no natural biome spawn registration, flying
-  navigation, no-gravity/no-fall movement, hostile targeting, and original
+  navigation, no-gravity/no-fall movement, neutral-until-provoked targeting, and original
   ambient/hurt/death sound events. Ghost Town marker spawning is deferred to
   10C.4. The renderer is client-only and uses the modern render-state API with
   the original Ghost texture.
@@ -319,3 +319,110 @@ and effect behavior remain stable. Ectoplasm Composter should be tested by
 filling a vanilla composter, applying Ectoplasm, completing it, and extracting
 Soul Soil. Stage 10C.3 is implemented but awaits this runtime validation;
 Ghost Town, archaeology assignment, and other 10C.4 systems remain deferred.
+
+## Stage 10C.4 — Ghost Town integration
+
+This implementation restores the final released Ghost Town integration as a
+data-driven vanilla `minecraft:jigsaw` structure. The canonical IDs are
+`biomemakeover:ghost_town`, structure set
+`biomemakeover:ghost_towns`, biome tag
+`#biomemakeover:has_structure/ghost_town`, and start pool
+`biomemakeover:ghosttown/centers`. The structure uses size 3,
+`WORLD_SURFACE_WG`, `beard_thin`, `surface_structures`, absolute start height
+0, max distance 80, and the released expansion hack. Its monster spawn
+override is Ghost, weight 150, groups 2–4, with piece bounding boxes. The
+linear random-spread set is spacing 32, separation 12, salt 6969 and has no
+exclusion zone or free Badlands spawn registration.
+The active biome chain is explicit: `has_structure/ghost_town` replaces to
+`#biomemakeover:badlands`, whose tag includes `#minecraft:is_badlands` and the
+optional `#c:badlands` convention tag.
+
+The transitive graph has four pools: `ghosttown/centers`, `roads`,
+`buildings`, and `decoration`. The center pool retains seven equally weighted
+rigid road roots (`street_01` through `street_07`). The graph contains one
+center, seven roads, fifteen decorations, and twenty-seven houses, plus the
+three water-tower elements in the building pool: 50 final NBT templates in
+total. The audit prose called this 40 (and described 17 decorations), but its
+own inventory and the released resource tree contain 50; source bytes and the
+complete graph are preserved. All templates are packaged at the required
+singular 1.21.10 paths under
+`data/biomemakeover/structure/ghosttown/`; no plural duplicate is packaged.
+The source and packaged SHA-256 bytes are compared by the Stage 10C.4
+validator, and the Java validator DataFixes and loads all 50 through the
+current `StructureTemplate` implementation (mixed source DataVersions 2580,
+2584, 3098, and 3454).
+
+The two released processor lists are active. `ghosttown_building` assigns one
+of `ghost_town/loot_0`, `_1`, or `_2` to barrels, fills/replaces chiseled
+bookshelves using the released weighted ranges, randomizes brick variants,
+and performs suspicious replacement. `ghosttown_roads` changes water to oak
+planks, changes dirt paths to red sand at the released 30% rule, and performs
+suspicious replacement. The two Taniwha processor behaviors are local
+`GhostTownLootProcessor`, `FillBookshelvesProcessor`, and
+`SuspiciousBlockReplacementProcessor` registrations; Taniwha is not a runtime
+dependency. During graph audit two released pool filenames were dangling:
+`bell_decoration` and `tree_decoration`; the actual released files are
+`bell_decoration_1` and `tree_decoration_1`, so the modern pool references are
+narrowly corrected to those existing templates rather than shipping a
+dangling graph.
+
+The three ordinary chest tables retain the final source pools, rolls,
+damaged/enchantable tools, books, resources, Cowboy Hat, and Ghost Town disc.
+The complete one-roll archaeology table is now active and resolves its final
+dependencies: the three pottery sherds, iron, gold, Crude Fragment, nested
+horse armour and junk tables, Ghost Town disc, and optionally enchanted
+damaged leather boots. The nested table codec uses modern `value` fields and
+the historical `minecraft:chain` entry is translated to
+`minecraft:iron_chain`; no dummy or vanilla substitute BM items were added.
+Crude Fragment is registered only as the archaeology item dependency; Crude
+cladding/progression and all later Crude systems remain deferred. The existing
+Cracked Brick item is also mapped to the released cracked pottery pattern;
+the three new sherds use native 1.21.10 `DecoratedPotPattern` registrations
+and the item-to-pattern mixin.
+
+`ghost_town_music_disk` is a rare native 1.21.10 jukebox item using the
+original `ghost_town.ogg`, the `biomemakeover:ghost_town` sound event, and
+song metadata with duration 270 seconds and comparator output 15 (the final
+record constructor's comparator value). It is in the
+music-disc tag, ordinary Ghost Town/archaeology loot, and the `badlands_disc`
+inventory advancement. The advancement chain is restored with modern icon
+and structure predicate forms: `ghost_town` (inside the generated structure),
+`badlands_disc`, `compost_soul_soil`, `poltergeist`, and `going_ghost`, with
+the released parent relationships. The former Poltergeist deferral is now
+resolved because its Ghost Town parent exists; no temporary parent was added.
+
+### Stage 10C.4 validation and runtime gate
+
+`Invoke-Stage10C4Validation.ps1` validates the packaged JAR graph, exact
+template count and byte identity, singular paths, all pool/fallback/template
+and processor references, structure/set placement, active loot item IDs and
+nested tables, `iron_chain`, sherd/pattern registrations, disc/song assets,
+advancement parent and modern `structures` predicates, and Taniwha absence.
+`Stage10C4TemplateRuntimeValidator` additionally DataFixes and loads every
+packaged template through the 1.21.10 structure-template code. Existing
+Stage 10A, 10B, 10C.1–10C.3, and integrated parity checks remain regression
+gates.
+
+The shortest Prism gate is: create a fresh disposable world, confirm clean
+bootstrap, run `/locate structure biomemakeover:ghost_town`, teleport above
+the result and verify a complete town (roads, buildings, decorations) is
+physically present; inspect barrels and released loot, Ghosts, suspicious red
+sand and brush it for archaeology loot (RNG-dependent), obtain sherds/Crude
+Fragment/disc, play the disc and check comparator output 1, inspect each
+relevant advancement, then save/reload and confirm no errors. Commands
+`/place structure biomemakeover:ghost_town` (when supported),
+`/give @s biomemakeover:refined_pottery_sherd`,
+`/give @s biomemakeover:worker_pottery_sherd`,
+`/give @s biomemakeover:whinny_pottery_sherd`,
+`/give @s biomemakeover:crude_fragment`, and
+`/give @s biomemakeover:ghost_town_music_disk` isolate deterministic checks.
+Runtime acceptance remains pending this Prism pass; Stage 10C.4 is
+implemented but not closed.
+
+## Scope boundary and deferred work
+
+No Mansion, Witch quest/primary Witch Hat drop, Crude gameplay, Stone Golem,
+Adjudicator, Mimic, Beach/Stage 13, historical Badlands revival, free-roaming
+Badlands Ghost spawning, terrain-blending polish, or Mythas enhancement is
+included. Existing-world compatibility relies on normal new-chunk structure
+generation; no retro-generation is introduced.

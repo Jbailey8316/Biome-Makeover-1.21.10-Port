@@ -46,6 +46,7 @@ def stage8GeneratedResources = layout.buildDirectory.dir('generated/stage8Resour
 def stage10aGeneratedResources = layout.buildDirectory.dir('generated/stage10aResources')
 def stage10aValidatorClasses = layout.buildDirectory.dir('classes/java/stage10aValidator')
 def stage10bAuditClasses = layout.buildDirectory.dir('classes/java/stage10bAudit')
+def stage10c4TemplateValidatorClasses = layout.buildDirectory.dir('classes/java/stage10c4TemplateValidator')
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
     outputs.dir(stage3GeneratedResources)
@@ -327,9 +328,26 @@ tasks.register('validateStage10BTemplateRuntime', JavaExec) {
     args file('build/resources/main').absolutePath, '--packaged'
 }
 
+tasks.register('compileStage10C4TemplateValidator', JavaCompile) {
+    dependsOn tasks.named('classes')
+    source file('validation/java/Stage10C4TemplateRuntimeValidator.java')
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath
+    destinationDirectory = stage10c4TemplateValidatorClasses
+    options.release = 21
+}
+
+tasks.register('validateStage10C4TemplateRuntime', JavaExec) {
+    dependsOn tasks.named('compileStage10C4TemplateValidator')
+    dependsOn tasks.named('processResources')
+    classpath = files(stage10c4TemplateValidatorClasses) + sourceSets.main.output + sourceSets.main.compileClasspath
+    mainClass = 'Stage10C4TemplateRuntimeValidator'
+    args file('build/resources/main').absolutePath, '--packaged'
+}
+
 tasks.named('check') {
     dependsOn tasks.named('validateStage10ATemplateRuntime')
     dependsOn tasks.named('validateStage10BTemplateRuntime')
+    dependsOn tasks.named('validateStage10C4TemplateRuntime')
 }
 
 processResources {
@@ -685,7 +703,6 @@ processResources {
         include 'data/biomemakeover/tags/damage_type/scuttler_immune_to.json'
         include 'data/biomemakeover/tags/damage_type/tumbleweed_immune_to.json'
         include 'data/biomemakeover/tags/worldgen/biome/spawns_tumbleweed.json'
-        include 'data/biomemakeover/tags/worldgen/biome/badlands.json'
         eachFile { details ->
             details.path = details.path.replace('/loot_tables/','/loot_table/').replace('/recipes/','/recipe/')
                 .replace('/advancements/','/advancement/').replace('/tags/blocks/','/tags/block/').replace('/tags/items/','/tags/item/')
@@ -925,7 +942,9 @@ processResources {
             stage4Contract.registry.spawn_eggs + stage4Contract.registry.entities + stage5Contract.blocks_with_items +
             stage5Contract.no_item_blocks + stage5Contract.special_items + stage5Contract.spawn_eggs + stage5Contract.entities) as Set
         allowed.add('altar')
-        allowed.addAll(['button_mushrooms_music_disk', 'mushroom_trader', 'mushroom_trader_spawn_egg'])
+        allowed.addAll(['button_mushrooms_music_disk', 'swamp_jives_music_disk', 'ghost_town_music_disk',
+                        'mushroom_trader', 'mushroom_trader_spawn_egg', 'crude_fragment',
+                        'refined_pottery_sherd', 'worker_pottery_sherd', 'whinny_pottery_sherd'])
         def minecraftTags = destinationDir.toPath().resolve('data/minecraft/tags').toFile()
         if (minecraftTags.exists()) {
             fileTree(minecraftTags).matching { include '**/*.json' }.files.each { tagFile ->
