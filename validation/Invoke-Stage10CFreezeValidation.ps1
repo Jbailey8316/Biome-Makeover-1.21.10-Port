@@ -93,7 +93,7 @@ try {
         (Get-Content $_.FullName -Raw) -replace '(?m)^\s*(//|/\*|\*).*$', ''
     }) -join "`n"
     if ($java -match '(?i)taniwha') { throw 'Stage 10C freeze detected Taniwha runtime source leakage' }
-    foreach ($forbidden in @('mansion','witch_quest','stone_golem','adjudicator','mimic','enchanted_totem')) {
+    foreach ($forbidden in @('witch_quest','stone_golem','adjudicator','mimic','enchanted_totem')) {
         if ($java -match "(?i)register.*$forbidden") { throw "Stage 10C freeze detected later-stage registration: $forbidden" }
     }
 

@@ -58,6 +58,8 @@ import party.lemons.biomemakeover.block.PeatComposterBlock;
 import party.lemons.biomemakeover.block.AltarBlock;
 import party.lemons.biomemakeover.block.EctoplasmComposterBlock;
 import party.lemons.biomemakeover.block.PoltergeistBlock;
+import party.lemons.biomemakeover.worldgen.mansion.MansionDirectionalDataBlock;
+import party.lemons.biomemakeover.worldgen.mansion.MansionWallTapestryBlock;
 
 public final class BMBlocks {
     public static final net.minecraft.tags.TagKey<Block> MOTH_ATTRACTIVE = net.minecraft.tags.TagKey.create(
@@ -189,6 +191,30 @@ public final class BMBlocks {
         Blocks.RED_SAND, SoundEvents.BRUSH_SAND, SoundEvents.BRUSH_SAND_COMPLETED, p),
         BlockBehaviour.Properties.of().mapColor(MapColor.SAND).instrument(NoteBlockInstrument.SNARE).strength(0.25F)
             .sound(SoundType.SUSPICIOUS_SAND).pushReaction(PushReaction.DESTROY));
+    // Structural Mansion palette dependencies (11A.2). Items and gameplay
+    // for these later-owned blocks remain deferred.
+    public static final Block CLADDED_STONE = registerNoItem("cladded_stone", Block::new,
+        BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 6.0F).sound(SoundType.STONE));
+    public static final Block DIRECTIONAL_DATA = registerNoItem("directional_data", MansionDirectionalDataBlock::new,
+        BlockBehaviour.Properties.of().strength(-1.0F).noLootTable());
+    public static final Block POTTED_ANCIENT_OAK_SAPLING = registerNoItem("potted_ancient_oak_sapling", Block::new,
+        BlockBehaviour.Properties.of().strength(0.0F).noCollision().noOcclusion());
+    public static final Block WHITE_WALL_TAPESTRY = mansionWallTapestry("white");
+    public static final Block ORANGE_WALL_TAPESTRY = mansionWallTapestry("orange");
+    public static final Block MAGENTA_WALL_TAPESTRY = mansionWallTapestry("magenta");
+    public static final Block LIGHT_BLUE_WALL_TAPESTRY = mansionWallTapestry("light_blue");
+    public static final Block YELLOW_WALL_TAPESTRY = mansionWallTapestry("yellow");
+    public static final Block LIME_WALL_TAPESTRY = mansionWallTapestry("lime");
+    public static final Block PINK_WALL_TAPESTRY = mansionWallTapestry("pink");
+    public static final Block GRAY_WALL_TAPESTRY = mansionWallTapestry("gray");
+    public static final Block LIGHT_GRAY_WALL_TAPESTRY = mansionWallTapestry("light_gray");
+    public static final Block CYAN_WALL_TAPESTRY = mansionWallTapestry("cyan");
+    public static final Block PURPLE_WALL_TAPESTRY = mansionWallTapestry("purple");
+    public static final Block BLUE_WALL_TAPESTRY = mansionWallTapestry("blue");
+    public static final Block BROWN_WALL_TAPESTRY = mansionWallTapestry("brown");
+    public static final Block GREEN_WALL_TAPESTRY = mansionWallTapestry("green");
+    public static final Block RED_WALL_TAPESTRY = mansionWallTapestry("red");
+    public static final Block BLACK_WALL_TAPESTRY = mansionWallTapestry("black");
     public static final Block POLTERGEIST = register("poltergeist", PoltergeistBlock::new,
         BlockBehaviour.Properties.of().strength(1.0F).mapColor(MapColor.WARPED_WART_BLOCK)
             .sound(SoundType.LODESTONE).lightLevel(state -> state.getValue(PoltergeistBlock.ENABLED) ? 7 : 0)
@@ -284,6 +310,11 @@ public final class BMBlocks {
 
     private static ResourceKey<ConfiguredFeature<?, ?>> configured(String path) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE, BiomeMakeover.id(path));
+    }
+    private static Block mansionWallTapestry(String color) {
+        return registerNoItem(color + "_wall_tapestry", MansionWallTapestryBlock::new,
+            BlockBehaviour.Properties.of().mapColor(MapColor.WOOL).strength(1.0F).noCollision().noOcclusion()
+                .pushReaction(PushReaction.DESTROY));
     }
 
     private static BlockBehaviour.Properties fungusPlant(MapColor color) {

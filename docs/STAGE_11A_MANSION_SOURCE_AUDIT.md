@@ -322,3 +322,38 @@ absence of active Mansion templates/worldgen, absence of marker gameplay, and
 Taniwha-free scope. The clean offline build, Stage 10C freeze validator,
 integrated parity validator, and `git diff --check` pass. The known offline
 dedicated-server `fabric-log4j-util:1.0.2` cache limitation is unchanged.
+
+## Stage 11A.2 — Mansion template migration / palette substrate
+
+**Status:** implemented and locally validated; natural Mansion generation
+remains intentionally unreachable until 11A.3.
+
+All **168** released Mansion NBT files are packaged byte-for-byte at the
+modern singular path `data/biomemakeover/structure/mansion/`. The three
+released orphans remain present and inactive. `Invoke-Stage11A2Validation.ps1`
+compares every source and packaged SHA-256 and enforces the complete corpus.
+
+The real Minecraft 1.21.10 DataFix and `StructureTemplate.load` harness loads
+all 168 packaged templates successfully (133,292 stored blocks total), with
+palette states and block-state properties resolving. Source DataVersions
+remain 2584 (157), 2586 (8), and 3104 (3); DataFix upgrades are in-memory and
+no NBT bytes were mutated.
+
+Palette audit found 19 non-vanilla IDs absent from the frozen port. Bounded
+structural registrations now provide canonical `cladded_stone`,
+`directional_data`, `potted_ancient_oak_sapling`, and all 16
+`*_wall_tapestry` blocks. These state-bearing blocks exist only to decode the
+released templates; items, renderers, block entities, marker actions, and
+broader Crude/Tapestry gameplay remain deferred to 11B/Stage 12. No
+substitutions or dummy IDs were introduced.
+
+Directional Data uses a modern directional substrate preserving serialized
+`FACING` state for later marker context. Functional marker dispatch remains
+inert. Template lookup, rotation, and piece construction now have a real
+packaged corpus, while structure JSON, structure set, biome injection, and
+natural generation remain absent.
+
+11A.3 readiness: template path/hash/load and palette resolution are **READY**;
+physical layout activation, terrain/beardifier hookup, marker dispatch, loot,
+Tapestries, and Stage 12 entities remain **DEFERRED**. The principal next
+risk is integrating custom layout placement without erasing marker metadata.

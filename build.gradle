@@ -48,6 +48,7 @@ def stage10aValidatorClasses = layout.buildDirectory.dir('classes/java/stage10aV
 def stage10bAuditClasses = layout.buildDirectory.dir('classes/java/stage10bAudit')
 def stage10c4TemplateValidatorClasses = layout.buildDirectory.dir('classes/java/stage10c4TemplateValidator')
 def stage10c4ProcessorValidatorClasses = layout.buildDirectory.dir('classes/java/stage10c4ProcessorValidator')
+def stage11a2TemplateValidatorClasses = layout.buildDirectory.dir('classes/java/stage11a2TemplateValidator')
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
     outputs.dir(stage3GeneratedResources)
@@ -359,6 +360,22 @@ tasks.register('validateStage10C4ProcessorCodec', JavaExec) {
     classpath = files(stage10c4ProcessorValidatorClasses) + sourceSets.main.output + sourceSets.main.compileClasspath
     mainClass = 'Stage10C4ProcessorCodecValidator'
     args file('build/resources/main/data/biomemakeover/worldgen/processor_list/ghosttown_building.json').absolutePath
+}
+
+tasks.register('compileStage11A2TemplateValidator', JavaCompile) {
+    dependsOn tasks.named('classes')
+    source file('validation/java/Stage11A2MansionTemplateRuntimeValidator.java')
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath
+    destinationDirectory = stage11a2TemplateValidatorClasses
+    options.release = 21
+}
+
+tasks.register('validateStage11A2TemplateRuntime', JavaExec) {
+    dependsOn tasks.named('compileStage11A2TemplateValidator')
+    dependsOn tasks.named('processResources')
+    classpath = files(stage11a2TemplateValidatorClasses) + sourceSets.main.output + sourceSets.main.compileClasspath
+    mainClass = 'Stage11A2MansionTemplateRuntimeValidator'
+    args file('build/resources/main').absolutePath
 }
 
 tasks.named('check') {

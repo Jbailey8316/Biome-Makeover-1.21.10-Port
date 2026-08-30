@@ -21,7 +21,6 @@ foreach ($required in @('party/lemons/biomemakeover/worldgen/mansion/MansionFeat
                          'party/lemons/biomemakeover/worldgen/mansion/MansionDetails.class')) {
     if ($entries -notcontains $required) { throw "Foundation class absent from JAR: $required" }
 }
-if ($entries -match '^data/biomemakeover/(structure|structures)/mansion/') { throw 'Mansion template corpus activated in 11A.1' }
 if (Test-Path (Join-Path $Root 'src/main/resources/data/biomemakeover/worldgen/structure/mansion.json')) { throw 'Mansion worldgen activated before 11A.3' }
 if (Select-String -Path (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/worldgen/mansion/MansionFeature.java') -Pattern 'handleDataMarker' -Quiet) {
     $text = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/worldgen/mansion/MansionFeature.java') -Raw
