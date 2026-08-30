@@ -205,14 +205,12 @@ public final class MansionFeature extends Structure {
     protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
         StructurePiecesBuilder builder = new StructurePiecesBuilder();
         MansionLayout layout = new MansionLayout();
-        BlockPos origin = new BlockPos(
-            context.chunkPos().getMinBlockX(),
-            context.chunkGenerator().getBaseHeight(
-                context.chunkPos().getMinBlockX(), context.chunkPos().getMinBlockZ(),
-                Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState()),
-            context.chunkPos().getMinBlockZ());
+        int releasedY = context.chunkGenerator().getBaseHeight(context.chunkPos().getMinBlockX(), context.chunkPos().getMinBlockZ(),
+            Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
+        int baseY = enhancedBaseY(context, releasedY);
+        BlockPos origin = new BlockPos(context.chunkPos().getMinBlockX(), baseY, context.chunkPos().getMinBlockZ());
         layout.generateLayout(context.random(), origin.getY());
-        if (Boolean.getBoolean("bm.mansion.trace")) traceMansionHeight(context, origin, layout);
+        if (Boolean.getBoolean("bm.mansion.trace")) traceMansionHeight(context, origin, releasedY);
         Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
             .sorted(Comparator.comparingInt(MansionRoom::getSortValue)).toList();
         for (MansionRoom room : rooms) {
@@ -232,21 +230,40 @@ public final class MansionFeature extends Structure {
             getLowestYIn5by5BoxOffset7Blocks(context, Rotation.NONE), Either.right(builder)));
     }
 
-    private static void traceMansionHeight(GenerationContext context, BlockPos origin, MansionLayout layout) {
+    private static int enhancedBaseY(GenerationContext context, int releasedY) {
+        List<Integer> heights = footprintHeights(context);
+        heights.sort(Integer::compareTo);
+        int median = heights.get(heights.size() / 2);
+        int bias = Math.min(4, Math.max(0, (heights.get(heights.size() - 1) - heights.get(0)) > 25 ? 2 : 1));
+        return Math.min(median + bias, median + 8);
+    }
+
+    private static List<Integer> footprintHeights(GenerationContext context) {
         List<Integer> heights = new java.util.ArrayList<>();
-        for (int dx : new int[] {-48, 0, 48}) for (int dz : new int[] {-48, 0, 48}) {
-            heights.add(context.chunkGenerator().getBaseHeight(origin.getX() + dx, origin.getZ() + dz,
-                Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState()));
+        for (int dx : new int[] {-96, -48, 0, 48, 96}) for (int dz : new int[] {-96, -48, 0, 48, 96}) {
+            heights.add(context.chunkGenerator().getBaseHeight(context.chunkPos().getMinBlockX() + dx,
+                context.chunkPos().getMinBlockZ() + dz, Heightmap.Types.WORLD_SURFACE_WG,
+                context.heightAccessor(), context.randomState()));
         }
+        return heights;
+    }
+
+    private static void traceMansionHeight(GenerationContext context, BlockPos origin, int releasedY) {
+        List<Integer> heights = footprintHeights(context);
         heights.sort(Integer::compareTo);
         int sum = heights.stream().mapToInt(Integer::intValue).sum();
-        int maxFloor = layout.getLayout().getEntries().stream().mapToInt(r -> r.getPosition().getY()).max().orElse(0);
+        int median = heights.get(heights.size() / 2);
+        int bias = origin.getY() - median;
         BiomeMakeover.LOGGER.info("[BM_MANSION_HEIGHT_TRACE] structureChunk={} generationPoint={} sampleX={} sampleZ={} sampledHeight={} heightmapType={} baseY={} firstFloorY={} roofReferenceY={} dungeonTopY={} dungeonBottomY={} minSurfaceY={} maxSurfaceY={} medianSurfaceY={} meanSurfaceY={} anchorMinusMedian={} anchorMinusMin={} anchorMinusMax={}",
-            context.chunkPos(), origin, origin.getX(), origin.getZ(), origin.getY(), Heightmap.Types.WORLD_SURFACE_WG,
-            origin.getY(), origin.getY(), origin.getY() + maxFloor * MansionLayoutFoundation.CELL_Y,
-            origin.getY() - 1, origin.getY() - 8, heights.get(0), heights.get(heights.size() - 1), heights.get(heights.size() / 2),
-            sum / (double) heights.size(), origin.getY() - heights.get(heights.size() / 2), origin.getY() - heights.get(0),
-            origin.getY() - heights.get(heights.size() - 1));
+            context.chunkPos(), origin, origin.getX(), origin.getZ(), releasedY, Heightmap.Types.WORLD_SURFACE_WG,
+            origin.getY(), origin.getY(), origin.getY() + 42, origin.getY() - 1, origin.getY() - 8,
+            heights.get(0), heights.get(heights.size() - 1), median, sum / (double) heights.size(),
+            releasedY - median, releasedY - heights.get(0), releasedY - heights.get(heights.size() - 1));
+        BiomeMakeover.LOGGER.info("[BM_MANSION_HEIGHT_TRACE] releasedAnchorY={} enhancedBaseY={} sampleCount={} median={} mean={} min={} max={} bias={} samplesAboveBase={} samplesBelowBase={} maxTerrainAboveBase={} maxGapBelowBase={} baseDeltaFromReleased={}",
+            releasedY, origin.getY(), heights.size(), median, sum / (double) heights.size(), heights.get(0), heights.get(heights.size() - 1), bias,
+            heights.stream().filter(h -> h > origin.getY()).count(), heights.stream().filter(h -> h < origin.getY()).count(),
+            heights.stream().mapToInt(h -> Math.max(0, h - origin.getY())).max().orElse(0),
+            heights.stream().mapToInt(h -> Math.max(0, origin.getY() - h)).max().orElse(0), origin.getY() - releasedY);
     }
 
     @Override public StructureType<?> type() { return BMStructures.MANSION; }
