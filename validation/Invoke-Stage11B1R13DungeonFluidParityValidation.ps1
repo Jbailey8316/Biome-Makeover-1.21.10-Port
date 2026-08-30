@@ -6,6 +6,12 @@ $source = Get-Content -LiteralPath $mansion -Raw
 foreach ($needle in @('BM_FLUID_INTERIOR','BM_FLUID_POSITION','authoredDryPositions','waterInAuthoredDry','BlockStateProperties.WATERLOGGED')) {
     if ($source.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing authored-interior fluid diagnostic: $needle" }
 }
+foreach ($forbidden in @('.join(', 'CountDownLatch', 'wait(', 'getChunk(')) {
+    if ($source.IndexOf($forbidden, [StringComparison]::Ordinal) -ge 0) { throw "Blocking/forcing call found in fluid diagnostic path: $forbidden" }
+}
+foreach ($needle in @('BM_DUNGEON_FLUID_DELAYED','BM_FLUID_REENTRY','BM_DELAYED_TRACE','REGISTER_BEGIN','REGISTER_END','SERVER_ACCEPT')) {
+    if ($source.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing delayed fluid trace event: $needle" }
+}
 
 $templates = Join-Path $Root 'src/main/resources/data/biomemakeover/structure/mansion'
 $dungeon = @(Get-ChildItem -LiteralPath $templates -Recurse -Filter '*.nbt' | Where-Object { $_.FullName -match '\\dungeon\\' })

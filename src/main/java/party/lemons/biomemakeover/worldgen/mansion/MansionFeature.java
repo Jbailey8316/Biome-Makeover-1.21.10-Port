@@ -84,6 +84,10 @@ public final class MansionFeature extends Structure {
     private static void tickDelayedFluidTraces(ServerLevel level) {
         for (DelayedFluidTrace trace : DELAYED_FLUID_TRACES) {
             if (trace.level != level) continue;
+            if (trace.age == 0) {
+                BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=SERVER_ACCEPT template={} registrationId={}", trace.template, trace.order);
+                trace.snapshot(level, "D0");
+            }
             trace.age++;
             String phase = switch (trace.age) { case 1 -> "D1"; case 5 -> "D5"; case 20 -> "D20"; case 100 -> "D100"; default -> null; };
             if (phase != null) trace.snapshot(level, phase);
@@ -327,9 +331,12 @@ public final class MansionFeature extends Structure {
                 traceFluids(level, bounds, "W5", order);
                 traceFluidInterior(level, "W3", order);
                 if (diagnosticTemplate.contains("/dungeon/") && level.getLevel() instanceof ServerLevel serverLevel) {
-                    DelayedFluidTrace delayed = new DelayedFluidTrace(serverLevel, diagnosticTemplate, placeSettings.getRotation(), staticAuthoredDry, order);
-                    delayed.snapshot(serverLevel, "D0");
-                    DELAYED_FLUID_TRACES.add(delayed);
+                    BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_BEGIN template={} orderIndex={} workerThread={} registrationId={}",
+                        diagnosticTemplate, order, Thread.currentThread().getName(), order);
+                    DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
+                        placeSettings.getRotation(), staticAuthoredDry, order));
+                    BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_END template={} orderIndex={} registrationId={}",
+                        diagnosticTemplate, order, order);
                 }
                 BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=END thread={} timestamp={} orderIndex={}",
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
