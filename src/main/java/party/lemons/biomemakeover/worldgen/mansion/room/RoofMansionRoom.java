@@ -161,7 +161,7 @@ public class RoofMansionRoom extends NonRoofedMansionRoom
 
     public boolean isRoofConnected(Direction direction, MansionGrid<MansionRoom> roomGrid)
     {
-        return layout.get(direction) && roomMansionGrid.get(getPosition().relative(direction)).getRoomType() == RoomType.ROOF;
+        return layout.get(direction) && roomGrid.get(getPosition().relative(direction)).getRoomType() == RoomType.ROOF;
     }
 
 }

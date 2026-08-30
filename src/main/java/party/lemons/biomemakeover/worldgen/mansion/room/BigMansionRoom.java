@@ -68,25 +68,25 @@ public class BigMansionRoom extends MansionRoom
         {
             if(isConnected(Direction.NORTH))
                 addWall(details, Direction.NORTH, manager, children, getInnerWall(templates, random),  wallPos.relative(Direction.NORTH, 2), Rotation.NONE, ground);
-            else if(!roomMansionGrid.contains(getPosition().north()) || !roomMansionGrid.get(getPosition().north()).getRoomType().hasWalls())
+            else if(!roomGrid.contains(getPosition().north()) || !roomGrid.get(getPosition().north()).getRoomType().hasWalls())
                 children.addPiece(new MansionFeature.Piece(details, manager, getOuterWall(templates, Direction.NORTH, roomGrid, random), wallPos.relative(Direction.EAST, 11), Rotation.CLOCKWISE_180, ground, true));
-            else if(roomMansionGrid.contains(getPosition().north()))
+            else if(roomGrid.contains(getPosition().north()))
                 addWall(details, Direction.NORTH, manager, children, getFlatWall(templates, random),  wallPos.relative(Direction.NORTH, 2), Rotation.NONE, ground);
 
             if(isConnected(Direction.WEST))
                 addWall(details, Direction.WEST, manager, children, getInnerWall(templates, random),  wallPos, Rotation.CLOCKWISE_90, ground);
-            else if(!roomMansionGrid.contains(getPosition().west()) || !roomMansionGrid.get(getPosition().west()).getRoomType().hasWalls())
+            else if(!roomGrid.contains(getPosition().west()) || !roomGrid.get(getPosition().west()).getRoomType().hasWalls())
                 children.addPiece(new MansionFeature.Piece(details, manager, getOuterWall(templates, Direction.WEST, roomGrid, random), wallPos.north(), Rotation.CLOCKWISE_90, ground, true));
-            else if(roomMansionGrid.contains(getPosition().west()))
+            else if(roomGrid.contains(getPosition().west()))
                 addWall(details, Direction.WEST, manager, children, getFlatWall(templates, random),  wallPos, Rotation.CLOCKWISE_90, ground);
 
-            if(!roomMansionGrid.contains(getPosition().east()) || !roomMansionGrid.get(getPosition().east()).getRoomType().hasWalls())
+            if(!roomGrid.contains(getPosition().east()) || !roomGrid.get(getPosition().east()).getRoomType().hasWalls())
                 children.addPiece(new MansionFeature.Piece(details, manager, getOuterWall(templates, Direction.EAST, roomGrid, random), wallPos.relative(Direction.EAST, 11).west().south(11), Rotation.COUNTERCLOCKWISE_90, ground, true));
-            if(!roomMansionGrid.contains(getPosition().south()) || !roomMansionGrid.get(getPosition().south()).getRoomType().hasWalls())
+            if(!roomGrid.contains(getPosition().south()) || !roomGrid.get(getPosition().south()).getRoomType().hasWalls())
                 children.addPiece(new MansionFeature.Piece(details, manager, getOuterWall(templates, Direction.SOUTH, roomGrid, random), wallPos.relative(Direction.SOUTH, 10).west(), Rotation.NONE, ground, true));
 
             BlockPos cornerPos1 = getPosition().relative(Direction.NORTH).relative(Direction.WEST);
-            if(roomMansionGrid.contains(cornerPos1) && roomMansionGrid.get(cornerPos1).getRoomType().hasWalls())
+            if(roomGrid.contains(cornerPos1) && roomGrid.get(cornerPos1).getRoomType().hasWalls())
                 children.addPiece(new MansionFeature.Piece(details, manager, MansionTemplateType.CORNER_FILLERS.getRandomTemplate(templates, random).toString(), wallPos.relative(Direction.WEST).relative(Direction.NORTH).offset(0, 0, 0), Rotation.NONE, ground, false));
         }
     }

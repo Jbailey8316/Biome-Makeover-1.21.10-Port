@@ -31,7 +31,7 @@ public class EntranceRoom extends MansionRoom
                 children.addPiece(new MansionFeature.Piece(details, manager, getInnerWall(templates, random), wallPos, Rotation.CLOCKWISE_90, ground, false));
 
             BlockPos cornerPos1 = getPosition().relative(Direction.NORTH).relative(Direction.WEST);
-            if(roomMansionGrid.contains(cornerPos1) && roomMansionGrid.get(cornerPos1).getRoomType().hasWalls())
+            if(roomGrid.contains(cornerPos1) && roomGrid.get(cornerPos1).getRoomType().hasWalls())
                 children.addPiece(new MansionFeature.Piece(details, manager, MansionTemplateType.CORNER_FILLERS.getRandomTemplate(templates, random).toString(), wallPos.relative(Direction.WEST).relative(Direction.NORTH).offset(0, 0, 0), Rotation.NONE, ground, false));
         }
     }
