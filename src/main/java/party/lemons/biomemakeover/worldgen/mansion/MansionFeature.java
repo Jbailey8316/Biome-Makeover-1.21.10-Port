@@ -91,10 +91,16 @@ public final class MansionFeature extends Structure {
         for (DelayedFluidTrace entry : DELAYED_FLUID_TRACES) {
             if (entry.level != level) continue;
             if (entry.age == 0) {
-                reconcileCompletedDungeon(level, entry.order);
+                if (tracing) BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_BEGIN mansionId={} unionPositions={}", entry.mansionId(), unionSize(level));
+                ReconcileResult result = reconcileCompletedDungeon(level, entry.order);
                 if (tracing) {
+                    BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_END mansionId={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
+                        entry.mansionId(), result.correctedAir(), result.correctedWaterlogged(), result.authoredWetPreserved());
+                    BiomeMakeover.LOGGER.info("[BM_DUNGEON_RECONCILE] phase=R0 mansionId={} explicitDryWater={} authoredFalseNowWaterlogged={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
+                        entry.mansionId(), result.explicitDryWater(), result.authoredFalseNowWaterlogged(), result.correctedAir(), result.correctedWaterlogged(), result.authoredWetPreserved());
                     BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=SERVER_ACCEPT template={} registrationId={}", entry.template, entry.order);
                     entry.snapshot(level, "D0");
+                    BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=REMOVE mansionId={}", entry.mansionId());
                 }
             }
             if (!tracing) {
@@ -113,28 +119,50 @@ public final class MansionFeature extends Structure {
      * records are captured from transformed template palettes, so omitted
      * terrain and surrounding aquifer cells are never touched.
      */
-    private static void reconcileCompletedDungeon(ServerLevel level, long order) {
+    private record ReconcileResult(int correctedAir, int correctedWaterlogged, int authoredWetPreserved,
+                                   int explicitDryWater, int authoredFalseNowWaterlogged) {}
+
+    private static int unionSize(ServerLevel level) {
+        Set<BlockPos> positions = new java.util.HashSet<>();
+        for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) if (candidate.level == level) positions.addAll(candidate.authoredStates.keySet());
+        return positions.size();
+    }
+
+    private static ReconcileResult reconcileCompletedDungeon(ServerLevel level, long order) {
         long first = Long.MAX_VALUE;
         for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
             if (candidate.level == level && candidate.age == 0 && candidate.order < first) first = candidate.order;
         }
-        if (order != first) return;
+        if (order != first) return new ReconcileResult(0, 0, 0, 0, 0);
         Map<BlockPos, BlockState> union = new HashMap<>();
         for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
             if (candidate.level == level) union.putAll(candidate.authoredStates);
         }
+        int correctedAir = 0, correctedWaterlogged = 0, authoredWetPreserved = 0;
         for (var entry : union.entrySet()) {
             BlockState authored = entry.getValue();
             BlockPos pos = entry.getKey();
             if (authored.isAir()) {
-                if (level.getFluidState(pos).is(Fluids.WATER)) level.setBlock(pos, authored, 3);
+                if (level.getFluidState(pos).is(Fluids.WATER)) { level.setBlock(pos, authored, 3); correctedAir++; }
+            } else if (authored.hasProperty(BlockStateProperties.WATERLOGGED)
+                && authored.getValue(BlockStateProperties.WATERLOGGED)) {
+                authoredWetPreserved++;
             } else if (authored.hasProperty(BlockStateProperties.WATERLOGGED)
                 && !authored.getValue(BlockStateProperties.WATERLOGGED)) {
                 BlockState runtime = level.getBlockState(pos);
                 if (runtime.is(authored.getBlock()) && runtime.hasProperty(BlockStateProperties.WATERLOGGED)
-                    && runtime.getValue(BlockStateProperties.WATERLOGGED)) level.setBlock(pos, authored, 3);
+                    && runtime.getValue(BlockStateProperties.WATERLOGGED)) { level.setBlock(pos, authored, 3); correctedWaterlogged++; }
+                }
             }
+        int explicitDryWater = 0, authoredFalseNowWaterlogged = 0;
+        for (var entry : union.entrySet()) {
+            BlockState authored = entry.getValue();
+            if (authored.isAir() && level.getFluidState(entry.getKey()).is(Fluids.WATER)) explicitDryWater++;
+            if (authored.hasProperty(BlockStateProperties.WATERLOGGED) && !authored.getValue(BlockStateProperties.WATERLOGGED)
+                && level.getBlockState(entry.getKey()).hasProperty(BlockStateProperties.WATERLOGGED)
+                && level.getBlockState(entry.getKey()).getValue(BlockStateProperties.WATERLOGGED)) authoredFalseNowWaterlogged++;
         }
+        return new ReconcileResult(correctedAir, correctedWaterlogged, authoredWetPreserved, explicitDryWater, authoredFalseNowWaterlogged);
     }
 
     private record EnvelopePiece(ServerLevel level, String template, Set<BlockPos> authoredDry, Set<BlockPos> architecturalInterior) {
@@ -159,6 +187,10 @@ public final class MansionFeature extends Structure {
             this.level = level; this.template = template; this.rotation = rotation;
             this.authoredDry = List.copyOf(authoredDry); this.architecturalInterior = List.copyOf(architecturalInterior);
             this.authoredStates = Map.copyOf(authoredStates); this.order = order;
+        }
+
+        private String mansionId() {
+            return level.dimension().location() + ":" + (authoredStates.keySet().stream().findFirst().map(BlockPos::toString).orElse(template));
         }
 
         private void snapshot(ServerLevel level, String phase) {
