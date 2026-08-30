@@ -980,6 +980,11 @@ processResources {
         allowed.addAll(['button_mushrooms_music_disk', 'swamp_jives_music_disk', 'ghost_town_music_disk',
                         'mushroom_trader', 'mushroom_trader_spawn_egg', 'crude_fragment',
                         'refined_pottery_sherd', 'worker_pottery_sherd', 'whinny_pottery_sherd'])
+        // Fence tags are consumed by vanilla FenceBlock connection logic. Keep
+        // the complete released BM fence family in the packaged modern tags;
+        // these structural blocks are registered even when their gameplay
+        // systems are otherwise outside the staged allow-list.
+        allowed.addAll(['ancient_oak_fence', 'willow_fence', 'swamp_cypress_fence', 'blighted_balsa_fence'])
         def minecraftTags = destinationDir.toPath().resolve('data/minecraft/tags').toFile()
         if (minecraftTags.exists()) {
             fileTree(minecraftTags).matching { include '**/*.json' }.files.each { tagFile ->
