@@ -49,6 +49,8 @@ public final class BMItems {
         Registries.JUKEBOX_SONG, BiomeMakeover.id("swamp_jives"));
     public static final ResourceKey<JukeboxSong> GHOST_TOWN_SONG = ResourceKey.create(
         Registries.JUKEBOX_SONG, BiomeMakeover.id("ghost_town"));
+    public static final ResourceKey<JukeboxSong> RED_ROSE_SONG = ResourceKey.create(
+        Registries.JUKEBOX_SONG, BiomeMakeover.id("red_rose"));
     public static final LootPoolEntryType BETTER_LOOTTABLE_REFERENCE = Registry.register(
         BuiltInRegistries.LOOT_POOL_ENTRY_TYPE,
         ResourceKey.create(Registries.LOOT_POOL_ENTRY_TYPE, BiomeMakeover.id("loot_table")),
@@ -125,6 +127,8 @@ public final class BMItems {
     public static final Item WHINNY_POTTERY_SHERD = register("whinny_pottery_sherd");
     public static final Item GHOST_TOWN_MUSIC_DISK = register("ghost_town_music_disk",
         p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(GHOST_TOWN_SONG)));
+    public static final Item RED_ROSE_MUSIC_DISK = register("red_rose_music_disk",
+        p -> new Item(p.stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(RED_ROSE_SONG)));
 
     public static final ResourceKey<DecoratedPotPattern> CRACKED_PATTERN = ResourceKey.create(
         Registries.DECORATED_POT_PATTERN, BiomeMakeover.id("cracked_pottery_pattern"));
@@ -179,6 +183,7 @@ public final class BMItems {
             entries.accept(CRUDE_FRAGMENT); entries.accept(REFINED_POTTERY_SHERD);
             entries.accept(WORKER_POTTERY_SHERD); entries.accept(WHINNY_POTTERY_SHERD);
             entries.accept(GHOST_TOWN_MUSIC_DISK);
+            entries.accept(RED_ROSE_MUSIC_DISK);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

@@ -29,3 +29,11 @@ Implement the small Red Rose disc dependency with its own 11B.2 boundary, then
 perform a bounded Stage 12 item-registration substrate for the cladded/crude
 loot objects. Resume 11B.1 only after every released Mansion table resolves
 without substitutions or missing IDs.
+
+## 11B.2A dependency update
+
+The standalone `red_rose_music_disk` item is now registered with its released
+`red_rose` streamed song, 135-second duration, comparator output 2, rare
+single-stack presentation, model, texture, translation, and music-disc tag.
+The remaining unresolved Mansion loot dependencies are the three cladded
+armor pieces and `crude_cladding`; Mansion loot markers remain inactive.

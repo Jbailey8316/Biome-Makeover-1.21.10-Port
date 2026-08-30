@@ -51,6 +51,7 @@ public final class BMSounds {
     public static final SoundEvent BUTTON_MUSHROOMS = register("button_mushrooms");
     public static final SoundEvent SWAMP_JIVES = register("swamp_jives");
     public static final SoundEvent GHOST_TOWN = register("ghost_town");
+    public static final SoundEvent RED_ROSE = register("red_rose");
     public static final SoundEvent GHOST_IDLE = register("ghost_idle");
     public static final SoundEvent GHOST_HURT = register("ghost_hurt");
     public static final SoundEvent GHOST_DEATH = register("ghost_death");
