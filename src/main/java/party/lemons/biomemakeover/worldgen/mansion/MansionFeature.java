@@ -25,6 +25,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilde
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Blocks;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.EntityType;
@@ -51,6 +53,7 @@ import java.util.Optional;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import party.lemons.biomemakeover.worldgen.mansion.room.MansionRoom;
 import party.lemons.biomemakeover.worldgen.mansion.RoomType;
@@ -135,6 +138,7 @@ public final class MansionFeature extends Structure {
     /** Serialized custom template piece; marker actions are connected later. */
     public static final class Piece extends TemplateStructurePiece {
         private static final boolean TRACE = Boolean.getBoolean("bm.mansion.trace");
+        private static final AtomicLong TRACE_ORDER = new AtomicLong();
         private final boolean ground;
         private final boolean wall;
         private MansionDetails details;
@@ -198,8 +202,21 @@ public final class MansionFeature extends Structure {
         @Override
         public void postProcess(WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator,
                                 RandomSource random, BoundingBox bounds, ChunkPos chunkPos, BlockPos pivot) {
+            long order = TRACE_ORDER.incrementAndGet();
+            if (TRACE) {
+                BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=BEGIN thread={} timestamp={} orderIndex={}",
+                    diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
+                traceLootLifecycle(level, bounds, "T0", order);
+                traceFences(level, bounds, "F0", order);
+                traceFluids(level, bounds, "W0", order);
+            }
             super.postProcess(level, structureManager, generator, random, bounds, chunkPos, pivot);
             if (TRACE) {
+                BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=AFTER_TEMPLATE thread={} timestamp={} orderIndex={}",
+                    diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
+                traceLootLifecycle(level, bounds, "T1", order);
+                traceFences(level, bounds, "F1", order);
+                traceFluids(level, bounds, "W1", order);
                 for (var type : new Block[] {Blocks.CHEST, Blocks.BARREL, Blocks.TRAPPED_CHEST, Blocks.DISPENSER, Blocks.DROPPER}) {
                     for (var info : template.filterBlocks(templatePosition, placeSettings, type)) {
                         BlockEntity be = level.getBlockEntity(info.pos());
@@ -223,6 +240,9 @@ public final class MansionFeature extends Structure {
                 if (info.nbt() != null && info.state().hasProperty(DirectionalBlock.FACING)) {
                     Direction facing = info.state().getValue(DirectionalBlock.FACING);
                     if (TRACE && info.nbt().getStringOr("metadata", "").startsWith("loot")) {
+                        traceLootMarker(level, bounds, info, facing, "T2", order);
+                    }
+                    if (TRACE && info.nbt().getStringOr("metadata", "").startsWith("loot")) {
                         BlockPos target = info.pos().relative(facing);
                         BlockEntity targetBe = level.getBlockEntity(target);
                         BiomeMakeover.LOGGER.info("[BM_LOOT_TRACE] template={} rot={} metadata={} marker={} facing={} target={} block={} be={} inBounds={}",
@@ -230,8 +250,64 @@ public final class MansionFeature extends Structure {
                             target, level.getBlockState(target).getBlock(), targetBe == null ? "null" : targetBe.getClass().getSimpleName(), bounds.isInside(target));
                     }
                     handleDirectionalMetadata(info.nbt().getStringOr("metadata", ""), facing, info.pos(), level, random);
+                    if (TRACE && info.nbt().getStringOr("metadata", "").startsWith("loot")) {
+                        traceLootMarker(level, bounds, info, facing, "T3", order);
+                    }
                 }
             }
+            if (TRACE) {
+                traceLootLifecycle(level, bounds, "T4", order);
+                traceFences(level, bounds, "F4", order);
+                traceFluids(level, bounds, "W5", order);
+                BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=END thread={} timestamp={} orderIndex={}",
+                    diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
+            }
+        }
+
+        private void traceLootLifecycle(WorldGenLevel level, BoundingBox bounds, String phase, long order) {
+            for (var info : template.filterBlocks(templatePosition, placeSettings, BMBlocks.DIRECTIONAL_DATA)) {
+                if (info.nbt() != null && info.nbt().getStringOr("metadata", "").startsWith("loot")
+                    && info.state().hasProperty(DirectionalBlock.FACING)) {
+                    traceLootMarker(level, bounds, info, info.state().getValue(DirectionalBlock.FACING), phase, order);
+                }
+            }
+        }
+
+        private void traceLootMarker(WorldGenLevel level, BoundingBox bounds, StructureTemplate.StructureBlockInfo info,
+                                     Direction facing, String phase, long order) {
+            BlockPos target = info.pos().relative(facing);
+            BlockEntity be = level.getBlockEntity(target);
+            BlockState targetState = level.getBlockState(target);
+            String loot = be instanceof RandomizableContainerBlockEntity container && container.getLootTable() != null
+                ? container.getLootTable().location().toString() : "null";
+            BiomeMakeover.LOGGER.info("[BM_LOOT_LIFECYCLE] template={} rotation={} markerLocal={} markerWorld={} facing={} target={} phase={} block={} blockEntity={} lootTablePresent={} lootTableId={} inPieceBounds={} owningPieceIfKnown={} orderIndex={}",
+                diagnosticTemplate, placeSettings.getRotation(), info.pos().subtract(templatePosition), info.pos(), facing, target, phase,
+                targetState.getBlock(), be == null ? "null" : be.getClass().getSimpleName(), !loot.equals("null"), loot,
+                bounds.isInside(target), diagnosticTemplate, order);
+        }
+
+        private void traceFences(WorldGenLevel level, BoundingBox bounds, String phase, long order) {
+            for (var type : new Block[] {Blocks.DARK_OAK_FENCE, BMBlocks.ANCIENT_OAK_FENCE}) {
+                for (var info : template.filterBlocks(templatePosition, placeSettings, type)) {
+                    BlockState state = level.getBlockState(info.pos());
+                    BiomeMakeover.LOGGER.info("[BM_FENCE_LIFECYCLE] template={} rotation={} pos={} phase={} serialized={} runtime={} neighbors=N:{} E:{} S:{} W:{} inPieceBounds={} orderIndex={}",
+                        diagnosticTemplate, placeSettings.getRotation(), info.pos(), phase, info.state(), state,
+                        level.getBlockState(info.pos().north()).getBlock(), level.getBlockState(info.pos().east()).getBlock(),
+                        level.getBlockState(info.pos().south()).getBlock(), level.getBlockState(info.pos().west()).getBlock(),
+                        bounds.isInside(info.pos()), order);
+                }
+            }
+        }
+
+        private void traceFluids(WorldGenLevel level, BoundingBox bounds, String phase, long order) {
+            int water = 0;
+            BoundingBox sample = new BoundingBox(bounds.minX() - 1, bounds.minY() - 1, bounds.minZ() - 1,
+                bounds.maxX() + 1, bounds.maxY() + 1, bounds.maxZ() + 1);
+            for (int x = sample.minX(); x <= sample.maxX(); x++) for (int y = sample.minY(); y <= sample.maxY(); y++)
+                for (int z = sample.minZ(); z <= sample.maxZ(); z++)
+                    if (level.getFluidState(new BlockPos(x, y, z)).is(Fluids.WATER)) water++;
+            BiomeMakeover.LOGGER.info("[BM_FLUID_LIFECYCLE] template={} rotation={} bounds={} phase={} waterBlocks={} orderIndex={}",
+                diagnosticTemplate, placeSettings.getRotation(), sample, phase, water, order);
         }
 
         private static String neighborSummary(WorldGenLevel level, BlockPos pos) {
