@@ -212,6 +212,7 @@ public final class MansionFeature extends Structure {
                 Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState()),
             context.chunkPos().getMinBlockZ());
         layout.generateLayout(context.random(), origin.getY());
+        if (Boolean.getBoolean("bm.mansion.trace")) traceMansionHeight(context, origin, layout);
         Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
             .sorted(Comparator.comparingInt(MansionRoom::getSortValue)).toList();
         for (MansionRoom room : rooms) {
@@ -229,6 +230,23 @@ public final class MansionFeature extends Structure {
         }
         return Optional.of(new GenerationStub(
             getLowestYIn5by5BoxOffset7Blocks(context, Rotation.NONE), Either.right(builder)));
+    }
+
+    private static void traceMansionHeight(GenerationContext context, BlockPos origin, MansionLayout layout) {
+        List<Integer> heights = new java.util.ArrayList<>();
+        for (int dx : new int[] {-48, 0, 48}) for (int dz : new int[] {-48, 0, 48}) {
+            heights.add(context.chunkGenerator().getBaseHeight(origin.getX() + dx, origin.getZ() + dz,
+                Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState()));
+        }
+        heights.sort(Integer::compareTo);
+        int sum = heights.stream().mapToInt(Integer::intValue).sum();
+        int maxFloor = layout.getLayout().getEntries().stream().mapToInt(r -> r.getPosition().getY()).max().orElse(0);
+        BiomeMakeover.LOGGER.info("[BM_MANSION_HEIGHT_TRACE] structureChunk={} generationPoint={} sampleX={} sampleZ={} sampledHeight={} heightmapType={} baseY={} firstFloorY={} roofReferenceY={} dungeonTopY={} dungeonBottomY={} minSurfaceY={} maxSurfaceY={} medianSurfaceY={} meanSurfaceY={} anchorMinusMedian={} anchorMinusMin={} anchorMinusMax={}",
+            context.chunkPos(), origin, origin.getX(), origin.getZ(), origin.getY(), Heightmap.Types.WORLD_SURFACE_WG,
+            origin.getY(), origin.getY(), origin.getY() + maxFloor * MansionLayoutFoundation.CELL_Y,
+            origin.getY() - 1, origin.getY() - 8, heights.get(0), heights.get(heights.size() - 1), heights.get(heights.size() / 2),
+            sum / (double) heights.size(), origin.getY() - heights.get(heights.size() / 2), origin.getY() - heights.get(0),
+            origin.getY() - heights.get(heights.size() - 1));
     }
 
     @Override public StructureType<?> type() { return BMStructures.MANSION; }
