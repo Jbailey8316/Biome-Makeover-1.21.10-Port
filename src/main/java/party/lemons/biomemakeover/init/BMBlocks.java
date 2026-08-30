@@ -193,7 +193,7 @@ public final class BMBlocks {
             .sound(SoundType.SUSPICIOUS_SAND).pushReaction(PushReaction.DESTROY));
     // Structural Mansion palette dependencies (11A.2). Items and gameplay
     // for these later-owned blocks remain deferred.
-    public static final Block CLADDED_STONE = registerBlockItem("cladded_stone", Block::new,
+    public static final Block CLADDED_STONE = register("cladded_stone", Block::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 6.0F).sound(SoundType.STONE));
     public static final Block DIRECTIONAL_DATA = registerNoItem("directional_data", MansionDirectionalDataBlock::new,
         BlockBehaviour.Properties.of().strength(-1.0F).noLootTable());
