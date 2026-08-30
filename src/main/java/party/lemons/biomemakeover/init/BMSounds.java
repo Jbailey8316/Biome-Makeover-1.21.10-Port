@@ -55,6 +55,8 @@ public final class BMSounds {
     public static final SoundEvent GHOST_DEATH = register("ghost_death");
     public static final SoundEvent GHOST_CHARGE = register("ghost_charge");
     public static final SoundEvent GHOST_ANGRY = register("ghost_angry");
+    public static final SoundEvent POLTERGEIST_ACTION = register("poltergeist_action");
+    public static final SoundEvent POLTERGEIST_TOGGLE = register("poltergeist_toggle");
 
     private BMSounds() {}
 

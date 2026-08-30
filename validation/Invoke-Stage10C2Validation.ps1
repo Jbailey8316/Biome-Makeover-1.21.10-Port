@@ -22,5 +22,5 @@ $junkNames = @($junk.pools[0].entries | ForEach-Object { $_.name })
 if ($junkNames -contains 'minecraft:chain') { throw 'Obsolete minecraft:chain item reference remains' }
 if ($junkNames -notcontains 'minecraft:iron_chain') { throw 'Modern iron_chain migration missing' }
 if (Test-Path (Join-Path $Root 'src/main/resources/data/biomemakeover/structures')) { throw 'Obsolete plural structure directory leaked into Stage 10C.2' }
-foreach ($needle in @('ectoplasm_composter','poltergeist','ghost_town/','ghosttown')) { $hits = Get-ChildItem (Join-Path $Root 'src/main/resources') -Recurse -File | Select-String -Pattern $needle -SimpleMatch; if ($hits -and $needle -ne 'ghost_town/') { throw "Deferred Stage 10C resource leaked: $needle" } }
+foreach ($needle in @('ghost_town/','ghosttown')) { $hits = Get-ChildItem (Join-Path $Root 'src/main/resources') -Recurse -File | Select-String -Pattern $needle -SimpleMatch; if ($hits -and $needle -ne 'ghost_town/') { throw "Deferred Stage 10C resource leaked: $needle" } }
 Write-Output 'STAGE 10C.2 VALIDATION PASSED'

@@ -1,0 +1,11 @@
+{
+  "blocks_with_items": ["poltergeist"],
+  "no_item_blocks": ["ectoplasm_composter"],
+  "items": [],
+  "sounds": ["poltergeist_action", "poltergeist_toggle"],
+  "particles": ["poltergeist"],
+  "block_entities": ["poltergeist"],
+  "recipes": ["poltergeist"],
+  "loot_tables": ["blocks/ectoplasm_composter", "blocks/poltergeist"],
+  "advancements": []
+}

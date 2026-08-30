@@ -231,3 +231,71 @@ brush, seed, save/reload, falling, and conversion behavior intact. The
 Stage 10C.2 validator now checks this compatibility, Creative exposure,
 packaged assets, active nested loot references, and explicit top-level loot
 deferral.
+
+## Stage 10C.3 — Interactive paranormal systems
+
+This implementation restores the final released Ectoplasm Composter and
+Poltergeist loop without activating Ghost Town (10C.4). `ectoplasm_composter`
+is a no-item `ComposterBlock` subclass. A partially filled vanilla composter
+accepts one Ectoplasm through the source item's use action or the narrow
+`ComposterBlock.InputContainer` mixin; it preserves the current level while
+changing to the BM block. At level 8, player use emits one Soul Soil and
+resets to a vanilla composter, while a downward hopper may extract one Soul
+Soil through the source-compatible output container. The Ectoplasm Composter
+has the released wood/six-tenths-strength properties and no independent block
+entity. The complete released BM compostable table is registered into the
+modern `ComposterBlock.COMPOSTABLES` map (including the three reed-thatch
+entries); Peat Composter behavior remains separate.
+
+`poltergeist` is a functional-block item with the released cauldron-like shape,
+`enabled` state, light level 7, and a registered stateless
+`poltergeist` BlockEntity. Redstone toggles the state after the source's
+four-tick delay and emits the source sound/particle event. While enabled, its
+server ticker performs one random action attempt in a 5-block cube. The
+source action set is preserved: doors, buttons, trapdoors, levers, note blocks,
+fence gates, daylight detectors, and bells. Air and stone are ignored; at most
+one selected block is changed per invocation. Actions use native 1.21.10
+block APIs and game events, with the final random candidate calculation and
+action-success sound behavior retained. The old Taniwha block/wood sound
+holders are not needed by the modern vanilla block classes; native block-set
+door sounds and vanilla event sounds are used where available.
+
+Entering an enabled Poltergeist applies/extends `biomemakeover:possessed` to
+any LivingEntity in the released vertical intersection. Possessed's existing
+10C.1 cadence is unchanged (`duration % 10 < min(amplifier + 1, 8)`); each
+server tick invokes `PoltergeistHandler.doPoltergeist` up to
+`min(amplifier + 1, 20)` times around the affected entity with range 4.
+The block and effect share this server-only helper, but no generalized effect
+application path was added. The `ectoplasm_compost`,
+`poltergeist_yourself`, and native inventory advancement triggers are
+registered now. Their released advancement JSONs are intentionally deferred
+until 10C.4 because the parent chain starts at the Ghost Town advancement;
+the parent is not activated by this substage and no invalid child resources
+are packaged.
+
+The 1.21.10 translation registers `poltergeist` through
+`FabricBlockEntityTypeBuilder`, uses the current `BlockEntityTicker` and
+`ValueInput`/`ValueOutput`-compatible stateless BE contract, and dispatches
+particles with `ServerLevel.sendParticles`. The private daylight-detector
+signal helper is reached only through a narrow mixin invoker. The particle is
+the released 11-frame translucent sheet, and the two sound events retain the
+released Soulspeed sound paths/subtitles. No Taniwha runtime dependency,
+Ghost Town resource, archaeology activation, or later-stage system is
+introduced.
+
+### Stage 10C.3 validation and runtime gate
+
+`validation/Invoke-Stage10C3Validation.ps1` checks registrations, block/entity
+compatibility, source action set and ranges, Possessed invocation formula,
+modern recipe/loot/advancement resources, packaged resources, particle frames,
+sound events, and absence of 10C.4 structure/worldgen leakage. Static checks
+do not replace Prism testing. The bounded runtime sequence is: obtain and
+place Poltergeist (or use `/give @s biomemakeover:poltergeist`), verify its
+enabled model; power it and observe the toggle; stand inside it and use
+`/effect give @s biomemakeover:possessed 30 0`; observe particles, sounds,
+and random nearby interactions; test a nearby door/button/lever and a note
+block; repeat on a passive mob; then save/reload and confirm the block state
+and effect behavior remain stable. Ectoplasm Composter should be tested by
+filling a vanilla composter, applying Ectoplasm, completing it, and extracting
+Soul Soil. Stage 10C.3 is implemented but awaits this runtime validation;
+Ghost Town, archaeology assignment, and other 10C.4 systems remain deferred.

@@ -56,6 +56,8 @@ import party.lemons.biomemakeover.block.WillowingBranchesBlock;
 import party.lemons.biomemakeover.block.PeatFarmlandBlock;
 import party.lemons.biomemakeover.block.PeatComposterBlock;
 import party.lemons.biomemakeover.block.AltarBlock;
+import party.lemons.biomemakeover.block.EctoplasmComposterBlock;
+import party.lemons.biomemakeover.block.PoltergeistBlock;
 
 public final class BMBlocks {
     public static final net.minecraft.tags.TagKey<Block> MOTH_ATTRACTIVE = net.minecraft.tags.TagKey.create(
@@ -131,6 +133,9 @@ public final class BMBlocks {
     public static final Block PEAT_COMPOSTER = registerNoItem("peat_composter", PeatComposterBlock::new,
         BlockBehaviour.Properties.of().strength(0.6F).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD)
             .ignitedByLava().mapColor(MapColor.WOOD));
+    public static final Block ECTOPLASM_COMPOSTER = registerNoItem("ectoplasm_composter", EctoplasmComposterBlock::new,
+        BlockBehaviour.Properties.of().strength(0.6F).instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD)
+            .ignitedByLava().mapColor(MapColor.WOOD));
     public static final Block FOXGLOVE = register("foxglove", TallFlowerBlock::new,
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().noOcclusion().instabreak().sound(SoundType.GRASS));
     public static final Block OWL_NEST = register("owl_nest", OwlNestBlock::new,
@@ -184,6 +189,10 @@ public final class BMBlocks {
         Blocks.RED_SAND, SoundEvents.BRUSH_SAND, SoundEvents.BRUSH_SAND_COMPLETED, p),
         BlockBehaviour.Properties.of().mapColor(MapColor.SAND).instrument(NoteBlockInstrument.SNARE).strength(0.25F)
             .sound(SoundType.SUSPICIOUS_SAND).pushReaction(PushReaction.DESTROY));
+    public static final Block POLTERGEIST = register("poltergeist", PoltergeistBlock::new,
+        BlockBehaviour.Properties.of().strength(1.0F).mapColor(MapColor.WARPED_WART_BLOCK)
+            .sound(SoundType.LODESTONE).lightLevel(state -> state.getValue(PoltergeistBlock.ENABLED) ? 7 : 0)
+            .noOcclusion().pushReaction(PushReaction.BLOCK));
     public static final Block PAYDIRT = register("paydirt", Block::new, BlockBehaviour.Properties.of().strength(1.4F)
         .requiresCorrectToolForDrops().sound(SoundType.GRAVEL).mapColor(MapColor.TERRACOTTA_GRAY));
     public static final Block TUMBLEWEED = registerNoItem("tumbleweed", Block::new,
@@ -486,6 +495,21 @@ public final class BMBlocks {
     }
 
     public static void initialize() {
+        // Final-release Biome Makeover additions to vanilla composter input.
+        compost(0.7F, PURPLE_GLOWSHROOM); compost(0.7F, GREEN_GLOWSHROOM); compost(0.7F, ORANGE_GLOWSHROOM);
+        compost(0.9F, PURPLE_GLOWSHROOM_BLOCK); compost(0.9F, ORANGE_GLOWSHROOM_BLOCK); compost(0.9F, GREEN_GLOWSHROOM_BLOCK);
+        compost(0.7F, MYCELIUM_SPROUTS); compost(0.7F, MYCELIUM_ROOTS); compost(0.7F, TALL_BROWN_MUSHROOM); compost(0.7F, TALL_RED_MUSHROOM);
+        compost(0.3F, BLIGHTED_BALSA_LEAVES); compost(0.4F, BLIGHTED_BALSA_SAPLING); compost(0.9F, GLOWSHROOM_STEM);
+        compost(0.15F, SAGUARO_CACTUS); compost(0.3F, BARREL_CACTUS); compost(0.4F, BARREL_CACTUS_FLOWERED);
+        compost(0.3F, WILLOWING_BRANCHES); compost(0.4F, WILLOW_SAPLING); compost(0.4F, SWAMP_CYPRESS_SAPLING);
+        compost(0.65F, BUTTONBUSH); compost(0.65F, MARIGOLD); compost(0.65F, BLACK_THISTLE); compost(0.5F, CATTAIL); compost(0.2F, REED);
+        compost(0.3F, SMALL_LILY_PAD); compost(0.8F, WATER_LILY); compost(0.3F, WILLOW_LEAVES); compost(0.3F, SWAMP_CYPRESS_LEAVES);
+        compost(0.3F, ANCIENT_OAK_LEAVES); compost(0.4F, ANCIENT_OAK_SAPLING); compost(0.5F, WILD_MUSHROOMS); compost(0.8F, MOTH_BLOSSOM);
+        compost(0.3F, ITCHING_IVY); compost(0.25F, IVY);
+        compost(0.25F, BMItems.PINK_BUD); compost(0.25F, BMItems.PURPLE_BUD); compost(0.25F, BMItems.MAGENTA_BUD);
+        compost(0.25F, BMItems.CYAN_BUD); compost(0.25F, BMItems.BLUE_BUD); compost(0.25F, BMItems.LIGHT_BLUE_BUD);
+        compost(0.25F, BMItems.BROWN_BUD); compost(0.25F, BMItems.GRAY_BUD);
+        compost(0.8F, REED_THATCH); compost(0.266F, REED_THATCH_SLAB); compost(0.45F, REED_THATCH_STAIRS);
         StrippableBlockRegistry.register(BLIGHTED_BALSA.get("blighted_balsa_log"), BLIGHTED_BALSA.get("stripped_blighted_balsa_log"));
         StrippableBlockRegistry.register(BLIGHTED_BALSA.get("blighted_balsa_wood"), BLIGHTED_BALSA.get("stripped_blighted_balsa_wood"));
         BLIGHTED_BALSA.values().forEach(block -> FlammableBlockRegistry.getDefaultInstance().add(block, 5, 20));
@@ -516,7 +540,7 @@ public final class BMBlocks {
             entries.accept(MYCELIUM_SPROUTS); entries.accept(MYCELIUM_ROOTS); entries.accept(TALL_BROWN_MUSHROOM); entries.accept(TALL_RED_MUSHROOM);
             entries.accept(BLIGHTED_BALSA_LEAVES); entries.accept(BLIGHTED_BALSA_SAPLING);
         });
-        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS).register(entries -> entries.accept(ALTAR));
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS).register(entries -> { entries.accept(ALTAR); entries.accept(POLTERGEIST); });
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.BUILDING_BLOCKS).register(entries -> {
             MUSHROOM_DECORATION.values().forEach(entries::accept);
             BLIGHTED_BALSA.values().forEach(entries::accept);
@@ -536,5 +560,13 @@ public final class BMBlocks {
             entries.accept(DRIED_PEAT); entries.accept(PEAT_FARMLAND); PEAT_MASONRY.values().forEach(entries::accept);
             entries.accept(REED_THATCH); entries.accept(REED_THATCH_SLAB); entries.accept(REED_THATCH_STAIRS);
         });
+    }
+
+    private static void compost(float chance, Block block) {
+        ComposterBlock.COMPOSTABLES.put(block.asItem(), chance);
+    }
+
+    private static void compost(float chance, Item item) {
+        ComposterBlock.COMPOSTABLES.put(item, chance);
     }
 }

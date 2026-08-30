@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.block.entity.LightningBugBottleBlockEntity;
 import party.lemons.biomemakeover.block.entity.AltarBlockEntity;
+import party.lemons.biomemakeover.block.entity.PoltergeistBlockEntity;
 import party.lemons.biomemakeover.mixin.BlockEntityTypeAccessor;
 
 public final class BMBlockEntities {
@@ -18,6 +19,9 @@ public final class BMBlockEntities {
     private static final ResourceKey<BlockEntityType<?>> ALTAR_KEY=ResourceKey.create(Registries.BLOCK_ENTITY_TYPE,BiomeMakeover.id("altar"));
     public static final BlockEntityType<AltarBlockEntity> ALTAR=Registry.register(
         BuiltInRegistries.BLOCK_ENTITY_TYPE,ALTAR_KEY,FabricBlockEntityTypeBuilder.create(AltarBlockEntity::new,BMBlocks.ALTAR).build());
+    private static final ResourceKey<BlockEntityType<?>> POLTERGEIST_KEY=ResourceKey.create(Registries.BLOCK_ENTITY_TYPE,BiomeMakeover.id("poltergeist"));
+    public static final BlockEntityType<PoltergeistBlockEntity> POLTERGEIST=Registry.register(
+        BuiltInRegistries.BLOCK_ENTITY_TYPE,POLTERGEIST_KEY,FabricBlockEntityTypeBuilder.create(PoltergeistBlockEntity::new,BMBlocks.POLTERGEIST).build());
     private BMBlockEntities() {}
     public static void initialize() {
         // Vanilla BrushableBlockEntity validates its BlockEntityType against a

@@ -37,6 +37,7 @@ import party.lemons.biomemakeover.init.BMItems;
 import party.lemons.biomemakeover.init.BMParticles;
 import party.lemons.biomemakeover.client.particle.LightningSparkParticle;
 import party.lemons.biomemakeover.client.particle.BlossomParticle;
+import party.lemons.biomemakeover.client.particle.PoltergeistParticle;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import party.lemons.biomemakeover.init.BMBlockEntities;
@@ -110,6 +111,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
             new AltarCursingSound(altar, altar.getLevel() == null ? net.minecraft.util.RandomSource.create() : altar.getLevel().random)));
         ParticleFactoryRegistry.getInstance().register(BMParticles.LIGHTNING_SPARK,LightningSparkParticle.Provider::new);
         ParticleFactoryRegistry.getInstance().register(BMParticles.BLOSSOM,BlossomParticle.Provider::new);
+        ParticleFactoryRegistry.getInstance().register(BMParticles.POLTERGEIST,PoltergeistParticle.Provider::new);
         ColorProviderRegistry.BLOCK.register((state,world,pos,tint)->{
             int color=world!=null&&pos!=null?BiomeColors.getAverageFoliageColor(world,pos):FoliageColor.FOLIAGE_DEFAULT;
             return shiftColor(color,-20,40,-20);

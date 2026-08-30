@@ -9,6 +9,7 @@ import party.lemons.biomemakeover.BiomeMakeover;
 public final class BMParticles {
     public static final SimpleParticleType LIGHTNING_SPARK=Registry.register(BuiltInRegistries.PARTICLE_TYPE,BiomeMakeover.id("lightning_spark"),FabricParticleTypes.simple());
     public static final SimpleParticleType BLOSSOM=Registry.register(BuiltInRegistries.PARTICLE_TYPE,BiomeMakeover.id("blossom"),FabricParticleTypes.simple());
+    public static final SimpleParticleType POLTERGEIST=Registry.register(BuiltInRegistries.PARTICLE_TYPE,BiomeMakeover.id("poltergeist"),FabricParticleTypes.simple());
     private BMParticles(){}
     public static void initialize(){}
 }
