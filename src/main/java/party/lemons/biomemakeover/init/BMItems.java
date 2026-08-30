@@ -37,6 +37,8 @@ import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.entity.DecoratedPotPattern;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
+import party.lemons.biomemakeover.util.loot.BetterLootTableReference;
 
 public final class BMItems {
     public static final TagKey<Item> CURSE_FUEL = TagKey.create(Registries.ITEM, BiomeMakeover.id("curse_fuel"));
@@ -47,6 +49,10 @@ public final class BMItems {
         Registries.JUKEBOX_SONG, BiomeMakeover.id("swamp_jives"));
     public static final ResourceKey<JukeboxSong> GHOST_TOWN_SONG = ResourceKey.create(
         Registries.JUKEBOX_SONG, BiomeMakeover.id("ghost_town"));
+    public static final LootPoolEntryType BETTER_LOOTTABLE_REFERENCE = Registry.register(
+        BuiltInRegistries.LOOT_POOL_ENTRY_TYPE,
+        ResourceKey.create(Registries.LOOT_POOL_ENTRY_TYPE, BiomeMakeover.id("loot_table")),
+        new LootPoolEntryType(BetterLootTableReference.CODEC));
     public static final Item LEAF_LITTER = register("leaf_litter");
     public static final Item OWL_EGG = register("owl_egg");
     private static final FoodProperties GLOWFISH_FOOD = new FoodProperties(1, 0.1F, true);
