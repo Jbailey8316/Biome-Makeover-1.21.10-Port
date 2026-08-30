@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Either;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -97,9 +98,9 @@ public final class MansionFeature extends Structure {
         }
     }
 
-    private record EnvelopePiece(ServerLevel level, String template, Set<BlockPos> authoredDry) {
-        private EnvelopePiece(ServerLevel level, String template, List<BlockPos> authoredDry) {
-            this(level, template, Set.copyOf(authoredDry));
+    private record EnvelopePiece(ServerLevel level, String template, Set<BlockPos> authoredDry, Set<BlockPos> architecturalInterior) {
+        private EnvelopePiece(ServerLevel level, String template, List<BlockPos> authoredDry, List<BlockPos> architecturalInterior) {
+            this(level, template, Set.copyOf(authoredDry), Set.copyOf(architecturalInterior));
         }
     }
 
@@ -108,24 +109,31 @@ public final class MansionFeature extends Structure {
         private final String template;
         private final Rotation rotation;
         private final List<BlockPos> authoredDry;
+        private final List<BlockPos> architecturalInterior;
         private final long order;
         private final java.util.Set<BlockPos> previouslyWet = new java.util.HashSet<>();
         private int age;
 
-        private DelayedFluidTrace(ServerLevel level, String template, Rotation rotation, List<BlockPos> authoredDry, long order) {
-            this.level = level; this.template = template; this.rotation = rotation; this.authoredDry = List.copyOf(authoredDry); this.order = order;
+        private DelayedFluidTrace(ServerLevel level, String template, Rotation rotation, List<BlockPos> authoredDry,
+                                  List<BlockPos> architecturalInterior, long order) {
+            this.level = level; this.template = template; this.rotation = rotation;
+            this.authoredDry = List.copyOf(authoredDry); this.architecturalInterior = List.copyOf(architecturalInterior); this.order = order;
         }
 
         private void snapshot(ServerLevel level, String phase) {
             int water = 0, source = 0, flowing = 0;
             int newlyWet = 0;
-            for (BlockPos pos : authoredDry) {
+            for (BlockPos pos : architecturalInterior) {
                 var fluid = level.getFluidState(pos);
                 if (fluid.is(Fluids.WATER)) {
                     water++;
                     if (fluid.isSource()) source++; else flowing++;
                     if (previouslyWet.add(pos) && newlyWet++ < 12) {
                         String classification = envelopeClassification(level, pos);
+                        if (!authoredDry.contains(pos)) {
+                            BiomeMakeover.LOGGER.info("[BM_UNTRACKED_STAIR_WATER] world={} template={} runtimeBlock={} fluid={} explicitMask=false architecturalInterior=true neighborOwnership={}",
+                                pos, template, level.getBlockState(pos).getBlock(), fluid, envelopeNeighbor(level, pos));
+                        }
                         BiomeMakeover.LOGGER.info("[BM_FLUID_REENTRY] template={} local=<static-mask> world={} firstWetPhase={} fluid={} sourceOrFlowing={} neighborN={} neighborE={} neighborS={} neighborW={} neighborUp={} neighborDown={} owningDungeonPiece={} boundaryPosition={} intentionalOpening={} classification={}",
                             template, pos, phase, fluid, fluid.isSource() ? "SOURCE" : "FLOWING", level.getBlockState(pos.north()).getBlock(),
                             level.getBlockState(pos.east()).getBlock(), level.getBlockState(pos.south()).getBlock(), level.getBlockState(pos.west()).getBlock(),
@@ -136,13 +144,20 @@ public final class MansionFeature extends Structure {
                     }
                 }
             }
-            BiomeMakeover.LOGGER.info("[BM_DUNGEON_FLUID_DELAYED] template={} rotation={} phase={} authoredDryPositions={} waterInAuthoredDry={} sourceWaterInAuthoredDry={} flowingWaterInAuthoredDry={} newlyWetPositions={} orderIndex={}",
+            BiomeMakeover.LOGGER.info("[BM_DUNGEON_FLUID_DELAYED] template={} rotation={} phase={} authoredDryPositions={} waterInArchitecturalInterior={} sourceWaterInArchitecturalInterior={} flowingWaterInArchitecturalInterior={} newlyWetPositions={} orderIndex={}",
                 template, rotation, phase, authoredDry.size(), water, source, flowing, newlyWet, order);
+            if (template.contains("/stair_")) {
+                int explicitWater = 0;
+                for (BlockPos pos : authoredDry) if (level.getFluidState(pos).is(Fluids.WATER)) explicitWater++;
+                BiomeMakeover.LOGGER.info("[BM_STAIR_FLUID_COVERAGE] template={} rotation={} explicitDryCount={} architecturalInteriorCount={} waterInExplicitDry={} waterInArchitecturalInterior={} waterOutsideExplicitMaskButInsideInterior={} phase={}",
+                    template, rotation, authoredDry.size(), architecturalInterior.size(), explicitWater, water,
+                    Math.max(0, water - explicitWater), phase);
+            }
         }
 
         private String envelopeClassification(ServerLevel level, BlockPos pos) {
             Set<BlockPos> union = new java.util.HashSet<>();
-            for (EnvelopePiece piece : DUNGEON_ENVELOPE) if (piece.level() == level) union.addAll(piece.authoredDry());
+            for (EnvelopePiece piece : DUNGEON_ENVELOPE) if (piece.level() == level) union.addAll(piece.architecturalInterior());
             boolean n = union.contains(pos.north()), e = union.contains(pos.east()), s = union.contains(pos.south()),
                 w = union.contains(pos.west()), up = union.contains(pos.above()), down = union.contains(pos.below());
             if (n && e && s && w && up && down) return "UNION_INTERIOR";
@@ -152,7 +167,7 @@ public final class MansionFeature extends Structure {
 
         private String envelopeNeighbor(ServerLevel level, BlockPos pos) {
             Set<BlockPos> union = new java.util.HashSet<>();
-            for (EnvelopePiece piece : DUNGEON_ENVELOPE) if (piece.level() == level) union.addAll(piece.authoredDry());
+            for (EnvelopePiece piece : DUNGEON_ENVELOPE) if (piece.level() == level) union.addAll(piece.architecturalInterior());
             return (union.contains(pos) ? "UNION_DRY" : "OUTSIDE") + ":" + level.getBlockState(pos).getBlock();
         }
     }
@@ -306,6 +321,7 @@ public final class MansionFeature extends Structure {
                 traceFluidInterior(level, "W0", order);
             }
             List<BlockPos> staticAuthoredDry = dungeonAuthoredDryPositions();
+            List<BlockPos> architecturalInterior = dungeonArchitecturalInterior(bounds);
             super.postProcess(level, structureManager, generator, random, bounds, chunkPos, pivot);
             if (TRACE) {
                 BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=AFTER_TEMPLATE thread={} timestamp={} orderIndex={}",
@@ -362,8 +378,8 @@ public final class MansionFeature extends Structure {
                     BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_BEGIN template={} orderIndex={} workerThread={} registrationId={}",
                         diagnosticTemplate, order, Thread.currentThread().getName(), order);
                     DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
-                        placeSettings.getRotation(), staticAuthoredDry, order));
-                    DUNGEON_ENVELOPE.add(new EnvelopePiece(serverLevel, diagnosticTemplate, staticAuthoredDry));
+                        placeSettings.getRotation(), staticAuthoredDry, architecturalInterior, order));
+                    DUNGEON_ENVELOPE.add(new EnvelopePiece(serverLevel, diagnosticTemplate, staticAuthoredDry, architecturalInterior));
                     if (DUNGEON_ENVELOPE.size() > 512) DUNGEON_ENVELOPE.remove(0);
                     BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_END template={} orderIndex={} registrationId={}",
                         diagnosticTemplate, order, order);
@@ -465,6 +481,38 @@ public final class MansionFeature extends Structure {
                 for (var info : template.filterBlocks(templatePosition, placeSettings, block)) positions.add(info.pos());
             }
             return positions;
+        }
+
+        private List<BlockPos> dungeonArchitecturalInterior(BoundingBox bounds) {
+            if (!diagnosticTemplate.contains("/dungeon/")) return List.of();
+            java.util.Set<BlockPos> solid = new java.util.HashSet<>();
+            for (Block block : BuiltInRegistries.BLOCK) {
+                for (var info : template.filterBlocks(templatePosition, placeSettings, block)) {
+                    BlockState state = info.state();
+                    if (!state.isAir() && !state.is(Blocks.STRUCTURE_VOID) && !state.getFluidState().is(Fluids.WATER)) solid.add(info.pos());
+                }
+            }
+            java.util.Set<BlockPos> exterior = new java.util.HashSet<>();
+            java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+            for (int x = bounds.minX(); x <= bounds.maxX(); x++) for (int y = bounds.minY(); y <= bounds.maxY(); y++) for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                if (x != bounds.minX() && x != bounds.maxX() && y != bounds.minY() && y != bounds.maxY() && z != bounds.minZ() && z != bounds.maxZ()) continue;
+                BlockPos p = new BlockPos(x, y, z);
+                if (!solid.contains(p) && exterior.add(p)) queue.add(p);
+            }
+            while (!queue.isEmpty()) {
+                BlockPos p = queue.remove();
+                for (Direction direction : Direction.values()) {
+                    BlockPos next = p.relative(direction);
+                    if (next.getX() < bounds.minX() || next.getX() > bounds.maxX() || next.getY() < bounds.minY() || next.getY() > bounds.maxY() || next.getZ() < bounds.minZ() || next.getZ() > bounds.maxZ()) continue;
+                    if (!solid.contains(next) && exterior.add(next)) queue.add(next);
+                }
+            }
+            List<BlockPos> interior = new java.util.ArrayList<>();
+            for (int x = bounds.minX(); x <= bounds.maxX(); x++) for (int y = bounds.minY(); y <= bounds.maxY(); y++) for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                BlockPos p = new BlockPos(x, y, z);
+                if (!solid.contains(p) && !exterior.contains(p)) interior.add(p);
+            }
+            return interior;
         }
 
         private static String neighborSummary(WorldGenLevel level, BlockPos pos) {
