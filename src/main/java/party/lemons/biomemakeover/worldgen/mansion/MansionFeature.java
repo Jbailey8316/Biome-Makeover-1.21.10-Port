@@ -355,23 +355,32 @@ public final class MansionFeature extends Structure {
             String[] parts = metadata.split("_");
             if (parts.length < 2) return;
             int chance = parts.length < 3 ? 100 : Integer.parseInt(parts[2]);
+            BlockState replacement = null;
+            if (parts.length >= 4) {
+                StringBuilder id = new StringBuilder();
+                for (int i = 3; i < parts.length; i++) id.append(parts[i]).append('_');
+                ResourceLocation replacementId = ResourceLocation.parse(id.substring(0, id.length() - 1));
+                Block replacementBlock = world.registryAccess().lookupOrThrow(Registries.BLOCK).getValue(replacementId);
+                replacement = replacementBlock == null ? null : replacementBlock.defaultBlockState();
+            }
             if (random.nextInt(100) > chance) {
                 world.setBlock(containerPos, Blocks.AIR.defaultBlockState(), 3);
-                return;
+            } else {
+                ResourceLocation table = switch (parts[1]) {
+                    case "arrow" -> details.loot().arrow();
+                    case "dungeonjunk" -> details.loot().dungeonJunk();
+                    case "dungeon" -> details.loot().dungeonStandard();
+                    case "dungeongood" -> details.loot().dungeonGood();
+                    case "junk" -> details.loot().junk();
+                    case "standard", "common" -> details.loot().standard();
+                    case "good", "loot" -> details.loot().good();
+                    default -> null;
+                };
+                if (table != null && world.getBlockEntity(containerPos) instanceof RandomizableContainerBlockEntity container) {
+                    container.setLootTable(net.minecraft.resources.ResourceKey.create(Registries.LOOT_TABLE, table), random.nextLong());
+                }
             }
-            ResourceLocation table = switch (parts[1]) {
-                case "arrow" -> details.loot().arrow();
-                case "dungeonjunk" -> details.loot().dungeonJunk();
-                case "dungeon" -> details.loot().dungeonStandard();
-                case "dungeongood" -> details.loot().dungeonGood();
-                case "junk" -> details.loot().junk();
-                case "standard", "common" -> details.loot().standard();
-                case "good", "loot" -> details.loot().good();
-                default -> null;
-            };
-            if (table != null && world.getBlockEntity(containerPos) instanceof RandomizableContainerBlockEntity container) {
-                container.setLootTable(net.minecraft.resources.ResourceKey.create(Registries.LOOT_TABLE, table), random.nextLong());
-            }
+            if (replacement != null) world.setBlock(marker, replacement, 3);
         }
 
         private void handleSpawning(String metadata, WorldGenLevel world, BlockPos position, List<EntityType<?>> pool) {
