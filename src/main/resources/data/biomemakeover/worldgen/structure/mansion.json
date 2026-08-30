@@ -250,12 +250,12 @@
   },
   "details": {
     "mobs": {
-      "enemies": [],
-      "ranged_enemies": [],
+      "enemies": ["minecraft:vindicator", "minecraft:evoker", "minecraft:pillager"],
+      "ranged_enemies": ["minecraft:pillager"],
       "golem_enemies": [],
-      "ravagers": [],
-      "cow": [],
-      "allays": []
+      "ravagers": ["minecraft:ravager"],
+      "cow": ["minecraft:cow"],
+      "allays": ["minecraft:allay"]
     },
     "loot": {
       "arrow": "biomemakeover:mansion/arrows",
