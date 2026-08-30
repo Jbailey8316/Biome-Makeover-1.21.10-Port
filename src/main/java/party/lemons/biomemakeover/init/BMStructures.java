@@ -6,6 +6,7 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.worldgen.SunkenRuinStructure;
+import party.lemons.biomemakeover.worldgen.mansion.MansionFeature;
 
 /** Built-in registrations required before dynamic structure data is decoded. */
 public final class BMStructures {
@@ -18,6 +19,16 @@ public final class BMStructures {
         BuiltInRegistries.STRUCTURE_PIECE,
         BiomeMakeover.id("sunken_ruin"),
         SunkenRuinStructure.SunkenRuinPiece::new
+    );
+    public static final StructureType<MansionFeature> MANSION = Registry.register(
+        BuiltInRegistries.STRUCTURE_TYPE,
+        BiomeMakeover.id("mansion"),
+        () -> MansionFeature.CODEC
+    );
+    public static final StructurePieceType MANSION_PIECE = Registry.register(
+        BuiltInRegistries.STRUCTURE_PIECE,
+        BiomeMakeover.id("mansion"),
+        MansionFeature.Piece::new
     );
 
     private BMStructures() {}

@@ -15,10 +15,11 @@ The source tree contains **168** Mansion NBT files, of which **165** are
 referenced by the released `mansion.json`; three outer-wall variants are
 orphaned. No duplicate SHA-256 groups were found.
 
-The current 1.21.10 port contains no Mansion registrations, templates,
-Tapestry/Directional Data resources, Red Rose disc, or Mansion advancement
-branch. This is an intentional Stage 11 boundary, not an unexplained partial
-implementation. No production files were changed by this audit.
+Before 11A.1 the current 1.21.10 port contained no Mansion registrations,
+templates, Tapestry/Directional Data resources, Red Rose disc, or Mansion
+advancement branch. The 11A.1 foundation now adds only the custom structure,
+piece, codec, and local grid substrate; all physical/template/marker systems
+remain intentionally absent.
 
 ## Identity and worldgen contract
 
@@ -283,3 +284,41 @@ advancements, and the 168 files under
 `data/biomemakeover/structures/mansion/`. Supporting synthesis is
 `docs/SHOWCASE_INFORMED_WOODLAND_MANSION_AUDIT.md`; final source, not
 showcase prose, controls all future implementation decisions.
+
+## Stage 11A.1 — Mansion registry / codec / structure foundation
+
+**Status:** implemented and locally validated; physical generation remains
+deferred to 11A.2/11A.3.
+
+The port now registers `biomemakeover:mansion` as a native 1.21.10
+`StructureType` backed by `MansionFeature.CODEC`, plus the matching custom
+`MansionFeature.Piece` `StructurePieceType`. The structure codec preserves the
+released `settings`, `templates`, and `details` fields using modern
+`MapCodec`/`RecordCodecBuilder` APIs. Piece serialization retains the vanilla
+template identifier and the released `Rotation`, `Ground`, and `IsWall`
+fields through `StructurePieceSerializationContext`; marker actions are not
+executed in this stage.
+
+`MansionTemplates` mirrors the released base, tower/roof, dungeon, and other
+catalog codec shape without packaging the NBT corpus. `MansionDetails`
+preserves the released loot and mob-list codec contract while avoiding any
+Stage 12 registrations. `MansionGrid` and `MansionLayoutFoundation` are
+narrow local replacements for the Taniwha grid/math helpers: horizontal cell
+spacing is 12 blocks, floor spacing is 7 blocks, and random horizontal
+selection uses the four cardinal directions. No Taniwha runtime dependency
+was added.
+
+The codec and registrations are intentionally inert: no Mansion structure
+JSON, structure set, biome injection, or physical NBT templates are active in
+11A.1, so incomplete template resources cannot make world generation
+reachable. Template migration, DataFix/`StructureTemplate.load`, Directional
+Data substrate, marker behavior, and terrain/layout activation are explicit
+11A.2/11A.3 work. This preserves the released custom (non-jigsaw) architecture
+without placeholder generation.
+
+`Invoke-Stage11A1FoundationValidation.ps1` checks source registrations,
+packaged foundation classes, codec/serialization fields, local grid constants,
+absence of active Mansion templates/worldgen, absence of marker gameplay, and
+Taniwha-free scope. The clean offline build, Stage 10C freeze validator,
+integrated parity validator, and `git diff --check` pass. The known offline
+dedicated-server `fabric-log4j-util:1.0.2` cache limitation is unchanged.
