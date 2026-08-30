@@ -161,8 +161,9 @@ public final class MansionFeature extends Structure {
 
         private static StructurePlaceSettings settings(Rotation rotation, boolean wall) {
             return new StructurePlaceSettings().setIgnoreEntities(true)
+                .setKeepLiquids(false)
                 .setRotation(rotation).setMirror(Mirror.NONE)
-                .addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR);
+                .addProcessor(wall ? BlockIgnoreProcessor.STRUCTURE_AND_AIR : BlockIgnoreProcessor.STRUCTURE_BLOCK);
         }
 
         @Override protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
