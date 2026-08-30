@@ -26,6 +26,10 @@ import net.minecraft.world.level.block.Rotation;
 import party.lemons.biomemakeover.init.BMStructures;
 
 import java.util.Optional;
+import java.util.Collection;
+import java.util.Comparator;
+import party.lemons.biomemakeover.worldgen.mansion.room.MansionRoom;
+import party.lemons.biomemakeover.worldgen.mansion.RoomType;
 
 /**
  * Foundation for the released custom Mansion structure. Physical layout and
@@ -60,18 +64,44 @@ public final class MansionFeature extends Structure {
     public MansionTemplates templates() { return templates; }
     public MansionDetails details() { return details; }
 
+    /** Builds the released physical piece graph without activating worldgen. */
+    public static void buildLayoutPieces(StructureTemplateManager manager, BlockPos origin,
+                                         RandomSource random, MansionTemplates templates,
+                                         MansionDetails details, StructurePiecesBuilder builder) {
+        MansionLayout layout = new MansionLayout();
+        layout.generateLayout(random, origin.getY());
+        Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
+            .sorted(Comparator.comparingInt(MansionRoom::getSortValue)).toList();
+        for (MansionRoom room : rooms) {
+            int x = origin.getX() + room.getPosition().getX() * MansionLayoutFoundation.CELL_XZ;
+            int y = origin.getY() + room.getPosition().getY() * MansionLayoutFoundation.CELL_Y;
+            int z = origin.getZ() + room.getPosition().getZ() * MansionLayoutFoundation.CELL_XZ;
+            Rotation rotation = room.getRotation(random);
+            BlockPos roomPos = room.getOffsetForRotation(new BlockPos(x, y, z), rotation);
+            builder.addPiece(new Piece(details, manager, room.getTemplate(templates, random).toString(), roomPos,
+                rotation, room.getPosition().getY() == 0,
+                room.getRoomType() == RoomType.TOWER_MID || room.getRoomType() == RoomType.TOWER_TOP));
+            room.addWalls(details, templates, random, new BlockPos(x, y, z), manager, layout.getLayout(), builder);
+        }
+    }
+
     /** Serialized custom template piece; marker actions are connected later. */
     public static final class Piece extends TemplateStructurePiece {
         private final boolean ground;
         private final boolean wall;
 
-        public Piece(StructureTemplateManager manager, ResourceLocation template, BlockPos position,
+    public Piece(StructureTemplateManager manager, ResourceLocation template, BlockPos position,
                      Rotation rotation, boolean ground, boolean wall) {
             super(BMStructures.MANSION_PIECE, 0, manager, template, template.toString(),
                 settings(rotation, wall), position);
             this.ground = ground;
-            this.wall = wall;
-        }
+        this.wall = wall;
+    }
+
+    public Piece(MansionDetails ignored, StructureTemplateManager manager, String template, BlockPos position,
+                 Rotation rotation, boolean ground, boolean wall) {
+        this(manager, ResourceLocation.parse(template), position, rotation, ground, wall);
+    }
 
         public Piece(StructurePieceSerializationContext context, CompoundTag tag) {
             super(BMStructures.MANSION_PIECE, tag, context.structureTemplateManager(),

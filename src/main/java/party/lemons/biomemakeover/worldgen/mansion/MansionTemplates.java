@@ -8,6 +8,10 @@ import java.util.List;
 
 /** The released Mansion template catalog. NBT assets are introduced in 11A.2. */
 public record MansionTemplates(Base base, TowerRoof towerRoof, Dungeon dungeon, Other other) {
+    public Base baseTemplates() { return base; }
+    public TowerRoof towerRoofTemplates() { return towerRoof; }
+    public Dungeon dungeonTemplates() { return dungeon; }
+    public Other otherTemplates() { return other; }
     public static final Codec<MansionTemplates> CODEC = RecordCodecBuilder.create(i -> i.group(
         Base.CODEC.fieldOf("base").forGetter(MansionTemplates::base),
         TowerRoof.CODEC.fieldOf("tower_roof").forGetter(MansionTemplates::towerRoof),
@@ -25,6 +29,14 @@ public record MansionTemplates(Base base, TowerRoof towerRoof, Dungeon dungeon, 
                        List<ResourceLocation> outerWallBase, List<ResourceLocation> outerWall,
                        List<ResourceLocation> outerWindow, List<ResourceLocation> garden,
                        List<ResourceLocation> entrance) {
+        public List<ResourceLocation> CORRIDOR_STRAIGHT(){ return corridorStraight; } public List<ResourceLocation> CORRIDOR_CORNER(){ return corridorCorner; }
+        public List<ResourceLocation> CORRIDOR_T(){ return corridorT; } public List<ResourceLocation> CORRIDOR_CROSS(){ return corridorCross; }
+        public List<ResourceLocation> ROOMS(){ return rooms; } public List<ResourceLocation> ROOMS_BIG(){ return roomsBig; }
+        public List<ResourceLocation> STAIRS_UP(){ return stairUp; } public List<ResourceLocation> STAIRS_DOWN(){ return stairDown; }
+        public List<ResourceLocation> INNER_WALL(){ return innerWall; } public List<ResourceLocation> FLAT_WALL(){ return flatWall; }
+        public List<ResourceLocation> OUTER_WALL_BASE(){ return outerWallBase; } public List<ResourceLocation> OUTER_WALL(){ return outerWall; }
+        public List<ResourceLocation> OUTER_WINDOW(){ return outerWindow; } public List<ResourceLocation> GARDEN(){ return garden; }
+        public List<ResourceLocation> ENTRANCE(){ return entrance; }
         public static final Codec<Base> CODEC = RecordCodecBuilder.create(i -> i.group(
             list().fieldOf("corridor_straight").forGetter(Base::corridorStraight),
             list().fieldOf("corridor_corner").forGetter(Base::corridorCorner),
@@ -49,6 +61,11 @@ public record MansionTemplates(Base base, TowerRoof towerRoof, Dungeon dungeon, 
                             List<ResourceLocation> roof1, List<ResourceLocation> roof2,
                             List<ResourceLocation> roof2Straight, List<ResourceLocation> roof3,
                             List<ResourceLocation> roof4, List<ResourceLocation> roofSplit) {
+        public List<ResourceLocation> TOWER_BASE(){ return towerBase; } public List<ResourceLocation> TOWER_MID(){ return towerMid; }
+        public List<ResourceLocation> TOWER_TOP(){ return towerTop; } public List<ResourceLocation> ROOF_0(){ return roof0; }
+        public List<ResourceLocation> ROOF_1(){ return roof1; } public List<ResourceLocation> ROOF_2(){ return roof2; }
+        public List<ResourceLocation> ROOF_2_STRAIGHT(){ return roof2Straight; } public List<ResourceLocation> ROOF_3(){ return roof3; }
+        public List<ResourceLocation> ROOF_4(){ return roof4; } public List<ResourceLocation> ROOF_SPLIT(){ return roofSplit; }
         public static final Codec<TowerRoof> CODEC = RecordCodecBuilder.create(i -> i.group(
             list().fieldOf("tower_base").forGetter(TowerRoof::towerBase),
             list().fieldOf("tower_mid").forGetter(TowerRoof::towerMid),
@@ -67,6 +84,10 @@ public record MansionTemplates(Base base, TowerRoof towerRoof, Dungeon dungeon, 
                           List<ResourceLocation> room, List<ResourceLocation> stairBottom,
                           List<ResourceLocation> stairMid, List<ResourceLocation> stairTop,
                           List<ResourceLocation> bossRoom) {
+        public List<ResourceLocation> DUNGEON_DOOR(){ return door; } public List<ResourceLocation> DUNGEON_WALL(){ return wall; }
+        public List<ResourceLocation> DUNGEON_ROOM(){ return room; } public List<ResourceLocation> DUNGEON_STAIRS_BOTTOM(){ return stairBottom; }
+        public List<ResourceLocation> DUNGEON_STAIRS_MID(){ return stairMid; } public List<ResourceLocation> DUNGEON_STAIR_TOP(){ return stairTop; }
+        public List<ResourceLocation> BOSS_ROOM(){ return bossRoom; }
         public static final Codec<Dungeon> CODEC = RecordCodecBuilder.create(i -> i.group(
             list().fieldOf("dungeon_door").forGetter(Dungeon::door),
             list().fieldOf("dungeon_wall").forGetter(Dungeon::wall),
@@ -79,6 +100,7 @@ public record MansionTemplates(Base base, TowerRoof towerRoof, Dungeon dungeon, 
     }
 
     public record Other(List<ResourceLocation> cornerFillers, List<ResourceLocation> empties) {
+        public List<ResourceLocation> CORNER_FILLERS(){ return cornerFillers; } public List<ResourceLocation> EMPTIES(){ return empties; }
         public static final Codec<Other> CODEC = RecordCodecBuilder.create(i -> i.group(
             list().fieldOf("corner_fillers").forGetter(Other::cornerFillers),
             list().fieldOf("empties").forGetter(Other::empties)

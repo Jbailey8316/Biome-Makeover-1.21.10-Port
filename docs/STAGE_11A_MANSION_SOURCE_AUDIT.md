@@ -357,3 +357,20 @@ natural generation remain absent.
 physical layout activation, terrain/beardifier hookup, marker dispatch, loot,
 Tapestries, and Stage 12 entities remain **DEFERRED**. The principal next
 risk is integrating custom layout placement without erasing marker metadata.
+
+## 11A.3.1 — Layout engine restoration
+
+The released physical layout package is now present while world generation
+remains disabled. `MansionLayout`, all released room/layout subclasses,
+floor-replacement processors, template selectors, and the dungeon geometry
+planner were ported into the modern package. `MansionGrid` and `MansionMath`
+are bounded local replacements for the released Taniwha helpers; no Taniwha
+runtime dependency is introduced. The engine preserves 12-block horizontal
+cell spacing, 7-block floor spacing, room/corridor/stair/wall/roof/tower/
+garden/root/dungeon selection, and creates real template-backed Piece objects.
+
+Marker metadata remains inert: no mobs, loot, spawners, bosses, functional
+Tapestries, or Stage 12 systems run during layout construction. The 168
+templates remain byte-identical (165 active, three known wall orphans
+inactive). No structure JSON, structure set, biome injection, `/locate`, or
+terrain adaptation was enabled; these are owned by Stage 11A.3.2.

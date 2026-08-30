@@ -15,8 +15,14 @@ public final class MansionGrid<T> {
     public boolean contains(BlockPos pos) { return cells.containsKey(pos); }
     public T get(BlockPos pos) { return cells.get(pos); }
     public void set(BlockPos pos, T value) { cells.put(pos, value); }
+    public void put(BlockPos pos, T value) { cells.put(pos, value); }
     public T remove(BlockPos pos) { return cells.remove(pos); }
     public Collection<T> entries() { return Collections.unmodifiableCollection(cells.values()); }
+    public Collection<T> getEntries() { return entries(); }
+    public int getMinX() { return cells.keySet().stream().mapToInt(BlockPos::getX).min().orElse(0); }
+    public int getMaxX() { return cells.keySet().stream().mapToInt(BlockPos::getX).max().orElse(0); }
+    public int getMinZ() { return cells.keySet().stream().mapToInt(BlockPos::getZ).min().orElse(0); }
+    public int getMaxZ() { return cells.keySet().stream().mapToInt(BlockPos::getZ).max().orElse(0); }
     public int size() { return cells.size(); }
     public BlockPos neighbor(BlockPos pos, Direction direction) { return pos.relative(direction); }
 }
