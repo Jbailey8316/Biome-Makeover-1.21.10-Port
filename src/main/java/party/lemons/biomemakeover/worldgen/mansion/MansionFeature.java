@@ -217,7 +217,7 @@ public final class MansionFeature extends Structure {
         String rejection = spread > 40 ? "SPREAD" : maxAbove > 20 ? "TERRAIN_ABOVE_BASE" : maxGap > 20 ? "TERRAIN_GAP" : "";
         if (!rejection.isEmpty()) {
             if (Boolean.getBoolean("bm.mansion.trace")) BiomeMakeover.LOGGER.info("[BM_MANSION_SITE_REJECT] chunk={} median={} min={} max={} spread={} baseY={} maxTerrainAboveBase={} maxGapBelowBase={} reason={}",
-                terrainSamples.stream().sorted().toList().get(terrainSamples.size() / 2), minTerrain, maxTerrain, spread, baseY, maxAbove, maxGap, rejection);
+                context.chunkPos(), terrainSamples.stream().sorted().toList().get(terrainSamples.size() / 2), minTerrain, maxTerrain, spread, baseY, maxAbove, maxGap, rejection);
             return Optional.empty();
         }
         BlockPos origin = new BlockPos(context.chunkPos().getMinBlockX(), baseY, context.chunkPos().getMinBlockZ());
@@ -432,6 +432,12 @@ public final class MansionFeature extends Structure {
                     }
                 }
             }
+            // Modern structure placement can merge an existing source fluid into
+            // waterloggable blocks even when keepLiquids(false) is set.  Released
+            // Mansion dungeon templates explicitly authored these states as dry;
+            // restore only those transformed template cells, leaving authored wet
+            // states and all surrounding world fluid untouched.
+            if (diagnosticTemplate.contains("/dungeon/")) restoreAuthoredDryWaterloggedStates(level, authoredStates);
             if (TRACE) traceFluidInterior(level, "W2", order);
             if (TRACE) traceCrops(level, "C2");
             if (TRACE && diagnosticTemplate.contains("/dungeon/")) traceWaterlogTransitions(level, authoredStates, "P2");
@@ -569,6 +575,19 @@ public final class MansionFeature extends Structure {
                     diagnosticTemplate, entry.getKey().subtract(templatePosition), entry.getKey(), authored.getBlock(), authored,
                     "waterlogged", authored.getValue(BlockStateProperties.WATERLOGGED), phase, runtime,
                     level.getFluidState(entry.getKey()), "piece-local");
+            }
+        }
+
+        private void restoreAuthoredDryWaterloggedStates(WorldGenLevel level, Map<BlockPos, BlockState> authoredStates) {
+            for (var entry : authoredStates.entrySet()) {
+                BlockState authored = entry.getValue();
+                if (!authored.hasProperty(BlockStateProperties.WATERLOGGED)
+                    || authored.getValue(BlockStateProperties.WATERLOGGED)) continue;
+                BlockState runtime = level.getBlockState(entry.getKey());
+                if (runtime.is(authored.getBlock()) && runtime.hasProperty(BlockStateProperties.WATERLOGGED)
+                    && runtime.getValue(BlockStateProperties.WATERLOGGED)) {
+                    level.setBlock(entry.getKey(), authored, 3);
+                }
             }
         }
 
