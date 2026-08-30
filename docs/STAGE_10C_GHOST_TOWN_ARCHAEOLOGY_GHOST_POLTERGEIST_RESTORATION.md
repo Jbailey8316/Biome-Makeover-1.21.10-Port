@@ -419,6 +419,30 @@ relevant advancement, then save/reload and confirm no errors. Commands
 Runtime acceptance remains pending this Prism pass; Stage 10C.4 is
 implemented but not closed.
 
+### Stage 10C.4 runtime blocker remediation: processor number providers
+
+The first Prism world-creation attempt exposed a 1.21.10 dynamic-registry
+codec failure in `biomemakeover:ghosttown_building`. The released processor
+JSON used the older nested UniformInt form (`"value": {"min_inclusive":
+..., "max_inclusive": ...}`). In the modern `UniformInt` MapCodec those two
+fields are direct members of the `minecraft:uniform` provider; the enclosing
+`minecraft:weighted_list` still uses its `distribution` entries with `data`
+and `weight`.
+
+`ghosttown_building.json` now uses the direct modern fields while preserving
+the released weighted ranges and weights exactly: 20 × 1–5, 10 × 3–10, 4 ×
+7–15, and 1 × 20–35 (all inclusive). A real 1.21.10 codec validator boots
+the vanilla registries and decodes `FillBookshelvesProcessor.CODEC`, then
+decodes and checks each UniformInt range from the packaged resource. The
+Stage 10C.4 PowerShell validator performs the same semantic checks on source
+and packaged JSON. The other Stage 10C.4 provider resources were audited; no
+additional occurrence of this obsolete nested UniformInt shape was found.
+
+This remediation changes only the processor provider serialization and its
+audit validation. Stage 10C.4 remains implemented and awaiting the next
+Prism runtime validation; no structure, template, pool, loot, or gameplay
+behavior was changed.
+
 ## Scope boundary and deferred work
 
 No Mansion, Witch quest/primary Witch Hat drop, Crude gameplay, Stone Golem,

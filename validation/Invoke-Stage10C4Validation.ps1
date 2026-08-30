@@ -46,6 +46,46 @@ try {
         $null = Read-Jar $path | ConvertFrom-Json
     }
 
+    function Assert-GhostTownBuildingProvider([object]$building, [string]$label) {
+        $fill = @($building.processors | Where-Object { $_.processor_type -eq 'biomemakeover:fill_bookshelves' })
+        if ($fill.Count -ne 1) { throw "$label must contain exactly one fill_bookshelves processor" }
+        $level = $fill[0].enchantment_level
+        if ($level.type -ne 'minecraft:weighted_list') { throw "$label enchantment_level must use minecraft:weighted_list" }
+        $distribution = @($level.distribution)
+        if ($distribution.Count -ne 4) { throw "$label enchantment_level must contain four weighted providers" }
+        $expected = @(
+            @{ weight = 20; min = 1; max = 5 },
+            @{ weight = 10; min = 3; max = 10 },
+            @{ weight = 4; min = 7; max = 15 },
+            @{ weight = 1; min = 20; max = 35 }
+        )
+        for ($i = 0; $i -lt $expected.Count; $i++) {
+            $entry = $distribution[$i]
+            $data = $entry.data
+            if ($entry.weight -ne $expected[$i].weight -or $data.type -ne 'minecraft:uniform' -or
+                $data.min_inclusive -ne $expected[$i].min -or $data.max_inclusive -ne $expected[$i].max) {
+                throw "$label enchantment_level provider $i differs from the released weighted range" }
+            if ($data.PSObject.Properties.Name -contains 'value') {
+                throw "$label uses the obsolete nested UniformInt value object; 1.21.10 requires direct min_inclusive/max_inclusive fields" }
+        }
+    }
+
+    function Assert-NoObsoleteUniformProvider([object]$node, [string]$label) {
+        if ($null -eq $node) { return }
+        if ($node -is [System.Array]) {
+            foreach ($child in $node) { Assert-NoObsoleteUniformProvider $child $label }
+            return
+        }
+        if ($node -is [pscustomobject]) {
+            if ($node.type -eq 'minecraft:uniform' -and $node.PSObject.Properties.Name -contains 'value') {
+                throw "$label contains obsolete nested UniformInt value; 1.21.10 requires direct min_inclusive/max_inclusive fields"
+            }
+            foreach ($property in $node.PSObject.Properties) {
+                Assert-NoObsoleteUniformProvider $property.Value $label
+            }
+        }
+    }
+
     # The released resource tree contains one center, seven road roots, fifteen
     # decorations, and twenty-seven houses (50 NBT files). The old audit prose
     # called this 40; the source/resource graph is authoritative.
@@ -110,6 +150,27 @@ try {
     $centerPool = Read-SourceJson 'src/main/resources/data/biomemakeover/worldgen/template_pool/ghosttown/centers.json'
     if (@($centerPool.elements).Count -ne 7 -or @($centerPool.elements | Where-Object { $_.element.location -match '/roads/street_0[1-7]$' }).Count -ne 7) { throw 'Ghost Town must retain seven road roots' }
     foreach ($path in @('data/biomemakeover/worldgen/processor_list/ghosttown_building.json','data/biomemakeover/worldgen/processor_list/ghosttown_roads.json')) { Require-JsonPair $path }
+    # Minecraft 1.21.10 UniformInt's MapCodec consumes min_inclusive and
+    # max_inclusive directly.  The released 1.20.1 shape nested those fields
+    # under `value`, which the modern codec interprets as a missing/invalid
+    # provider. Check both source and packaged JSON so processResources cannot
+    # reintroduce the runtime registry-load failure.
+    Assert-GhostTownBuildingProvider (Read-SourceJson 'src/main/resources/data/biomemakeover/worldgen/processor_list/ghosttown_building.json') 'source ghosttown_building.json'
+    Assert-GhostTownBuildingProvider ((Read-Jar 'data/biomemakeover/worldgen/processor_list/ghosttown_building.json') | ConvertFrom-Json) 'packaged ghosttown_building.json'
+    # Audit every JSON resource in the Stage 10C.4 structure graph, not just
+    # the currently failing processor, for the same old provider shape.
+    $stage10c4JsonRoots = @('structure','structure_set','template_pool','processor_list')
+    foreach ($rootName in $stage10c4JsonRoots) {
+        $sourceRoot = Join-Path $Root "src/main/resources/data/biomemakeover/worldgen/$rootName"
+        if (Test-Path $sourceRoot) {
+            foreach ($jsonFile in Get-ChildItem $sourceRoot -Recurse -File -Filter '*.json') {
+                Assert-NoObsoleteUniformProvider (Get-Content $jsonFile.FullName -Raw | ConvertFrom-Json) $jsonFile.FullName
+            }
+        }
+    }
+    foreach ($path in @($entries.Keys | Where-Object { $_ -match '^data/biomemakeover/worldgen/(structure|structure_set|template_pool|processor_list)/.+\.json$' })) {
+        Assert-NoObsoleteUniformProvider (Read-Jar $path | ConvertFrom-Json) "packaged $path"
+    }
     foreach ($processor in @('biomemakeover:ghost_town_loot','biomemakeover:fill_bookshelves','biomemakeover:suspicious_block_replacement')) {
         if (!(Select-String -LiteralPath (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/init/BMStructureProcessors.java') -Pattern ($processor.Split(':')[1]) -SimpleMatch -Quiet)) { throw "Processor registration missing $processor" }
     }
