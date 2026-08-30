@@ -2,6 +2,7 @@ package party.lemons.biomemakeover.worldgen.mansion;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +12,7 @@ import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
@@ -54,9 +56,32 @@ public final class MansionFeature extends Structure {
 
     @Override
     protected Optional<GenerationStub> findGenerationPoint(GenerationContext context) {
-        // No template corpus is packaged in 11A.1. Keeping the registered
-        // codec inert prevents incomplete Mansion worldgen from activating.
-        return Optional.empty();
+        StructurePiecesBuilder builder = new StructurePiecesBuilder();
+        MansionLayout layout = new MansionLayout();
+        BlockPos origin = new BlockPos(
+            context.chunkPos().getMinBlockX(),
+            context.chunkGenerator().getBaseHeight(
+                context.chunkPos().getMinBlockX(), context.chunkPos().getMinBlockZ(),
+                Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState()),
+            context.chunkPos().getMinBlockZ());
+        layout.generateLayout(context.random(), origin.getY());
+        Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
+            .sorted(Comparator.comparingInt(MansionRoom::getSortValue)).toList();
+        for (MansionRoom room : rooms) {
+            int x = origin.getX() + room.getPosition().getX() * MansionLayoutFoundation.CELL_XZ;
+            int y = origin.getY() + room.getPosition().getY() * MansionLayoutFoundation.CELL_Y;
+            int z = origin.getZ() + room.getPosition().getZ() * MansionLayoutFoundation.CELL_XZ;
+            Rotation rotation = room.getRotation(context.random());
+            BlockPos roomPos = room.getOffsetForRotation(new BlockPos(x, y, z), rotation);
+            builder.addPiece(new Piece(details, context.structureTemplateManager(),
+                room.getTemplate(templates, context.random()).toString(), roomPos, rotation,
+                room.getPosition().getY() == 0,
+                room.getRoomType() == RoomType.TOWER_MID || room.getRoomType() == RoomType.TOWER_TOP));
+            room.addWalls(details, templates, context.random(), new BlockPos(x, y, z),
+                context.structureTemplateManager(), layout.getLayout(), builder);
+        }
+        return Optional.of(new GenerationStub(
+            getLowestYIn5by5BoxOffset7Blocks(context, Rotation.NONE), Either.right(builder)));
     }
 
     @Override public StructureType<?> type() { return BMStructures.MANSION; }
