@@ -490,3 +490,45 @@ Adjudicator, Mimic, Beach/Stage 13, historical Badlands revival, free-roaming
 Badlands Ghost spawning, terrain-blending polish, or Mythas enhancement is
 included. Existing-world compatibility relies on normal new-chunk structure
 generation; no retro-generation is introduced.
+
+### Stage 10C.5 — integrated parity freeze
+
+The final source-ownership walk and packaged-graph audit found no unexplained
+missing active Stage 10C feature and no active parity defect. Stages 10C.1
+through 10C.4 remain bounded to the released paranormal family: Ectoplasm,
+Possessed, Ghost, Suspicious Red Sand/archaeology, Ectoplasm Composter,
+Poltergeist, Ghost Town worldgen and its 50 templates, processors, loot,
+pottery/Crude Fragment dependencies, disc/audio, structure-only Ghost spawn,
+and the Stage 10C advancement chain. Each cross-system edge resolves in the
+packaged JAR, including processor → suspicious sand → archaeology loot,
+structure → Ghost spawn override, Ectoplasm → Composter/recipe, and
+Possessed → Poltergeist actions.
+
+The authoritative Ghost Town inventory is 50 templates (one center, seven
+roads, 27 houses, and 15 decorations including three water towers), all under
+the singular `data/biomemakeover/structure/ghosttown/` path. Source bytes,
+hashes, DataFix/StructureTemplate loading, pool references, and the narrow
+`bell_decoration_1`/`tree_decoration_1` filename corrections are frozen. The
+`ghosttown_building` codec remediation retains the direct 1.21.10 UniformInt
+fields and exact weighted ranges 20×1–5, 10×3–10, 4×7–15, and 1×20–35.
+
+Crude Fragment is intentionally registered only as an active Ghost Town
+archaeology dependency; broader Crude/cladding/armor/Pillager behavior remains
+Stage 12B. Witch quests and primary Witch Hat drops remain Stage 12A. Mansion,
+Stone Golem, Adjudicator, Mimics, Enchanted Totem, Beach/Stage 13, and other
+later or historical/showcase content remain excluded. No Mythas enhancement
+was introduced, and Taniwha remains absent as a runtime dependency.
+
+`Invoke-Stage10CFreezeValidation.ps1` is the integrated freeze gate. It checks
+the packaged 50-template graph, structure/set anchors, archaeology and disc
+edges, comparator value 15, structure-only Ghost ownership, Taniwha absence,
+and later-stage registration boundaries; the detailed 10C.1–10C.4 validators
+remain in place. The full offline build, real processor codec, template
+DataFix/load, per-stage validators, integrated parity checks, leakage scans,
+and `git diff --check` all pass. The known uncached
+`net.fabricmc:fabric-log4j-util:1.0.2` dedicated-server limitation is an
+environmental gate only and was not worked around.
+
+Stage 10C.5 is **COMPLETE / PARITY FROZEN** and Stage 10C is **COMPLETE**.
+The occasional clumsy Ghost terrain pathing remains the previously accepted
+non-blocking observation; no pathfinding polish was added. Stage 11A is next.
