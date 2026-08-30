@@ -142,6 +142,26 @@ The final accepted candidate was built and tested as
 stage handoff). Stage 10C.1 is now closed; Stage 10C.2 (archaeology) remains
 the next substage, while Poltergeist integration remains Stage 10C.3.
 
+## Stage 10C.3 final runtime acceptance
+
+Prism accepted the interactive paranormal systems. Ectoplasm is obtainable
+with `/give` and the released source intentionally exposes it in the BM item
+group; the modern port maps that placement to Natural Blocks immediately
+after Scuttler Tail. Ectoplasm Composter conversion and functional composting
+passed without errors.
+
+The Poltergeist placed correctly with its released cauldron-like appearance,
+enabled light, and state changes. All eight released action categories were
+observed working: lever, trapdoor, door, bell, note block, button, fence gate,
+and daylight detector. Possessed applied successfully, produced its released
+paranormal interactions and particles, and remained stable. Save/quit/reload
+left the Poltergeist functional; no Stage 10C.3 runtime errors were observed.
+
+Poltergeist advancement JSONs remain deliberately deferred to Stage 10C.4:
+the released parent chain begins at the Ghost Town advancement, so temporary
+parents are not introduced. The trigger registrations remain available for
+that later restoration.
+
 ## Possessed effect audit and icon remediation
 
 The final effect is `biomemakeover:possessed`, a harmful MobEffect with color
