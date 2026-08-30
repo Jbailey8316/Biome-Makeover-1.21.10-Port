@@ -58,6 +58,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
 import java.util.function.Consumer;
 import party.lemons.biomemakeover.worldgen.mansion.room.MansionRoom;
 import party.lemons.biomemakeover.worldgen.mansion.RoomType;
@@ -68,6 +69,7 @@ import party.lemons.biomemakeover.worldgen.mansion.RoomType;
  */
 public final class MansionFeature extends Structure {
     private static final CopyOnWriteArrayList<DelayedFluidTrace> DELAYED_FLUID_TRACES = new CopyOnWriteArrayList<>();
+    private static final CopyOnWriteArrayList<EnvelopePiece> DUNGEON_ENVELOPE = new CopyOnWriteArrayList<>();
     private static volatile boolean delayedFluidTraceInstalled;
 
     public static void enableDelayedFluidTrace() {
@@ -95,6 +97,12 @@ public final class MansionFeature extends Structure {
         }
     }
 
+    private record EnvelopePiece(ServerLevel level, String template, Set<BlockPos> authoredDry) {
+        private EnvelopePiece(ServerLevel level, String template, List<BlockPos> authoredDry) {
+            this(level, template, Set.copyOf(authoredDry));
+        }
+    }
+
     private static final class DelayedFluidTrace {
         private final ServerLevel level;
         private final String template;
@@ -117,15 +125,35 @@ public final class MansionFeature extends Structure {
                     water++;
                     if (fluid.isSource()) source++; else flowing++;
                     if (previouslyWet.add(pos) && newlyWet++ < 12) {
-                        BiomeMakeover.LOGGER.info("[BM_FLUID_REENTRY] template={} local=<static-mask> world={} firstWetPhase={} fluid={} sourceOrFlowing={} neighborN={} neighborE={} neighborS={} neighborW={} neighborUp={} neighborDown={} owningDungeonPiece={} boundaryPosition={} intentionalOpening={}",
+                        String classification = envelopeClassification(level, pos);
+                        BiomeMakeover.LOGGER.info("[BM_FLUID_REENTRY] template={} local=<static-mask> world={} firstWetPhase={} fluid={} sourceOrFlowing={} neighborN={} neighborE={} neighborS={} neighborW={} neighborUp={} neighborDown={} owningDungeonPiece={} boundaryPosition={} intentionalOpening={} classification={}",
                             template, pos, phase, fluid, fluid.isSource() ? "SOURCE" : "FLOWING", level.getBlockState(pos.north()).getBlock(),
                             level.getBlockState(pos.east()).getBlock(), level.getBlockState(pos.south()).getBlock(), level.getBlockState(pos.west()).getBlock(),
-                            level.getBlockState(pos.above()).getBlock(), level.getBlockState(pos.below()).getBlock(), template, true, false);
+                            level.getBlockState(pos.above()).getBlock(), level.getBlockState(pos.below()).getBlock(), template, true, false, classification);
+                        BiomeMakeover.LOGGER.info("[BM_DUNGEON_ENVELOPE] wetPos={} owner={} classification={} N={} E={} S={} W={} UP={} DOWN={}",
+                            pos, template, classification, envelopeNeighbor(level, pos.north()), envelopeNeighbor(level, pos.east()),
+                            envelopeNeighbor(level, pos.south()), envelopeNeighbor(level, pos.west()), envelopeNeighbor(level, pos.above()), envelopeNeighbor(level, pos.below()));
                     }
                 }
             }
             BiomeMakeover.LOGGER.info("[BM_DUNGEON_FLUID_DELAYED] template={} rotation={} phase={} authoredDryPositions={} waterInAuthoredDry={} sourceWaterInAuthoredDry={} flowingWaterInAuthoredDry={} newlyWetPositions={} orderIndex={}",
                 template, rotation, phase, authoredDry.size(), water, source, flowing, newlyWet, order);
+        }
+
+        private String envelopeClassification(ServerLevel level, BlockPos pos) {
+            Set<BlockPos> union = new java.util.HashSet<>();
+            for (EnvelopePiece piece : DUNGEON_ENVELOPE) if (piece.level() == level) union.addAll(piece.authoredDry());
+            boolean n = union.contains(pos.north()), e = union.contains(pos.east()), s = union.contains(pos.south()),
+                w = union.contains(pos.west()), up = union.contains(pos.above()), down = union.contains(pos.below());
+            if (n && e && s && w && up && down) return "UNION_INTERIOR";
+            if (n || e || s || w || up || down) return "INTER_PIECE_SEAM";
+            return "UNION_EXTERIOR";
+        }
+
+        private String envelopeNeighbor(ServerLevel level, BlockPos pos) {
+            Set<BlockPos> union = new java.util.HashSet<>();
+            for (EnvelopePiece piece : DUNGEON_ENVELOPE) if (piece.level() == level) union.addAll(piece.authoredDry());
+            return (union.contains(pos) ? "UNION_DRY" : "OUTSIDE") + ":" + level.getBlockState(pos).getBlock();
         }
     }
 
@@ -335,6 +363,8 @@ public final class MansionFeature extends Structure {
                         diagnosticTemplate, order, Thread.currentThread().getName(), order);
                     DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
                         placeSettings.getRotation(), staticAuthoredDry, order));
+                    DUNGEON_ENVELOPE.add(new EnvelopePiece(serverLevel, diagnosticTemplate, staticAuthoredDry));
+                    if (DUNGEON_ENVELOPE.size() > 512) DUNGEON_ENVELOPE.remove(0);
                     BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_END template={} orderIndex={} registrationId={}",
                         diagnosticTemplate, order, order);
                 }
