@@ -73,6 +73,7 @@ import party.lemons.biomemakeover.worldgen.mansion.RoomType;
 public final class MansionFeature extends Structure {
     private static final CopyOnWriteArrayList<DelayedFluidTrace> DELAYED_FLUID_TRACES = new CopyOnWriteArrayList<>();
     private static final ThreadLocal<BlockPos> LAYOUT_ORIGIN = new ThreadLocal<>();
+    private static final Set<String> EXECUTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final CopyOnWriteArrayList<EnvelopePiece> DUNGEON_ENVELOPE = new CopyOnWriteArrayList<>();
     private static volatile boolean delayedFluidTraceInstalled;
 
@@ -91,9 +92,10 @@ public final class MansionFeature extends Structure {
         boolean tracing = Boolean.getBoolean("bm.mansion.trace");
         for (DelayedFluidTrace entry : DELAYED_FLUID_TRACES) {
             if (entry.level != level) continue;
-            if (entry.age == 0) {
+            if (entry.age >= 20 && EXECUTED_MANSIONS.add(entry.mansionId())) {
                 ReconcileResult result = reconcileCompletedDungeon(level, entry.order, entry.mansionOrigin);
                 if (tracing && result.executed()) {
+                    BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=READY mansionId={} pieceCount={} unionPositions={}", entry.mansionId(), countMansionPieces(level, entry.mansionOrigin), unionSize(level, entry.mansionOrigin));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_BEGIN mansionId={} unionPositions={}", entry.mansionId(), unionSize(level, entry.mansionOrigin));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_END mansionId={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
                         entry.mansionId(), result.correctedAir(), result.correctedWaterlogged(), result.authoredWetPreserved());
@@ -104,14 +106,10 @@ public final class MansionFeature extends Structure {
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=REMOVE mansionId={}", entry.mansionId());
                 }
             }
-            if (!tracing) {
-                DELAYED_FLUID_TRACES.remove(entry);
-                continue;
-            }
             entry.age++;
             String phase = switch (entry.age) { case 1 -> "D1"; case 5 -> "D5"; case 20 -> "D20"; case 100 -> "D100"; default -> null; };
             if (phase != null) entry.snapshot(level, phase);
-            if (entry.age >= 100) DELAYED_FLUID_TRACES.remove(entry);
+            if (entry.age >= 100 || (!tracing && EXECUTED_MANSIONS.contains(entry.mansionId()))) DELAYED_FLUID_TRACES.remove(entry);
         }
     }
 
@@ -129,10 +127,17 @@ public final class MansionFeature extends Structure {
         return positions.size();
     }
 
+    private static int countMansionPieces(ServerLevel level, BlockPos mansionOrigin) {
+        int count = 0;
+        for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES)
+            if (candidate.level == level && candidate.mansionOrigin.equals(mansionOrigin)) count++;
+        return count;
+    }
+
     private static ReconcileResult reconcileCompletedDungeon(ServerLevel level, long order, BlockPos mansionOrigin) {
         long first = Long.MAX_VALUE;
         for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
-            if (candidate.level == level && candidate.mansionOrigin.equals(mansionOrigin) && candidate.age == 0 && candidate.order < first) first = candidate.order;
+            if (candidate.level == level && candidate.mansionOrigin.equals(mansionOrigin) && candidate.order < first) first = candidate.order;
         }
         if (order != first) return new ReconcileResult(false, 0, 0, 0, 0, 0);
         Map<BlockPos, BlockState> union = new HashMap<>();
