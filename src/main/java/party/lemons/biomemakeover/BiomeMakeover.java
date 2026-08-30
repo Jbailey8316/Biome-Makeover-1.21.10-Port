@@ -20,6 +20,7 @@ import party.lemons.biomemakeover.level.BMWorldEvents;
 import party.lemons.biomemakeover.init.BMMenus;
 import party.lemons.biomemakeover.init.BMStructureProcessors;
 import party.lemons.biomemakeover.init.BMStructures;
+import party.lemons.biomemakeover.worldgen.mansion.MansionFeature;
 
 public final class BiomeMakeover implements ModInitializer {
     public static final String MOD_ID = "biomemakeover";
@@ -48,6 +49,9 @@ public final class BiomeMakeover implements ModInitializer {
         BMWorldEvents.initialize();
         if (Boolean.getBoolean("bm.fence.trace")) {
             ServerLifecycleEvents.SERVER_STARTED.register(server -> BMBlocks.traceFenceTags());
+        }
+        if (Boolean.getBoolean("bm.mansion.trace")) {
+            MansionFeature.enableDelayedFluidTrace();
         }
         LOGGER.info("Biome Makeover Stage 10C.4 Ghost Town integration candidate loaded.");
     }
