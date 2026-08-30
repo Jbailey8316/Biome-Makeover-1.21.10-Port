@@ -416,8 +416,8 @@ relevant advancement, then save/reload and confirm no errors. Commands
 `/give @s biomemakeover:whinny_pottery_sherd`,
 `/give @s biomemakeover:crude_fragment`, and
 `/give @s biomemakeover:ghost_town_music_disk` isolate deterministic checks.
-Runtime acceptance remains pending this Prism pass; Stage 10C.4 is
-implemented but not closed.
+Before the final Prism pass, runtime acceptance was pending; the final Prism
+acceptance is recorded below.
 
 ### Stage 10C.4 runtime blocker remediation: processor number providers
 
@@ -439,9 +439,49 @@ and packaged JSON. The other Stage 10C.4 provider resources were audited; no
 additional occurrence of this obsolete nested UniformInt shape was found.
 
 This remediation changes only the processor provider serialization and its
-audit validation. Stage 10C.4 remains implemented and awaiting the next
-Prism runtime validation; no structure, template, pool, loot, or gameplay
-behavior was changed.
+audit validation. At that point Stage 10C.4 remained implemented and awaited
+the next Prism runtime validation; no structure, template, pool, loot, or
+gameplay behavior was changed by the codec remediation.
+
+### Stage 10C.4 final Prism runtime acceptance
+
+The processor-codec-remediated candidate passed the final Prism run on
+Minecraft 1.21.10 with Fabric Loader 0.19.3, Fabric API 0.138.4+1.21.10,
+and no dynamic-registry errors. A fresh disposable world created normally;
+recipes, advancements, and the integrated server loaded without an unbound
+`ghosttown_building` processor-list entry.
+
+`/locate structure biomemakeover:ghost_town` returned a real structure (the
+observed location was approximately `[4192, ~, 2352]`). Teleporting there
+showed a complete, coherent town: roads, multiple buildings, decorations,
+and correctly assembled jigsaw layout. No missing-template or broken-jigsaw
+failure was observed. Structure-associated Ghosts spawned, with no evidence
+of free Badlands Ghost spawning.
+
+Naturally generated Suspicious Red Sand was present in the town. Brushing
+worked and produced cursed boots, confirming the live processor → suspicious
+block → Ghost Town archaeology table → nested loot chain. Whinny, Worker,
+and Refined Pottery Sherds, Crude Fragment, and the Ghost Town disc were
+present and visually valid; the three sherds remained Creative-visible.
+Archaeology remains RNG-dependent, so this observation does not claim every
+weighted entry was rolled. Crude Fragment remains bounded to its active loot
+dependency; broader Crude/cladding/armor gameplay is deferred to Stage 12B.
+
+Ghost Town disc playback was accepted; static validation retains the released
+jukebox comparator value 15. Runtime advancement activity included “Yee
+hawnted” and “Ragtime Gal”. The world, all dimensions, player state, and
+advancement state saved and reloaded cleanly at the town, and the integrated
+server stopped normally with no structure, processor, or block-entity errors.
+
+Stage 10C.4 is therefore **COMPLETE / RUNTIME ACCEPTED**. The 50-template
+authoritative count correction (rather than the earlier prose count of 40),
+the `bell_decoration_1` and `tree_decoration_1` pool filename corrections,
+and the four exact weighted UniformInt ranges remain part of the accepted
+implementation. The known offline `fabric-log4j-util:1.0.2` limitation is
+unchanged and unrelated. Occasional clumsy Ghost terrain pathing remains a
+non-blocking Stage 10C.1 observation only; no polish was added. Stage 10C.5
+is the next closure/integration step and Stage 10C overall remains in
+progress.
 
 ## Scope boundary and deferred work
 
