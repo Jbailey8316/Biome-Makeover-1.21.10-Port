@@ -63,6 +63,8 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
             BMBlocks.WILD_MUSHROOMS, BMBlocks.IVY, BMBlocks.ITCHING_IVY, BMBlocks.MOTH_BLOSSOM, BMBlocks.BLACK_THISTLE, BMBlocks.FOXGLOVE,
             BMBlocks.ROOTLING_CROP,
             BMBlocks.ANCIENT_OAK_LEAVES, BMBlocks.ANCIENT_OAK_SAPLING,
+            BMBlocks.POTTED_ANCIENT_OAK_SAPLING, BMBlocks.POTTED_WILLOW_SAPLING,
+            BMBlocks.POTTED_SWAMP_CYPRESS_SAPLING, BMBlocks.POTTED_BLIGHTED_BALSA_SAPLING,
             BMBlocks.ANCIENT_OAK_DOOR, BMBlocks.ANCIENT_OAK_TRAPDOOR,
             BMBlocks.SMALL_ILLUNITE_BUD, BMBlocks.MEDIUM_ILLUNITE_BUD, BMBlocks.LARGE_ILLUNITE_BUD, BMBlocks.ILLUNITE_CLUSTER);
         BlockRenderLayerMap.putBlock(BMBlocks.ALTAR, ChunkSectionLayer.CUTOUT);
@@ -71,6 +73,10 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
             BMBlocks.MYCELIUM_SPROUTS, BMBlocks.MYCELIUM_ROOTS, BMBlocks.TALL_BROWN_MUSHROOM,
             BMBlocks.TALL_RED_MUSHROOM, BMBlocks.BLIGHTED_BALSA_LEAVES,
             BMBlocks.SAGUARO_CACTUS, BMBlocks.BARREL_CACTUS, BMBlocks.BARREL_CACTUS_FLOWERED,
+            BMBlocks.POTTED_MYCELIUM_ROOTS, BMBlocks.POTTED_PURPLE_GLOWSHROOM,
+            BMBlocks.POTTED_GREEN_GLOWSHROOM, BMBlocks.POTTED_ORANGE_GLOWSHROOM,
+            BMBlocks.POTTED_WILD_MUSHROOMS, BMBlocks.POTTED_SAGUARO_CACTUS,
+            BMBlocks.POTTED_BARREL_CACTUS, BMBlocks.POTTED_FLOWERED_BARREL_CACTUS,
             BMBlocks.TUMBLEWEED,
             BMBlocks.BLIGHTED_BALSA.get("blighted_balsa_door"), BMBlocks.BLIGHTED_BALSA.get("blighted_balsa_trapdoor"));
         BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT,
