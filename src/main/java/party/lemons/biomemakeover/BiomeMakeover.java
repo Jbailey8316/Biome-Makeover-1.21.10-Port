@@ -1,6 +1,7 @@
 package party.lemons.biomemakeover;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,9 @@ public final class BiomeMakeover implements ModInitializer {
         BMEntities.initialize();
         BMWorldgen.initialize();
         BMWorldEvents.initialize();
+        if (Boolean.getBoolean("bm.fence.trace")) {
+            ServerLifecycleEvents.SERVER_STARTED.register(server -> BMBlocks.traceFenceTags());
+        }
         LOGGER.info("Biome Makeover Stage 10C.4 Ghost Town integration candidate loaded.");
     }
 }

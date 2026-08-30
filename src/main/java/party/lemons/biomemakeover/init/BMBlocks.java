@@ -525,7 +525,6 @@ public final class BMBlocks {
     }
 
     public static void initialize() {
-        if (Boolean.getBoolean("bm.fence.trace")) traceFenceTags();
         // Final-release Biome Makeover additions to vanilla composter input.
         compost(0.7F, PURPLE_GLOWSHROOM); compost(0.7F, GREEN_GLOWSHROOM); compost(0.7F, ORANGE_GLOWSHROOM);
         compost(0.9F, PURPLE_GLOWSHROOM_BLOCK); compost(0.9F, ORANGE_GLOWSHROOM_BLOCK); compost(0.9F, GREEN_GLOWSHROOM_BLOCK);
@@ -593,7 +592,7 @@ public final class BMBlocks {
         });
     }
 
-    private static void traceFenceTags() {
+    public static void traceFenceTags() {
         for (Block fence : new Block[] {ANCIENT_OAK_FENCE, BLIGHTED_BALSA.get("blighted_balsa_fence"),
                 WILLOW.get("willow_fence"), SWAMP_CYPRESS.get("swamp_cypress_fence")}) {
             BiomeMakeover.LOGGER.info("[BM_FENCE_TAG_TRACE] block={} fences={} woodenFences={} class={}",
