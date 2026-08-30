@@ -51,7 +51,10 @@ public final class RootlingEntity extends Animal implements Shearable {
 
     public RootlingEntity(EntityType<? extends RootlingEntity> type, Level level) {
         super(type, level);
-        actionCooldown = level.random.nextInt(501);
+        // Entity construction can occur on asynchronous chunk workers.  The
+        // level's LegacyRandomSource is not safe to touch from those threads;
+        // use an independent per-entity source until normal server ticking.
+        actionCooldown = RandomSource.create().nextInt(501);
     }
 
     public static AttributeSupplier.Builder createAttributes() {

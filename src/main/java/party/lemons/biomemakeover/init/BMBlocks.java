@@ -197,8 +197,6 @@ public final class BMBlocks {
         BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 6.0F).sound(SoundType.STONE));
     public static final Block DIRECTIONAL_DATA = registerNoItem("directional_data", MansionDirectionalDataBlock::new,
         BlockBehaviour.Properties.of().strength(-1.0F).noLootTable());
-    public static final Block POTTED_ANCIENT_OAK_SAPLING = registerNoItem("potted_ancient_oak_sapling", Block::new,
-        BlockBehaviour.Properties.of().strength(0.0F).noCollision().noOcclusion());
     public static final Block WHITE_WALL_TAPESTRY = mansionWallTapestry("white");
     public static final Block ORANGE_WALL_TAPESTRY = mansionWallTapestry("orange");
     public static final Block MAGENTA_WALL_TAPESTRY = mansionWallTapestry("magenta");
@@ -305,6 +303,7 @@ public final class BMBlocks {
             .noOcclusion().pushReaction(PushReaction.DESTROY).ignitedByLava());
     public static final Block ANCIENT_OAK_SAPLING = register("ancient_oak_sapling", p -> new SaplingBlock(ANCIENT_OAK_GROWER, p),
         BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().noOcclusion().randomTicks().instabreak().sound(SoundType.GRASS));
+    public static final Block POTTED_ANCIENT_OAK_SAPLING = potted("potted_ancient_oak_sapling", ANCIENT_OAK_SAPLING, 0);
 
     private BMBlocks() {}
 
