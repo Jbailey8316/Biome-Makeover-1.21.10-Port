@@ -73,6 +73,9 @@ import party.lemons.biomemakeover.worldgen.mansion.RoomType;
 public final class MansionFeature extends Structure {
     private static final CopyOnWriteArrayList<DelayedFluidTrace> DELAYED_FLUID_TRACES = new CopyOnWriteArrayList<>();
     private static final ThreadLocal<BlockPos> LAYOUT_ORIGIN = new ThreadLocal<>();
+    private static final ThreadLocal<List<Piece>> LAYOUT_PIECES = new ThreadLocal<>();
+    private static final Map<String, Integer> EXPECTED_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Set<String>> PLACED_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> EXECUTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final CopyOnWriteArrayList<EnvelopePiece> DUNGEON_ENVELOPE = new CopyOnWriteArrayList<>();
     private static volatile boolean delayedFluidTraceInstalled;
@@ -92,7 +95,10 @@ public final class MansionFeature extends Structure {
         boolean tracing = Boolean.getBoolean("bm.mansion.trace");
         for (DelayedFluidTrace entry : DELAYED_FLUID_TRACES) {
             if (entry.level != level) continue;
-            if (entry.age >= 20 && EXECUTED_MANSIONS.add(entry.mansionId())) {
+            String mansionId = entry.mansionId();
+            if (EXPECTED_PIECES.containsKey(mansionId)
+                && PLACED_PIECES.getOrDefault(mansionId, Set.of()).size() >= EXPECTED_PIECES.get(mansionId)
+                && EXECUTED_MANSIONS.add(mansionId)) {
                 ReconcileResult result = reconcileCompletedDungeon(level, entry.order, entry.mansionOrigin);
                 if (tracing && result.executed()) {
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=READY mansionId={} pieceCount={} unionPositions={}", entry.mansionId(), countMansionPieces(level, entry.mansionOrigin), unionSize(level, entry.mansionOrigin));
@@ -132,6 +138,14 @@ public final class MansionFeature extends Structure {
         for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES)
             if (candidate.level == level && candidate.mansionOrigin.equals(mansionOrigin)) count++;
         return count;
+    }
+
+    private static void registerExpectedPieces(BlockPos origin, List<Piece> pieces) {
+        String key = "minecraft:overworld:" + origin;
+        Set<String> ids = new java.util.HashSet<>();
+        for (Piece piece : pieces) if (piece.isDungeonStructuralTemplate()) ids.add(piece.pieceId());
+        EXPECTED_PIECES.put(key, ids.size());
+        PLACED_PIECES.putIfAbsent(key, java.util.concurrent.ConcurrentHashMap.newKeySet());
     }
 
     private static ReconcileResult reconcileCompletedDungeon(ServerLevel level, long order, BlockPos mansionOrigin) {
@@ -299,6 +313,7 @@ public final class MansionFeature extends Structure {
         }
         BlockPos origin = new BlockPos(context.chunkPos().getMinBlockX(), baseY, context.chunkPos().getMinBlockZ());
         LAYOUT_ORIGIN.set(origin);
+        LAYOUT_PIECES.set(new java.util.ArrayList<>());
         layout.generateLayout(context.random(), origin.getY());
         if (Boolean.getBoolean("bm.mansion.trace")) traceMansionHeight(context, origin, releasedY, terrainSamples, true, "");
         Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
@@ -317,6 +332,8 @@ public final class MansionFeature extends Structure {
                 context.structureTemplateManager(), layout.getLayout(), builder);
         }
         LAYOUT_ORIGIN.remove();
+        registerExpectedPieces(origin, LAYOUT_PIECES.get());
+        LAYOUT_PIECES.remove();
         return Optional.of(new GenerationStub(
             getLowestYIn5by5BoxOffset7Blocks(context, Rotation.NONE), Either.right(builder)));
     }
@@ -367,6 +384,7 @@ public final class MansionFeature extends Structure {
                                          MansionDetails details, StructurePiecesBuilder builder) {
         MansionLayout layout = new MansionLayout();
         LAYOUT_ORIGIN.set(origin);
+        LAYOUT_PIECES.set(new java.util.ArrayList<>());
         layout.generateLayout(random, origin.getY());
         Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
             .sorted(Comparator.comparingInt(MansionRoom::getSortValue)).toList();
@@ -382,6 +400,8 @@ public final class MansionFeature extends Structure {
             room.addWalls(details, templates, random, new BlockPos(x, y, z), manager, layout.getLayout(), builder);
         }
         LAYOUT_ORIGIN.remove();
+        registerExpectedPieces(origin, LAYOUT_PIECES.get());
+        LAYOUT_PIECES.remove();
     }
 
     /** Serialized custom template piece; marker actions are connected later. */
@@ -403,6 +423,7 @@ public final class MansionFeature extends Structure {
             this.details = null;
             this.diagnosticTemplate = template.toString();
             this.mansionOrigin = LAYOUT_ORIGIN.get() == null ? position : LAYOUT_ORIGIN.get();
+            if (LAYOUT_PIECES.get() != null) LAYOUT_PIECES.get().add(this);
     }
 
     public Piece(MansionDetails details, StructureTemplateManager manager, String template, BlockPos position,
@@ -549,6 +570,13 @@ public final class MansionFeature extends Structure {
                 BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=END thread={} timestamp={} orderIndex={}",
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
             }
+            if (isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
+                String mansionId = serverLevel.dimension().location() + ":" + mansionOrigin;
+                String pieceId = pieceId();
+                PLACED_PIECES.computeIfAbsent(mansionId, ignored -> java.util.concurrent.ConcurrentHashMap.newKeySet()).add(pieceId);
+                if (TRACE) BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=PIECE_PLACED mansionId={} pieceId={} placedCount={} expectedCount={}",
+                    mansionId, pieceId, PLACED_PIECES.get(mansionId).size(), EXPECTED_PIECES.getOrDefault(mansionId, -1));
+            }
             if (!TRACE && isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                 DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
                     placeSettings.getRotation(), mansionOrigin, staticAuthoredDry, architecturalInterior, authoredStates, order));
@@ -567,6 +595,8 @@ public final class MansionFeature extends Structure {
         private boolean isDungeonStructuralTemplate() {
             return diagnosticTemplate.contains("/dungeon/") || diagnosticTemplate.contains("/boss_room");
         }
+
+        private String pieceId() { return diagnosticTemplate + "@" + templatePosition + ":" + placeSettings.getRotation(); }
 
         private void traceLootMarker(WorldGenLevel level, BoundingBox bounds, StructureTemplate.StructureBlockInfo info,
                                      Direction facing, String phase, long order) {
