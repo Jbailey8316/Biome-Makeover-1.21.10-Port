@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -25,7 +26,11 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.level.ChunkPos;
 import party.lemons.biomemakeover.init.BMStructures;
+import party.lemons.biomemakeover.init.BMBlocks;
 
 import java.util.Optional;
 import java.util.Collection;
@@ -152,6 +157,34 @@ public final class MansionFeature extends Structure {
         @Override protected void handleDataMarker(String metadata, BlockPos position, ServerLevelAccessor level,
                                                    RandomSource random, BoundingBox bounds) {
             // Marker dispatch is deliberately deferred to 11A.2/11B.
+        }
+
+        /**
+         * Directional Data is released construction metadata.  The 1.20.1
+         * TemplateStructurePiece mixin consumes these entries before they can
+         * remain in the finished Mansion; gameplay marker dispatch is still
+         * deferred.  Consume only this piece's transformed entries so facing
+         * remains available to later marker infrastructure.
+         */
+        @Override
+        public void postProcess(WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator,
+                                RandomSource random, BoundingBox bounds, ChunkPos chunkPos, BlockPos pivot) {
+            super.postProcess(level, structureManager, generator, random, bounds, chunkPos, pivot);
+            for (var info : template.filterBlocks(templatePosition, placeSettings, BMBlocks.DIRECTIONAL_DATA)) {
+                if (info.nbt() != null && info.state().hasProperty(DirectionalBlock.FACING)) {
+                    Direction facing = info.state().getValue(DirectionalBlock.FACING);
+                    consumeDirectionalMetadata(info.nbt().getStringOr("metadata", ""), facing, info.pos(), level);
+                }
+            }
+        }
+
+        private static void consumeDirectionalMetadata(String metadata, Direction facing, BlockPos position,
+                                                       WorldGenLevel level) {
+            // Metadata and transformed facing are intentionally retained in the
+            // call boundary for Stage 11B; no marker gameplay is activated here.
+            if (level.getBlockState(position).is(BMBlocks.DIRECTIONAL_DATA)) {
+                level.setBlock(position, Blocks.AIR.defaultBlockState(), 3);
+            }
         }
     }
 }
