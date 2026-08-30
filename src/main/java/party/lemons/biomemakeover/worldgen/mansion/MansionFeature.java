@@ -60,6 +60,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.function.Consumer;
 import party.lemons.biomemakeover.worldgen.mansion.room.MansionRoom;
 import party.lemons.biomemakeover.worldgen.mansion.RoomType;
@@ -110,14 +112,16 @@ public final class MansionFeature extends Structure {
         private final Rotation rotation;
         private final List<BlockPos> authoredDry;
         private final List<BlockPos> architecturalInterior;
+        private final Map<BlockPos, BlockState> authoredStates;
         private final long order;
         private final java.util.Set<BlockPos> previouslyWet = new java.util.HashSet<>();
         private int age;
 
         private DelayedFluidTrace(ServerLevel level, String template, Rotation rotation, List<BlockPos> authoredDry,
-                                  List<BlockPos> architecturalInterior, long order) {
+                                  List<BlockPos> architecturalInterior, Map<BlockPos, BlockState> authoredStates, long order) {
             this.level = level; this.template = template; this.rotation = rotation;
-            this.authoredDry = List.copyOf(authoredDry); this.architecturalInterior = List.copyOf(architecturalInterior); this.order = order;
+            this.authoredDry = List.copyOf(authoredDry); this.architecturalInterior = List.copyOf(architecturalInterior);
+            this.authoredStates = Map.copyOf(authoredStates); this.order = order;
         }
 
         private void snapshot(ServerLevel level, String phase) {
@@ -146,6 +150,15 @@ public final class MansionFeature extends Structure {
             }
             BiomeMakeover.LOGGER.info("[BM_DUNGEON_FLUID_DELAYED] template={} rotation={} phase={} authoredDryPositions={} waterInArchitecturalInterior={} sourceWaterInArchitecturalInterior={} flowingWaterInArchitecturalInterior={} newlyWetPositions={} orderIndex={}",
                 template, rotation, phase, authoredDry.size(), water, source, flowing, newlyWet, order);
+            int transitions = 0;
+            for (var entry : authoredStates.entrySet()) {
+                BlockState authored = entry.getValue();
+                if (!authored.hasProperty(BlockStateProperties.WATERLOGGED)) continue;
+                BlockState runtime = level.getBlockState(entry.getKey());
+                if (transitions++ < 24) BiomeMakeover.LOGGER.info("[BM_WATERLOG_TRANSITION] template={} local=<static-mask> world={} block={} P0={} {}={} phase={} runtimeState={} neighborFluids={} envelopeClassification={}",
+                    template, entry.getKey(), authored.getBlock(), authored, "waterlogged", authored.getValue(BlockStateProperties.WATERLOGGED), phase,
+                    runtime, level.getFluidState(entry.getKey()), envelopeClassification(level, entry.getKey()));
+            }
             if (template.contains("/stair_")) {
                 int explicitWater = 0;
                 for (BlockPos pos : authoredDry) if (level.getFluidState(pos).is(Fluids.WATER)) explicitWater++;
@@ -321,7 +334,9 @@ public final class MansionFeature extends Structure {
                 traceFluidInterior(level, "W0", order);
             }
             List<BlockPos> staticAuthoredDry = dungeonAuthoredDryPositions();
+            Map<BlockPos, BlockState> authoredStates = dungeonAuthoredStates();
             List<BlockPos> architecturalInterior = dungeonArchitecturalInterior(bounds);
+            if (TRACE && diagnosticTemplate.contains("/dungeon/")) traceWaterlogTransitions(level, authoredStates, "P0");
             super.postProcess(level, structureManager, generator, random, bounds, chunkPos, pivot);
             if (TRACE) {
                 BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=AFTER_TEMPLATE thread={} timestamp={} orderIndex={}",
@@ -330,6 +345,7 @@ public final class MansionFeature extends Structure {
                 traceFences(level, bounds, "F1", order);
                 traceFluids(level, bounds, "W1", order);
                 traceFluidInterior(level, "W1", order);
+                if (diagnosticTemplate.contains("/dungeon/")) traceWaterlogTransitions(level, authoredStates, "P1");
                 for (var type : new Block[] {Blocks.CHEST, Blocks.BARREL, Blocks.TRAPPED_CHEST, Blocks.DISPENSER, Blocks.DROPPER}) {
                     for (var info : template.filterBlocks(templatePosition, placeSettings, type)) {
                         BlockEntity be = level.getBlockEntity(info.pos());
@@ -369,6 +385,7 @@ public final class MansionFeature extends Structure {
                 }
             }
             if (TRACE) traceFluidInterior(level, "W2", order);
+            if (TRACE && diagnosticTemplate.contains("/dungeon/")) traceWaterlogTransitions(level, authoredStates, "P2");
             if (TRACE) {
                 traceLootLifecycle(level, bounds, "T4", order);
                 traceFences(level, bounds, "F4", order);
@@ -378,7 +395,7 @@ public final class MansionFeature extends Structure {
                     BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_BEGIN template={} orderIndex={} workerThread={} registrationId={}",
                         diagnosticTemplate, order, Thread.currentThread().getName(), order);
                     DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
-                        placeSettings.getRotation(), staticAuthoredDry, architecturalInterior, order));
+                        placeSettings.getRotation(), staticAuthoredDry, architecturalInterior, authoredStates, order));
                     DUNGEON_ENVELOPE.add(new EnvelopePiece(serverLevel, diagnosticTemplate, staticAuthoredDry, architecturalInterior));
                     if (DUNGEON_ENVELOPE.size() > 512) DUNGEON_ENVELOPE.remove(0);
                     BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_END template={} orderIndex={} registrationId={}",
@@ -481,6 +498,28 @@ public final class MansionFeature extends Structure {
                 for (var info : template.filterBlocks(templatePosition, placeSettings, block)) positions.add(info.pos());
             }
             return positions;
+        }
+
+        private Map<BlockPos, BlockState> dungeonAuthoredStates() {
+            if (!diagnosticTemplate.contains("/dungeon/")) return Map.of();
+            Map<BlockPos, BlockState> states = new HashMap<>();
+            for (Block block : BuiltInRegistries.BLOCK) {
+                for (var info : template.filterBlocks(templatePosition, placeSettings, block)) states.put(info.pos(), info.state());
+            }
+            return states;
+        }
+
+        private void traceWaterlogTransitions(WorldGenLevel level, Map<BlockPos, BlockState> authoredStates, String phase) {
+            int count = 0;
+            for (var entry : authoredStates.entrySet()) {
+                BlockState authored = entry.getValue();
+                if (!authored.hasProperty(BlockStateProperties.WATERLOGGED) || count++ >= 24) continue;
+                BlockState runtime = level.getBlockState(entry.getKey());
+                BiomeMakeover.LOGGER.info("[BM_WATERLOG_TRANSITION] template={} local={} world={} block={} P0={} {}={} phase={} runtimeState={} neighborFluids={} envelopeClassification={}",
+                    diagnosticTemplate, entry.getKey().subtract(templatePosition), entry.getKey(), authored.getBlock(), authored,
+                    "waterlogged", authored.getValue(BlockStateProperties.WATERLOGGED), phase, runtime,
+                    level.getFluidState(entry.getKey()), "piece-local");
+            }
         }
 
         private List<BlockPos> dungeonArchitecturalInterior(BoundingBox bounds) {
