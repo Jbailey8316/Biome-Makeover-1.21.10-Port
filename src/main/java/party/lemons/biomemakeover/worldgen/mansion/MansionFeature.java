@@ -91,9 +91,9 @@ public final class MansionFeature extends Structure {
         for (DelayedFluidTrace entry : DELAYED_FLUID_TRACES) {
             if (entry.level != level) continue;
             if (entry.age == 0) {
-                if (tracing) BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_BEGIN mansionId={} unionPositions={}", entry.mansionId(), unionSize(level));
                 ReconcileResult result = reconcileCompletedDungeon(level, entry.order);
-                if (tracing) {
+                if (tracing && result.executed()) {
+                    BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_BEGIN mansionId={} unionPositions={}", entry.mansionId(), unionSize(level));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_END mansionId={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
                         entry.mansionId(), result.correctedAir(), result.correctedWaterlogged(), result.authoredWetPreserved());
                     BiomeMakeover.LOGGER.info("[BM_DUNGEON_RECONCILE] phase=R0 mansionId={} explicitDryWater={} authoredFalseNowWaterlogged={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
@@ -119,7 +119,7 @@ public final class MansionFeature extends Structure {
      * records are captured from transformed template palettes, so omitted
      * terrain and surrounding aquifer cells are never touched.
      */
-    private record ReconcileResult(int correctedAir, int correctedWaterlogged, int authoredWetPreserved,
+    private record ReconcileResult(boolean executed, int correctedAir, int correctedWaterlogged, int authoredWetPreserved,
                                    int explicitDryWater, int authoredFalseNowWaterlogged) {}
 
     private static int unionSize(ServerLevel level) {
@@ -133,7 +133,7 @@ public final class MansionFeature extends Structure {
         for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
             if (candidate.level == level && candidate.age == 0 && candidate.order < first) first = candidate.order;
         }
-        if (order != first) return new ReconcileResult(0, 0, 0, 0, 0);
+        if (order != first) return new ReconcileResult(false, 0, 0, 0, 0, 0);
         Map<BlockPos, BlockState> union = new HashMap<>();
         for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
             if (candidate.level == level) union.putAll(candidate.authoredStates);
@@ -162,7 +162,7 @@ public final class MansionFeature extends Structure {
                 && level.getBlockState(entry.getKey()).hasProperty(BlockStateProperties.WATERLOGGED)
                 && level.getBlockState(entry.getKey()).getValue(BlockStateProperties.WATERLOGGED)) authoredFalseNowWaterlogged++;
         }
-        return new ReconcileResult(correctedAir, correctedWaterlogged, authoredWetPreserved, explicitDryWater, authoredFalseNowWaterlogged);
+        return new ReconcileResult(true, correctedAir, correctedWaterlogged, authoredWetPreserved, explicitDryWater, authoredFalseNowWaterlogged);
     }
 
     private record EnvelopePiece(ServerLevel level, String template, Set<BlockPos> authoredDry, Set<BlockPos> architecturalInterior) {
@@ -452,7 +452,7 @@ public final class MansionFeature extends Structure {
             List<BlockPos> staticAuthoredDry = dungeonAuthoredDryPositions();
             Map<BlockPos, BlockState> authoredStates = dungeonAuthoredStates();
             List<BlockPos> architecturalInterior = dungeonArchitecturalInterior(bounds);
-            if (TRACE && diagnosticTemplate.contains("/dungeon/")) traceWaterlogTransitions(level, authoredStates, "P0");
+            if (TRACE && isDungeonStructuralTemplate()) traceWaterlogTransitions(level, authoredStates, "P0");
             super.postProcess(level, structureManager, generator, random, bounds, chunkPos, pivot);
             if (TRACE) {
                 BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=AFTER_TEMPLATE thread={} timestamp={} orderIndex={}",
@@ -462,7 +462,7 @@ public final class MansionFeature extends Structure {
                 traceFluids(level, bounds, "W1", order);
                 traceFluidInterior(level, "W1", order);
                 traceCrops(level, "C1");
-                if (diagnosticTemplate.contains("/dungeon/")) traceWaterlogTransitions(level, authoredStates, "P1");
+                if (isDungeonStructuralTemplate()) traceWaterlogTransitions(level, authoredStates, "P1");
                 for (var type : new Block[] {Blocks.CHEST, Blocks.BARREL, Blocks.TRAPPED_CHEST, Blocks.DISPENSER, Blocks.DROPPER}) {
                     for (var info : template.filterBlocks(templatePosition, placeSettings, type)) {
                         BlockEntity be = level.getBlockEntity(info.pos());
@@ -506,17 +506,17 @@ public final class MansionFeature extends Structure {
             // Mansion dungeon templates explicitly authored these states as dry;
             // restore only those transformed template cells, leaving authored wet
             // states and all surrounding world fluid untouched.
-            if (diagnosticTemplate.contains("/dungeon/")) restoreAuthoredDryWaterloggedStates(level, authoredStates);
+            if (isDungeonStructuralTemplate()) restoreAuthoredDryWaterloggedStates(level, authoredStates);
             if (TRACE) traceFluidInterior(level, "W2", order);
             if (TRACE) traceCrops(level, "C2");
-            if (TRACE && diagnosticTemplate.contains("/dungeon/")) traceWaterlogTransitions(level, authoredStates, "P2");
+            if (TRACE && isDungeonStructuralTemplate()) traceWaterlogTransitions(level, authoredStates, "P2");
             if (TRACE) {
                 traceLootLifecycle(level, bounds, "T4", order);
                 traceFences(level, bounds, "F4", order);
                 traceFluids(level, bounds, "W5", order);
                 traceFluidInterior(level, "W3", order);
                 traceCrops(level, "C3");
-                if (diagnosticTemplate.contains("/dungeon/") && level.getLevel() instanceof ServerLevel serverLevel) {
+                if (isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                     BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_BEGIN template={} orderIndex={} workerThread={} registrationId={}",
                         diagnosticTemplate, order, Thread.currentThread().getName(), order);
                     DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
@@ -529,7 +529,7 @@ public final class MansionFeature extends Structure {
                 BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=END thread={} timestamp={} orderIndex={}",
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
             }
-            if (!TRACE && diagnosticTemplate.contains("/dungeon/") && level.getLevel() instanceof ServerLevel serverLevel) {
+            if (!TRACE && isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                 DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
                     placeSettings.getRotation(), staticAuthoredDry, architecturalInterior, authoredStates, order));
             }
@@ -542,6 +542,10 @@ public final class MansionFeature extends Structure {
                     traceLootMarker(level, bounds, info, info.state().getValue(DirectionalBlock.FACING), phase, order);
                 }
             }
+        }
+
+        private boolean isDungeonStructuralTemplate() {
+            return diagnosticTemplate.contains("/dungeon/") || diagnosticTemplate.contains("/boss_room");
         }
 
         private void traceLootMarker(WorldGenLevel level, BoundingBox bounds, StructureTemplate.StructureBlockInfo info,
@@ -588,7 +592,7 @@ public final class MansionFeature extends Structure {
          * diagnostics-only and never mutates world state.
          */
         private void traceFluidInterior(WorldGenLevel level, String phase, long order) {
-            if (!diagnosticTemplate.contains("/dungeon/")) return;
+            if (!isDungeonStructuralTemplate()) return;
             int authoredDry = 0, waterInDry = 0, sourceInDry = 0, flowingInDry = 0;
             int authoredWater = 0, wetWaterloggable = 0, dryWaterloggable = 0, openings = 0;
             int positionSamples = 0;
@@ -621,7 +625,7 @@ public final class MansionFeature extends Structure {
         }
 
         private List<BlockPos> dungeonAuthoredDryPositions() {
-            if (!diagnosticTemplate.contains("/dungeon/")) return List.of();
+            if (!isDungeonStructuralTemplate()) return List.of();
             List<BlockPos> positions = new java.util.ArrayList<>();
             for (Block block : new Block[] {Blocks.AIR, Blocks.CAVE_AIR}) {
                 for (var info : template.filterBlocks(templatePosition, placeSettings, block)) positions.add(info.pos());
@@ -630,7 +634,7 @@ public final class MansionFeature extends Structure {
         }
 
         private Map<BlockPos, BlockState> dungeonAuthoredStates() {
-            if (!diagnosticTemplate.contains("/dungeon/")) return Map.of();
+            if (!isDungeonStructuralTemplate()) return Map.of();
             Map<BlockPos, BlockState> states = new HashMap<>();
             for (Block block : BuiltInRegistries.BLOCK) {
                 for (var info : template.filterBlocks(templatePosition, placeSettings, block)) states.put(info.pos(), info.state());
@@ -677,7 +681,7 @@ public final class MansionFeature extends Structure {
         }
 
         private List<BlockPos> dungeonArchitecturalInterior(BoundingBox bounds) {
-            if (!diagnosticTemplate.contains("/dungeon/")) return List.of();
+            if (!isDungeonStructuralTemplate()) return List.of();
             java.util.Set<BlockPos> solid = new java.util.HashSet<>();
             for (Block block : BuiltInRegistries.BLOCK) {
                 for (var info : template.filterBlocks(templatePosition, placeSettings, block)) {
