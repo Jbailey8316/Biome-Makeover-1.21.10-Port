@@ -207,10 +207,22 @@ public final class MansionFeature extends Structure {
         MansionLayout layout = new MansionLayout();
         int releasedY = context.chunkGenerator().getBaseHeight(context.chunkPos().getMinBlockX(), context.chunkPos().getMinBlockZ(),
             Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
-        int baseY = enhancedBaseY(context, releasedY);
+        List<Integer> terrainSamples = footprintHeights(context);
+        int baseY = enhancedBaseY(terrainSamples);
+        int minTerrain = terrainSamples.stream().mapToInt(Integer::intValue).min().orElse(releasedY);
+        int maxTerrain = terrainSamples.stream().mapToInt(Integer::intValue).max().orElse(releasedY);
+        int spread = maxTerrain - minTerrain;
+        int maxAbove = terrainSamples.stream().mapToInt(h -> Math.max(0, h - baseY)).max().orElse(0);
+        int maxGap = terrainSamples.stream().mapToInt(h -> Math.max(0, baseY - h)).max().orElse(0);
+        String rejection = spread > 40 ? "SPREAD" : maxAbove > 20 ? "TERRAIN_ABOVE_BASE" : maxGap > 20 ? "TERRAIN_GAP" : "";
+        if (!rejection.isEmpty()) {
+            if (Boolean.getBoolean("bm.mansion.trace")) BiomeMakeover.LOGGER.info("[BM_MANSION_SITE_REJECT] chunk={} median={} min={} max={} spread={} baseY={} maxTerrainAboveBase={} maxGapBelowBase={} reason={}",
+                terrainSamples.stream().sorted().toList().get(terrainSamples.size() / 2), minTerrain, maxTerrain, spread, baseY, maxAbove, maxGap, rejection);
+            return Optional.empty();
+        }
         BlockPos origin = new BlockPos(context.chunkPos().getMinBlockX(), baseY, context.chunkPos().getMinBlockZ());
         layout.generateLayout(context.random(), origin.getY());
-        if (Boolean.getBoolean("bm.mansion.trace")) traceMansionHeight(context, origin, releasedY);
+        if (Boolean.getBoolean("bm.mansion.trace")) traceMansionHeight(context, origin, releasedY, terrainSamples, true, "");
         Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
             .sorted(Comparator.comparingInt(MansionRoom::getSortValue)).toList();
         for (MansionRoom room : rooms) {
@@ -230,8 +242,7 @@ public final class MansionFeature extends Structure {
             getLowestYIn5by5BoxOffset7Blocks(context, Rotation.NONE), Either.right(builder)));
     }
 
-    private static int enhancedBaseY(GenerationContext context, int releasedY) {
-        List<Integer> heights = footprintHeights(context);
+    private static int enhancedBaseY(List<Integer> heights) {
         heights.sort(Integer::compareTo);
         int median = heights.get(heights.size() / 2);
         int bias = Math.min(4, Math.max(0, (heights.get(heights.size() - 1) - heights.get(0)) > 25 ? 2 : 1));
@@ -248,8 +259,7 @@ public final class MansionFeature extends Structure {
         return heights;
     }
 
-    private static void traceMansionHeight(GenerationContext context, BlockPos origin, int releasedY) {
-        List<Integer> heights = footprintHeights(context);
+    private static void traceMansionHeight(GenerationContext context, BlockPos origin, int releasedY, List<Integer> heights, boolean suitable, String rejection) {
         heights.sort(Integer::compareTo);
         int sum = heights.stream().mapToInt(Integer::intValue).sum();
         int median = heights.get(heights.size() / 2);
@@ -259,11 +269,12 @@ public final class MansionFeature extends Structure {
             origin.getY(), origin.getY(), origin.getY() + 42, origin.getY() - 1, origin.getY() - 8,
             heights.get(0), heights.get(heights.size() - 1), median, sum / (double) heights.size(),
             releasedY - median, releasedY - heights.get(0), releasedY - heights.get(heights.size() - 1));
-        BiomeMakeover.LOGGER.info("[BM_MANSION_HEIGHT_TRACE] releasedAnchorY={} enhancedBaseY={} sampleCount={} median={} mean={} min={} max={} bias={} samplesAboveBase={} samplesBelowBase={} maxTerrainAboveBase={} maxGapBelowBase={} baseDeltaFromReleased={}",
+        BiomeMakeover.LOGGER.info("[BM_MANSION_HEIGHT_TRACE] releasedAnchorY={} enhancedBaseY={} sampleCount={} median={} mean={} min={} max={} bias={} samplesAboveBase={} samplesBelowBase={} maxTerrainAboveBase={} maxGapBelowBase={} baseDeltaFromReleased={} terrainSpread={} siteSuitable={} rejectionReason={} thresholdSpread=40 thresholdAbove=20 thresholdGap=20",
             releasedY, origin.getY(), heights.size(), median, sum / (double) heights.size(), heights.get(0), heights.get(heights.size() - 1), bias,
             heights.stream().filter(h -> h > origin.getY()).count(), heights.stream().filter(h -> h < origin.getY()).count(),
             heights.stream().mapToInt(h -> Math.max(0, h - origin.getY())).max().orElse(0),
-            heights.stream().mapToInt(h -> Math.max(0, origin.getY() - h)).max().orElse(0), origin.getY() - releasedY);
+            heights.stream().mapToInt(h -> Math.max(0, origin.getY() - h)).max().orElse(0), origin.getY() - releasedY,
+            heights.get(heights.size() - 1) - heights.get(0), suitable, rejection);
     }
 
     @Override public StructureType<?> type() { return BMStructures.MANSION; }
@@ -367,6 +378,7 @@ public final class MansionFeature extends Structure {
                 traceFences(level, bounds, "F0", order);
                 traceFluids(level, bounds, "W0", order);
                 traceFluidInterior(level, "W0", order);
+                traceCrops(level, "C0");
             }
             List<BlockPos> staticAuthoredDry = dungeonAuthoredDryPositions();
             Map<BlockPos, BlockState> authoredStates = dungeonAuthoredStates();
@@ -380,6 +392,7 @@ public final class MansionFeature extends Structure {
                 traceFences(level, bounds, "F1", order);
                 traceFluids(level, bounds, "W1", order);
                 traceFluidInterior(level, "W1", order);
+                traceCrops(level, "C1");
                 if (diagnosticTemplate.contains("/dungeon/")) traceWaterlogTransitions(level, authoredStates, "P1");
                 for (var type : new Block[] {Blocks.CHEST, Blocks.BARREL, Blocks.TRAPPED_CHEST, Blocks.DISPENSER, Blocks.DROPPER}) {
                     for (var info : template.filterBlocks(templatePosition, placeSettings, type)) {
@@ -420,12 +433,14 @@ public final class MansionFeature extends Structure {
                 }
             }
             if (TRACE) traceFluidInterior(level, "W2", order);
+            if (TRACE) traceCrops(level, "C2");
             if (TRACE && diagnosticTemplate.contains("/dungeon/")) traceWaterlogTransitions(level, authoredStates, "P2");
             if (TRACE) {
                 traceLootLifecycle(level, bounds, "T4", order);
                 traceFences(level, bounds, "F4", order);
                 traceFluids(level, bounds, "W5", order);
                 traceFluidInterior(level, "W3", order);
+                traceCrops(level, "C3");
                 if (diagnosticTemplate.contains("/dungeon/") && level.getLevel() instanceof ServerLevel serverLevel) {
                     BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_BEGIN template={} orderIndex={} workerThread={} registrationId={}",
                         diagnosticTemplate, order, Thread.currentThread().getName(), order);
@@ -554,6 +569,18 @@ public final class MansionFeature extends Structure {
                     diagnosticTemplate, entry.getKey().subtract(templatePosition), entry.getKey(), authored.getBlock(), authored,
                     "waterlogged", authored.getValue(BlockStateProperties.WATERLOGGED), phase, runtime,
                     level.getFluidState(entry.getKey()), "piece-local");
+            }
+        }
+
+        private void traceCrops(WorldGenLevel level, String phase) {
+            for (Block crop : new Block[] {Blocks.WHEAT, Blocks.CARROTS, Blocks.POTATOES, Blocks.BEETROOTS,
+                Blocks.MELON_STEM, Blocks.PUMPKIN_STEM}) {
+                for (var info : template.filterBlocks(templatePosition, placeSettings, crop)) {
+                    BlockPos support = info.pos().below();
+                    BiomeMakeover.LOGGER.info("[BM_CROP_TRACE] template={} local={} world={} serializedState={} phase={} runtimeState={} supportState={}",
+                        diagnosticTemplate, info.pos().subtract(templatePosition), info.pos(), info.state(), phase,
+                        level.getBlockState(info.pos()), level.getBlockState(support));
+                }
             }
         }
 
