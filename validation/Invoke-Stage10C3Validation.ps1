@@ -40,6 +40,9 @@ if (($recipe.pattern -join '') -ne 'EEEP SPP C P'.Replace(' ','')) { throw 'Polt
 foreach ($key in @('E','P','S','C')) { if (!$recipe.key.$key) { throw "Poltergeist recipe key missing: $key" } }
 $advSource = Join-Path $Root 'src/main/java/party/lemons/biomemakeover/init/BMAdvancements.java'
 Require-Text 'src/main/java/party/lemons/biomemakeover/init/BMAdvancements.java' 'POLTERGEIST_YOURSELF'
+$itemsSource = Join-Path $Root 'src/main/java/party/lemons/biomemakeover/init/BMItems.java'
+Require-Text 'src/main/java/party/lemons/biomemakeover/init/BMItems.java' 'entries.accept(SCUTTLER_TAIL); entries.accept(ECTOPLASM); entries.accept(PINK_BUD)'
+if ((Select-String -LiteralPath $itemsSource -Pattern 'entries\.accept\(ECTOPLASM\)' -AllMatches).Count -ne 1) { throw 'Ectoplasm Creative exposure must be registered exactly once' }
 $particle = Get-Content (Join-Path $resources 'assets/biomemakeover/particles/poltergeist.json') -Raw | ConvertFrom-Json
 if (@($particle.textures).Count -ne 11) { throw 'Poltergeist particle must contain 11 released frames' }
 $sounds = Get-Content (Join-Path $resources 'assets/biomemakeover/sounds.json') -Raw | ConvertFrom-Json

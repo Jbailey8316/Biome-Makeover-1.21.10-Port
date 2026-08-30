@@ -135,7 +135,7 @@ public final class BMItems {
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(entries -> {
             entries.accept(LEAF_LITTER);
             entries.accept(GLOWSHROOM_STEW); entries.accept(GLOWFISH); entries.accept(COOKED_GLOWFISH); entries.accept(GLOWFISH_BUCKET);
-            entries.accept(SCUTTLER_TAIL); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(WITCH_HAT); entries.accept(CRACKED_BRICK); entries.accept(LIGHTNING_BOTTLE); entries.accept(ILLUNITE_SHARD);
+            entries.accept(SCUTTLER_TAIL); entries.accept(ECTOPLASM); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(WITCH_HAT); entries.accept(CRACKED_BRICK); entries.accept(LIGHTNING_BOTTLE); entries.accept(ILLUNITE_SHARD);
             entries.accept(ANCIENT_OAK_SIGN); entries.accept(ANCIENT_OAK_HANGING_SIGN);
             entries.accept(BLUE_BUD); entries.accept(BROWN_BUD); entries.accept(CYAN_BUD); entries.accept(GRAY_BUD);
             entries.accept(LIGHT_BLUE_BUD); entries.accept(PURPLE_BUD); entries.accept(ROOTLING_SEEDS);
