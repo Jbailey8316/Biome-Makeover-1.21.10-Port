@@ -87,16 +87,53 @@ public final class MansionFeature extends Structure {
     }
 
     private static void tickDelayedFluidTraces(ServerLevel level) {
-        for (DelayedFluidTrace trace : DELAYED_FLUID_TRACES) {
-            if (trace.level != level) continue;
-            if (trace.age == 0) {
-                BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=SERVER_ACCEPT template={} registrationId={}", trace.template, trace.order);
-                trace.snapshot(level, "D0");
+        boolean tracing = Boolean.getBoolean("bm.mansion.trace");
+        for (DelayedFluidTrace entry : DELAYED_FLUID_TRACES) {
+            if (entry.level != level) continue;
+            if (entry.age == 0) {
+                reconcileCompletedDungeon(level, entry.order);
+                if (tracing) {
+                    BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=SERVER_ACCEPT template={} registrationId={}", entry.template, entry.order);
+                    entry.snapshot(level, "D0");
+                }
             }
-            trace.age++;
-            String phase = switch (trace.age) { case 1 -> "D1"; case 5 -> "D5"; case 20 -> "D20"; case 100 -> "D100"; default -> null; };
-            if (phase != null) trace.snapshot(level, phase);
-            if (trace.age >= 100) DELAYED_FLUID_TRACES.remove(trace);
+            if (!tracing) {
+                DELAYED_FLUID_TRACES.remove(entry);
+                continue;
+            }
+            entry.age++;
+            String phase = switch (entry.age) { case 1 -> "D1"; case 5 -> "D5"; case 20 -> "D20"; case 100 -> "D100"; default -> null; };
+            if (phase != null) entry.snapshot(level, phase);
+            if (entry.age >= 100) DELAYED_FLUID_TRACES.remove(entry);
+        }
+    }
+
+    /**
+     * Restores only the final serialized dry state of the dungeon union.  The
+     * records are captured from transformed template palettes, so omitted
+     * terrain and surrounding aquifer cells are never touched.
+     */
+    private static void reconcileCompletedDungeon(ServerLevel level, long order) {
+        long first = Long.MAX_VALUE;
+        for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
+            if (candidate.level == level && candidate.age == 0 && candidate.order < first) first = candidate.order;
+        }
+        if (order != first) return;
+        Map<BlockPos, BlockState> union = new HashMap<>();
+        for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
+            if (candidate.level == level) union.putAll(candidate.authoredStates);
+        }
+        for (var entry : union.entrySet()) {
+            BlockState authored = entry.getValue();
+            BlockPos pos = entry.getKey();
+            if (authored.isAir()) {
+                if (level.getFluidState(pos).is(Fluids.WATER)) level.setBlock(pos, authored, 3);
+            } else if (authored.hasProperty(BlockStateProperties.WATERLOGGED)
+                && !authored.getValue(BlockStateProperties.WATERLOGGED)) {
+                BlockState runtime = level.getBlockState(pos);
+                if (runtime.is(authored.getBlock()) && runtime.hasProperty(BlockStateProperties.WATERLOGGED)
+                    && runtime.getValue(BlockStateProperties.WATERLOGGED)) level.setBlock(pos, authored, 3);
+            }
         }
     }
 
@@ -459,6 +496,10 @@ public final class MansionFeature extends Structure {
                 }
                 BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=END thread={} timestamp={} orderIndex={}",
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
+            }
+            if (!TRACE && diagnosticTemplate.contains("/dungeon/") && level.getLevel() instanceof ServerLevel serverLevel) {
+                DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
+                    placeSettings.getRotation(), staticAuthoredDry, architecturalInterior, authoredStates, order));
             }
         }
 

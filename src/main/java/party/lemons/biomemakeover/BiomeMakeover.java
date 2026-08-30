@@ -50,9 +50,9 @@ public final class BiomeMakeover implements ModInitializer {
         if (Boolean.getBoolean("bm.fence.trace")) {
             ServerLifecycleEvents.SERVER_STARTED.register(server -> BMBlocks.traceFenceTags());
         }
-        if (Boolean.getBoolean("bm.mansion.trace")) {
-            MansionFeature.enableDelayedFluidTrace();
-        }
+        // The server-thread callback also performs the bounded released-state
+        // dungeon reconciliation when diagnostics are disabled.
+        MansionFeature.enableDelayedFluidTrace();
         LOGGER.info("Biome Makeover Stage 10C.4 Ghost Town integration candidate loaded.");
     }
 }
