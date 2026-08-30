@@ -28,7 +28,9 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.entity.Entity;
@@ -43,6 +45,7 @@ import party.lemons.biomemakeover.init.BMEntities;
 import net.minecraft.world.level.ChunkPos;
 import party.lemons.biomemakeover.init.BMStructures;
 import party.lemons.biomemakeover.init.BMBlocks;
+import party.lemons.biomemakeover.BiomeMakeover;
 
 import java.util.Optional;
 import java.util.Collection;
@@ -131,9 +134,11 @@ public final class MansionFeature extends Structure {
 
     /** Serialized custom template piece; marker actions are connected later. */
     public static final class Piece extends TemplateStructurePiece {
+        private static final boolean TRACE = Boolean.getBoolean("bm.mansion.trace");
         private final boolean ground;
         private final boolean wall;
         private MansionDetails details;
+        private String diagnosticTemplate;
 
     public Piece(StructureTemplateManager manager, ResourceLocation template, BlockPos position,
                      Rotation rotation, boolean ground, boolean wall) {
@@ -142,6 +147,7 @@ public final class MansionFeature extends Structure {
             this.ground = ground;
             this.wall = wall;
             this.details = null;
+            this.diagnosticTemplate = template.toString();
     }
 
     public Piece(MansionDetails details, StructureTemplateManager manager, String template, BlockPos position,
@@ -157,6 +163,7 @@ public final class MansionFeature extends Structure {
             this.ground = tag.getBooleanOr("Ground", false);
             this.wall = tag.getBooleanOr("IsWall", false);
             this.details = tag.contains("Details") ? MansionDetails.CODEC.decode(net.minecraft.nbt.NbtOps.INSTANCE, tag.get("Details")).result().map(com.mojang.datafixers.util.Pair::getFirst).orElse(null) : null;
+            this.diagnosticTemplate = tag.getStringOr("Template", "<serialized>");
         }
 
         private static StructurePlaceSettings settings(Rotation rotation, boolean wall) {
@@ -170,6 +177,7 @@ public final class MansionFeature extends Structure {
             tag.putString("Rotation", placeSettings.getRotation().name());
             tag.putBoolean("Ground", ground);
             tag.putBoolean("IsWall", wall);
+            tag.putString("Template", diagnosticTemplate);
             if (details != null) {
                 MansionDetails.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, details).result().ifPresent(value -> tag.put("Details", value));
             }
@@ -191,12 +199,46 @@ public final class MansionFeature extends Structure {
         public void postProcess(WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator,
                                 RandomSource random, BoundingBox bounds, ChunkPos chunkPos, BlockPos pivot) {
             super.postProcess(level, structureManager, generator, random, bounds, chunkPos, pivot);
+            if (TRACE) {
+                for (var type : new Block[] {Blocks.CHEST, Blocks.BARREL, Blocks.TRAPPED_CHEST, Blocks.DISPENSER, Blocks.DROPPER}) {
+                    for (var info : template.filterBlocks(templatePosition, placeSettings, type)) {
+                        BlockEntity be = level.getBlockEntity(info.pos());
+                        BiomeMakeover.LOGGER.info("[BM_CONTAINER_TRACE] template={} rot={} pos={} block={} be={} inBounds={}",
+                            diagnosticTemplate, placeSettings.getRotation(), info.pos(), info.state().getBlock(),
+                            be == null ? "null" : be.getClass().getSimpleName(), bounds.isInside(info.pos()));
+                    }
+                }
+                for (var type : new Block[] {Blocks.OAK_FENCE, Blocks.SPRUCE_FENCE, Blocks.BIRCH_FENCE,
+                        Blocks.JUNGLE_FENCE, Blocks.ACACIA_FENCE, Blocks.DARK_OAK_FENCE, Blocks.MANGROVE_FENCE,
+                        Blocks.CHERRY_FENCE, Blocks.BAMBOO_FENCE}) {
+                    for (var info : template.filterBlocks(templatePosition, placeSettings, type)) {
+                        BlockState runtime = level.getBlockState(info.pos());
+                        BiomeMakeover.LOGGER.info("[BM_FENCE_TRACE] template={} rot={} pos={} serialized={} runtime={} neighbors={} inBounds={}",
+                            diagnosticTemplate, placeSettings.getRotation(), info.pos(), info.state(), runtime,
+                            neighborSummary(level, info.pos()), bounds.isInside(info.pos()));
+                    }
+                }
+            }
             for (var info : template.filterBlocks(templatePosition, placeSettings, BMBlocks.DIRECTIONAL_DATA)) {
                 if (info.nbt() != null && info.state().hasProperty(DirectionalBlock.FACING)) {
                     Direction facing = info.state().getValue(DirectionalBlock.FACING);
+                    if (TRACE && info.nbt().getStringOr("metadata", "").startsWith("loot")) {
+                        BlockPos target = info.pos().relative(facing);
+                        BlockEntity targetBe = level.getBlockEntity(target);
+                        BiomeMakeover.LOGGER.info("[BM_LOOT_TRACE] template={} rot={} metadata={} marker={} facing={} target={} block={} be={} inBounds={}",
+                            diagnosticTemplate, placeSettings.getRotation(), info.nbt().getStringOr("metadata", ""), info.pos(), facing,
+                            target, level.getBlockState(target).getBlock(), targetBe == null ? "null" : targetBe.getClass().getSimpleName(), bounds.isInside(target));
+                    }
                     handleDirectionalMetadata(info.nbt().getStringOr("metadata", ""), facing, info.pos(), level, random);
                 }
             }
+        }
+
+        private static String neighborSummary(WorldGenLevel level, BlockPos pos) {
+            return "N=" + level.getBlockState(pos.north()).getBlock()
+                + ",E=" + level.getBlockState(pos.east()).getBlock()
+                + ",S=" + level.getBlockState(pos.south()).getBlock()
+                + ",W=" + level.getBlockState(pos.west()).getBlock();
         }
 
         private void handleDirectionalMetadata(String metadata, Direction facing, BlockPos position,
