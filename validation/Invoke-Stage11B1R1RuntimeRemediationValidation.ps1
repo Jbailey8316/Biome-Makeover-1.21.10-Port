@@ -19,7 +19,7 @@ $blocks = Get-Content (Join-Path $ProjectRoot 'src/main/java/party/lemons/biomem
 }
 
 # The released loot entry is an item reference; cladded_stone must exist in both registries.
-if ($blocks -notmatch 'CLADDED_STONE\s*=\s*registerBlockItem') { $errors.Add('cladded_stone is not registered with a BlockItem') }
+if ($blocks -notmatch 'CLADDED_STONE\s*=\s*register\(') { $errors.Add('cladded_stone is not registered with a BlockItem') }
 $loot = Get-ChildItem (Join-Path $resource 'data/biomemakeover/loot_table/mansion') -Filter '*.json'
 if ($loot.Count -ne 7) { $errors.Add("expected 7 Mansion loot tables, found $($loot.Count)") }
 
