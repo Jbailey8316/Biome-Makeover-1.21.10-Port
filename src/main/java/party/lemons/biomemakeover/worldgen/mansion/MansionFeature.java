@@ -83,6 +83,13 @@ public final class MansionFeature extends Structure {
     private static final Map<String, Integer> EXPECTED_UNION_SIZES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Integer> EXPECTED_BOSS_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> RUNTIME_REGISTERED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private static final class LayoutMetadata {
+        final String key, signature; final BlockPos origin; final Set<String> ordinals, placements; final int unionSize, bossPieces;
+        LayoutMetadata(String key, String signature, BlockPos origin, Set<String> ordinals, Set<String> placements, int unionSize, int bossPieces) {
+            this.key = key; this.signature = signature; this.origin = origin; this.ordinals = Set.copyOf(ordinals); this.placements = Set.copyOf(placements); this.unionSize = unionSize; this.bossPieces = bossPieces;
+        }
+    }
     private static final Set<String> COVERAGE_MISMATCH_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Map<String, Set<String>> PLACED_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> EXECUTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
@@ -240,10 +247,6 @@ public final class MansionFeature extends Structure {
         Map<BlockPos, BlockState> completeUnion = new HashMap<>();
         int bossPieces = 0;
         for (Piece piece : pieces) if (piece.isDungeonStructuralTemplate()) { ids.add(Integer.toString(piece.mansionPieceOrdinal)); completeUnion.putAll(piece.dungeonAuthoredStates()); if (piece.diagnosticTemplate.contains("/boss_room")) bossPieces++; }
-        EXPECTED_PIECES.put(key, ids.size());
-        EXPECTED_UNION_SIZES.put(key, completeUnion.size());
-        EXPECTED_BOSS_PIECES.put(key, bossPieces);
-        EXPECTED_ORDINALS.put(key, Set.copyOf(ids));
         Set<String> placements = new java.util.HashSet<>();
         for (Piece piece : pieces) if (piece.isDungeonStructuralTemplate()) {
             BoundingBox box = piece.getBoundingBox();
@@ -251,11 +254,12 @@ public final class MansionFeature extends Structure {
                 for (int chunkZ = box.minZ() >> 4; chunkZ <= box.maxZ() >> 4; chunkZ++)
                     placements.add(piece.mansionPieceOrdinal + ":" + chunkX + ":" + chunkZ);
         }
-        EXPECTED_PLACEMENTS.put(key, Set.copyOf(placements));
-        PLACED_PLACEMENTS.putIfAbsent(key, java.util.concurrent.ConcurrentHashMap.newKeySet());
+        LayoutMetadata metadata = new LayoutMetadata(key, signature, origin, ids, placements, completeUnion.size(), bossPieces);
+        for (Piece piece : pieces) piece.layoutMetadata = metadata;
+        // Candidate construction is pure: runtime maps are populated lazily by
+        // the first actual Piece.postProcess callback.
         if (Boolean.getBoolean("bm.mansion.trace")) BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=LAYOUT_COMPLETE mansionId={} structuralPieces={} expectedPlacementCount={} unionPositions={}",
             key, ids.size(), placements.size(), pieces.stream().filter(Piece::isDungeonStructuralTemplate).mapToInt(piece -> piece.dungeonAuthoredStates().size()).sum());
-        PLACED_PIECES.putIfAbsent(key, java.util.concurrent.ConcurrentHashMap.newKeySet());
     }
 
     private static String layoutSignature(List<Piece> pieces) {
@@ -536,6 +540,7 @@ public final class MansionFeature extends Structure {
         private final BlockPos mansionOrigin;
         private final int mansionPieceOrdinal;
         private String layoutSignature;
+        private LayoutMetadata layoutMetadata;
         private MansionDetails details;
         private String diagnosticTemplate;
 
@@ -572,6 +577,7 @@ public final class MansionFeature extends Structure {
                 : templatePosition;
             this.mansionPieceOrdinal = tag.getInt("MansionPieceOrdinal").orElse(-1);
             this.layoutSignature = tag.getStringOr("MansionLayoutSignature", "legacy");
+            this.layoutMetadata = null;
         }
 
         private static StructurePlaceSettings settings(Rotation rotation, boolean wall) {
@@ -699,8 +705,16 @@ public final class MansionFeature extends Structure {
             }
             if (isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                 String mansionId = serverLevel.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature;
-                if (RUNTIME_REGISTERED.add(mansionId) && TRACE) BiomeMakeover.LOGGER.info("[BM_MANSION_RUNTIME_REGISTER] mansionLayoutKey={} structuralPieces={} expectedPlacementCount={} unionPositions={} bossRoomPieces={}", mansionId,
-                    EXPECTED_PIECES.getOrDefault(mansionId, -1), EXPECTED_PLACEMENTS.getOrDefault(mansionId, Set.of()).size(), EXPECTED_UNION_SIZES.getOrDefault(mansionId, -1), EXPECTED_BOSS_PIECES.getOrDefault(mansionId, 0));
+                if (layoutMetadata != null && RUNTIME_REGISTERED.add(mansionId)) {
+                    EXPECTED_PIECES.putIfAbsent(mansionId, layoutMetadata.ordinals.size());
+                    EXPECTED_ORDINALS.putIfAbsent(mansionId, layoutMetadata.ordinals);
+                    EXPECTED_PLACEMENTS.putIfAbsent(mansionId, layoutMetadata.placements);
+                    EXPECTED_UNION_SIZES.putIfAbsent(mansionId, layoutMetadata.unionSize);
+                    EXPECTED_BOSS_PIECES.putIfAbsent(mansionId, layoutMetadata.bossPieces);
+                    PLACED_PLACEMENTS.putIfAbsent(mansionId, java.util.concurrent.ConcurrentHashMap.newKeySet());
+                    PLACED_PIECES.putIfAbsent(mansionId, java.util.concurrent.ConcurrentHashMap.newKeySet());
+                    if (TRACE) BiomeMakeover.LOGGER.info("[BM_MANSION_RUNTIME_REGISTER] mansionLayoutKey={} structuralPieces={} expectedPlacementCount={} unionPositions={} bossRoomPieces={}", mansionId, layoutMetadata.ordinals.size(), layoutMetadata.placements.size(), layoutMetadata.unionSize, layoutMetadata.bossPieces);
+                }
                 String pieceId = Integer.toString(mansionPieceOrdinal);
                 PLACED_PIECES.computeIfAbsent(mansionId, ignored -> java.util.concurrent.ConcurrentHashMap.newKeySet()).add(pieceId);
                 String placementKey = pieceId + ":" + chunkPos.x + ":" + chunkPos.z;
