@@ -80,6 +80,9 @@ public final class MansionFeature extends Structure {
     private static final Map<String, Set<String>> EXPECTED_ORDINALS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Set<String>> EXPECTED_PLACEMENTS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Set<String>> PLACED_PLACEMENTS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Integer> EXPECTED_UNION_SIZES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Integer> EXPECTED_BOSS_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Set<String> RUNTIME_REGISTERED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Set<String> COVERAGE_MISMATCH_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Map<String, Set<String>> PLACED_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> EXECUTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
@@ -134,12 +137,16 @@ public final class MansionFeature extends Structure {
                                    int explicitDryWater, int authoredFalseNowWaterlogged) {}
 
     private static int unionSize(ServerLevel level, BlockPos mansionOrigin, String signature) {
+        String key = level.dimension().location() + ":" + mansionOrigin + ":" + signature;
+        if (EXPECTED_UNION_SIZES.containsKey(key)) return EXPECTED_UNION_SIZES.get(key);
         Set<BlockPos> positions = new java.util.HashSet<>();
         for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) if (candidate.level == level && candidate.mansionOrigin.equals(mansionOrigin) && candidate.layoutSignature.equals(signature)) positions.addAll(candidate.authoredStates.keySet());
         return positions.size();
     }
 
     private static int countMansionPieces(ServerLevel level, BlockPos mansionOrigin, String signature) {
+        String key = level.dimension().location() + ":" + mansionOrigin + ":" + signature;
+        if (EXPECTED_PIECES.containsKey(key)) return EXPECTED_PIECES.get(key);
         int count = 0;
         for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES)
             if (candidate.level == level && candidate.mansionOrigin.equals(mansionOrigin) && candidate.layoutSignature.equals(signature)) count++;
@@ -230,8 +237,12 @@ public final class MansionFeature extends Structure {
         String key = "minecraft:overworld:" + origin + ":" + signature;
         if (Boolean.getBoolean("bm.mansion.trace")) BiomeMakeover.LOGGER.info("[BM_MANSION_LAYOUT_INSTANCE] origin={} layoutInstanceId={} thread={} structuralPieces={} registrationReason=layout_metadata", origin, signature, Thread.currentThread().getName(), pieces.stream().filter(Piece::isDungeonStructuralTemplate).count());
         Set<String> ids = new java.util.HashSet<>();
-        for (Piece piece : pieces) if (piece.isDungeonStructuralTemplate()) ids.add(Integer.toString(piece.mansionPieceOrdinal));
+        Map<BlockPos, BlockState> completeUnion = new HashMap<>();
+        int bossPieces = 0;
+        for (Piece piece : pieces) if (piece.isDungeonStructuralTemplate()) { ids.add(Integer.toString(piece.mansionPieceOrdinal)); completeUnion.putAll(piece.dungeonAuthoredStates()); if (piece.diagnosticTemplate.contains("/boss_room")) bossPieces++; }
         EXPECTED_PIECES.put(key, ids.size());
+        EXPECTED_UNION_SIZES.put(key, completeUnion.size());
+        EXPECTED_BOSS_PIECES.put(key, bossPieces);
         EXPECTED_ORDINALS.put(key, Set.copyOf(ids));
         Set<String> placements = new java.util.HashSet<>();
         for (Piece piece : pieces) if (piece.isDungeonStructuralTemplate()) {
@@ -688,6 +699,8 @@ public final class MansionFeature extends Structure {
             }
             if (isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                 String mansionId = serverLevel.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature;
+                if (RUNTIME_REGISTERED.add(mansionId) && TRACE) BiomeMakeover.LOGGER.info("[BM_MANSION_RUNTIME_REGISTER] mansionLayoutKey={} structuralPieces={} expectedPlacementCount={} unionPositions={} bossRoomPieces={}", mansionId,
+                    EXPECTED_PIECES.getOrDefault(mansionId, -1), EXPECTED_PLACEMENTS.getOrDefault(mansionId, Set.of()).size(), EXPECTED_UNION_SIZES.getOrDefault(mansionId, -1), EXPECTED_BOSS_PIECES.getOrDefault(mansionId, 0));
                 String pieceId = Integer.toString(mansionPieceOrdinal);
                 PLACED_PIECES.computeIfAbsent(mansionId, ignored -> java.util.concurrent.ConcurrentHashMap.newKeySet()).add(pieceId);
                 String placementKey = pieceId + ":" + chunkPos.x + ":" + chunkPos.z;
