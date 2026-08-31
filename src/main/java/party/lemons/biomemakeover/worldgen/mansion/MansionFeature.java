@@ -221,7 +221,10 @@ public final class MansionFeature extends Structure {
     }
 
     private static void registerExpectedPieces(BlockPos origin, List<Piece> pieces) {
-        String key = "minecraft:overworld:" + origin;
+        String signature = layoutSignature(pieces);
+        for (Piece piece : pieces) piece.layoutSignature = signature;
+        String key = "minecraft:overworld:" + origin + ":" + signature;
+        if (Boolean.getBoolean("bm.mansion.trace")) BiomeMakeover.LOGGER.info("[BM_MANSION_LAYOUT_INSTANCE] origin={} layoutInstanceId={} thread={} structuralPieces={} registrationReason=layout_metadata", origin, signature, Thread.currentThread().getName(), pieces.stream().filter(Piece::isDungeonStructuralTemplate).count());
         Set<String> ids = new java.util.HashSet<>();
         for (Piece piece : pieces) if (piece.isDungeonStructuralTemplate()) ids.add(Integer.toString(piece.mansionPieceOrdinal));
         EXPECTED_PIECES.put(key, ids.size());
@@ -238,6 +241,14 @@ public final class MansionFeature extends Structure {
         if (Boolean.getBoolean("bm.mansion.trace")) BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=LAYOUT_COMPLETE mansionId={} structuralPieces={} expectedPlacementCount={} unionPositions={}",
             key, ids.size(), placements.size(), pieces.stream().filter(Piece::isDungeonStructuralTemplate).mapToInt(piece -> piece.dungeonAuthoredStates().size()).sum());
         PLACED_PIECES.putIfAbsent(key, java.util.concurrent.ConcurrentHashMap.newKeySet());
+    }
+
+    private static String layoutSignature(List<Piece> pieces) {
+        StringBuilder canonical = new StringBuilder();
+        pieces.stream().sorted(Comparator.comparingInt(piece -> piece.mansionPieceOrdinal)).forEach(piece ->
+            canonical.append(piece.diagnosticTemplate).append('|').append(piece.getBoundingBox()).append('|')
+                .append(piece.mansionPieceOrdinal).append(';'));
+        return Integer.toUnsignedString(canonical.toString().hashCode(), 16);
     }
 
     private static ReconcileResult reconcileCompletedDungeon(ServerLevel level, long order, BlockPos mansionOrigin) {
@@ -286,6 +297,7 @@ public final class MansionFeature extends Structure {
         private final String template;
         private final Rotation rotation;
         private final BlockPos mansionOrigin;
+        private final String layoutSignature;
         private final List<BlockPos> authoredDry;
         private final List<BlockPos> architecturalInterior;
         private final Map<BlockPos, BlockState> authoredStates;
@@ -294,15 +306,16 @@ public final class MansionFeature extends Structure {
         private int age;
 
         private DelayedFluidTrace(ServerLevel level, String template, Rotation rotation, BlockPos mansionOrigin, List<BlockPos> authoredDry,
-                                  List<BlockPos> architecturalInterior, Map<BlockPos, BlockState> authoredStates, long order) {
+                                  List<BlockPos> architecturalInterior, Map<BlockPos, BlockState> authoredStates, long order, String layoutSignature) {
             this.level = level; this.template = template; this.rotation = rotation;
             this.mansionOrigin = mansionOrigin;
+            this.layoutSignature = layoutSignature;
             this.authoredDry = List.copyOf(authoredDry); this.architecturalInterior = List.copyOf(architecturalInterior);
             this.authoredStates = Map.copyOf(authoredStates); this.order = order;
         }
 
         private String mansionId() {
-            return level.dimension().location() + ":" + mansionOrigin;
+            return level.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature;
         }
 
         private void snapshot(ServerLevel level, String phase) {
@@ -507,6 +520,7 @@ public final class MansionFeature extends Structure {
         private final boolean wall;
         private final BlockPos mansionOrigin;
         private final int mansionPieceOrdinal;
+        private String layoutSignature;
         private MansionDetails details;
         private String diagnosticTemplate;
 
@@ -542,6 +556,7 @@ public final class MansionFeature extends Structure {
                 ? new BlockPos(tag.getInt("MansionOriginX").orElse(0), tag.getInt("MansionOriginY").orElse(0), tag.getInt("MansionOriginZ").orElse(0))
                 : templatePosition;
             this.mansionPieceOrdinal = tag.getInt("MansionPieceOrdinal").orElse(-1);
+            this.layoutSignature = tag.getStringOr("MansionLayoutSignature", "legacy");
         }
 
         private static StructurePlaceSettings settings(Rotation rotation, boolean wall) {
@@ -560,6 +575,7 @@ public final class MansionFeature extends Structure {
             tag.putInt("MansionOriginY", mansionOrigin.getY());
             tag.putInt("MansionOriginZ", mansionOrigin.getZ());
             tag.putInt("MansionPieceOrdinal", mansionPieceOrdinal);
+            tag.putString("MansionLayoutSignature", layoutSignature == null ? "legacy" : layoutSignature);
             if (details != null) {
                 MansionDetails.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, details).result().ifPresent(value -> tag.put("Details", value));
             }
@@ -659,7 +675,7 @@ public final class MansionFeature extends Structure {
                 traceCrops(level, "C3");
                 if (isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                     DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
-                        placeSettings.getRotation(), mansionOrigin, staticAuthoredDry, architecturalInterior, authoredStates, order));
+                        placeSettings.getRotation(), mansionOrigin, staticAuthoredDry, architecturalInterior, authoredStates, order, layoutSignature));
                     DUNGEON_ENVELOPE.add(new EnvelopePiece(serverLevel, diagnosticTemplate, staticAuthoredDry, architecturalInterior));
                     if (DUNGEON_ENVELOPE.size() > 512) DUNGEON_ENVELOPE.remove(0);
                 }
@@ -667,7 +683,7 @@ public final class MansionFeature extends Structure {
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
             }
             if (isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
-                String mansionId = serverLevel.dimension().location() + ":" + mansionOrigin;
+                String mansionId = serverLevel.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature;
                 String pieceId = Integer.toString(mansionPieceOrdinal);
                 PLACED_PIECES.computeIfAbsent(mansionId, ignored -> java.util.concurrent.ConcurrentHashMap.newKeySet()).add(pieceId);
                 String placementKey = pieceId + ":" + chunkPos.x + ":" + chunkPos.z;
@@ -691,7 +707,7 @@ public final class MansionFeature extends Structure {
             }
             if (!TRACE && isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                 DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
-                    placeSettings.getRotation(), mansionOrigin, staticAuthoredDry, architecturalInterior, authoredStates, order));
+                    placeSettings.getRotation(), mansionOrigin, staticAuthoredDry, architecturalInterior, authoredStates, order, layoutSignature));
             }
         }
 
