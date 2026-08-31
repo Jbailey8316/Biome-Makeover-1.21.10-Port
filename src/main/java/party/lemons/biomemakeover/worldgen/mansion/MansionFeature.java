@@ -77,6 +77,8 @@ public final class MansionFeature extends Structure {
     private static final ThreadLocal<Integer> NEXT_PIECE_ORDINAL = new ThreadLocal<>();
     private static final Map<String, Integer> EXPECTED_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Set<String>> EXPECTED_ORDINALS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Set<String>> EXPECTED_PLACEMENTS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Set<String>> PLACED_PLACEMENTS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Set<String>> PLACED_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> EXECUTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final CopyOnWriteArrayList<EnvelopePiece> DUNGEON_ENVELOPE = new CopyOnWriteArrayList<>();
@@ -99,7 +101,7 @@ public final class MansionFeature extends Structure {
             if (entry.level != level) continue;
             String mansionId = entry.mansionId();
             if (EXPECTED_PIECES.containsKey(mansionId)
-                && PLACED_PIECES.getOrDefault(mansionId, Set.of()).equals(EXPECTED_ORDINALS.get(mansionId))
+                && PLACED_PLACEMENTS.getOrDefault(mansionId, Set.of()).equals(EXPECTED_PLACEMENTS.get(mansionId))
                 && EXECUTED_MANSIONS.add(mansionId)) {
                 ReconcileResult result = reconcileCompletedDungeon(level, entry.order, entry.mansionOrigin);
                 if (tracing && result.executed()) {
@@ -148,6 +150,15 @@ public final class MansionFeature extends Structure {
         for (Piece piece : pieces) if (piece.isDungeonStructuralTemplate()) ids.add(Integer.toString(piece.mansionPieceOrdinal));
         EXPECTED_PIECES.put(key, ids.size());
         EXPECTED_ORDINALS.put(key, Set.copyOf(ids));
+        Set<String> placements = new java.util.HashSet<>();
+        for (Piece piece : pieces) if (piece.isDungeonStructuralTemplate()) {
+            BoundingBox box = piece.getBoundingBox();
+            for (int chunkX = box.minX() >> 4; chunkX <= box.maxX() >> 4; chunkX++)
+                for (int chunkZ = box.minZ() >> 4; chunkZ <= box.maxZ() >> 4; chunkZ++)
+                    placements.add(piece.mansionPieceOrdinal + ":" + chunkX + ":" + chunkZ);
+        }
+        EXPECTED_PLACEMENTS.put(key, Set.copyOf(placements));
+        PLACED_PLACEMENTS.putIfAbsent(key, java.util.concurrent.ConcurrentHashMap.newKeySet());
         PLACED_PIECES.putIfAbsent(key, java.util.concurrent.ConcurrentHashMap.newKeySet());
     }
 
@@ -586,8 +597,13 @@ public final class MansionFeature extends Structure {
                 String mansionId = serverLevel.dimension().location() + ":" + mansionOrigin;
                 String pieceId = Integer.toString(mansionPieceOrdinal);
                 PLACED_PIECES.computeIfAbsent(mansionId, ignored -> java.util.concurrent.ConcurrentHashMap.newKeySet()).add(pieceId);
+                String placementKey = pieceId + ":" + chunkPos.x + ":" + chunkPos.z;
+                boolean newAck = PLACED_PLACEMENTS.computeIfAbsent(mansionId, ignored -> java.util.concurrent.ConcurrentHashMap.newKeySet()).add(placementKey);
                 if (TRACE) BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=PIECE_PLACED mansionId={} pieceId={} placedCount={} expectedCount={}",
                     mansionId, pieceId, PLACED_PIECES.get(mansionId).size(), EXPECTED_PIECES.getOrDefault(mansionId, -1));
+                if (TRACE) BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=CHUNK_PLACED mansionId={} ordinal={} template={} chunk=[{},{}] placedPlacementCount={} expectedPlacementCount={} newAck={}",
+                    mansionId, mansionPieceOrdinal, diagnosticTemplate, chunkPos.x, chunkPos.z,
+                    PLACED_PLACEMENTS.get(mansionId).size(), EXPECTED_PLACEMENTS.getOrDefault(mansionId, Set.of()).size(), newAck);
             }
             if (!TRACE && isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                 DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
