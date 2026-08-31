@@ -762,10 +762,6 @@ public final class MansionFeature extends Structure {
                 if (runtime.is(authored.getBlock()) && runtime.hasProperty(BlockStateProperties.WATERLOGGED)
                     && runtime.getValue(BlockStateProperties.WATERLOGGED)) { level.setBlock(pos, authored, 3); dryRestored++; }
             }
-            Map<BlockPos, BlockState> union = new HashMap<>();
-            for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES)
-                if (candidate.level == level.getLevel() && candidate.mansionOrigin.equals(mansionOrigin)) union.putAll(candidate.authoredStates);
-            union.putAll(authoredStates);
             Set<BlockPos> closedSources = new java.util.HashSet<>();
             Map<String, Integer> replacementHistogram = new HashMap<>();
             int candidates = 0, dryAirRestored = 0, dryWaterloggableRestored = 0, solidRestored = 0, authoredWet = 0, voidSkipped = 0;
@@ -776,20 +772,10 @@ public final class MansionFeature extends Structure {
                     && !authored.getValue(BlockStateProperties.WATERLOGGED)))) continue;
                 for (Direction face : Direction.values()) {
                     BlockPos sourcePos = dryPos.relative(face);
+                    if (authoredStates.containsKey(sourcePos)) continue;
                     var fluid = level.getFluidState(sourcePos);
                     if (!fluid.is(Fluids.WATER) || !fluid.isSource()) continue;
                     candidates++;
-                    BlockState owned = union.get(sourcePos);
-                    if (owned != null) {
-                        if (owned.is(Blocks.STRUCTURE_VOID)) { voidSkipped++; continue; }
-                        if (owned.isAir()) { level.setBlock(sourcePos, owned, 3); dryAirRestored++; continue; }
-                        if (owned.hasProperty(BlockStateProperties.WATERLOGGED)) {
-                            if (owned.getValue(BlockStateProperties.WATERLOGGED)) { authoredWet++; continue; }
-                            level.setBlock(sourcePos, owned, 3); dryWaterloggableRestored++; continue;
-                        }
-                        if (owned.getFluidState().isEmpty()) { level.setBlock(sourcePos, owned, 3); solidRestored++; }
-                        continue;
-                    }
                     if (closedSources.contains(sourcePos)) continue;
                     BlockState replacement = naturalClosureState(level, sourcePos, authoredStates);
                     if (replacement == null) continue;
@@ -808,11 +794,10 @@ public final class MansionFeature extends Structure {
                     && level.getBlockState(entry.getKey()).hasProperty(BlockStateProperties.WATERLOGGED)
                     && level.getBlockState(entry.getKey()).getValue(BlockStateProperties.WATERLOGGED)) level.setBlock(entry.getKey(), authored, 3);
             }
-            // [BM_FLUID_SOURCE_CLOSURE] compatibility marker; superseded by union-level metrics.
-            if (TRACE) BiomeMakeover.LOGGER.info("[BM_UNION_FLUID_CLOSURE] mansionId={} ordinal={} template={} chunk={} unionDryReassertedAir={} unionDryReassertedWaterloggable={} unionSolidRestored={} authoredWetPreserved={} externalOmittedSourcesClosed={} structureVoidSkipped={} replacementHistogram={}",
+            // [BM_FLUID_SOURCE_CLOSURE] R17N baseline metrics.
+            if (TRACE) BiomeMakeover.LOGGER.info("[BM_FLUID_SOURCE_CLOSURE] mansionId={} ordinal={} template={} chunk={} candidateSources={} internalOwnedSkipped={} intentionalOpeningSkipped={} externalSourcesClosed={} replacementHistogram={}",
                 level.getLevel().dimension().location() + ":" + mansionOrigin, mansionPieceOrdinal, diagnosticTemplate,
-                ((clip.minX() >> 4) + "," + (clip.minZ() >> 4)), dryAirRestored, dryWaterloggableRestored,
-                solidRestored, authoredWet, closedSources.size(), voidSkipped, replacementHistogram);
+                ((clip.minX() >> 4) + "," + (clip.minZ() >> 4)), candidates, 0, 0, closedSources.size(), replacementHistogram);
             if (TRACE) BiomeMakeover.LOGGER.info("[BM_PLACEMENT_FLUID_FIX] mansionId={} ordinal={} template={} chunk={} explicitAirChecked={} waterRemovedFromExplicitAir={} dryWaterloggableChecked={} waterloggedFalseRestored={} authoredWetPreserved={}",
                 level.getLevel().dimension().location() + ":" + mansionOrigin, mansionPieceOrdinal, diagnosticTemplate,
                 ((clip.minX() >> 4) + "," + (clip.minZ() >> 4)), airChecked, airRemoved, dryChecked, dryRestored, wetPreserved);
