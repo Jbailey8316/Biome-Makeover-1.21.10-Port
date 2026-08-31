@@ -231,6 +231,7 @@ public final class MansionFeature extends Structure {
         }
 
         private void snapshot(ServerLevel level, String phase) {
+            if (!ARCHAEology_TRACE) return;
             int water = 0, source = 0, flowing = 0;
             int newlyWet = 0;
             for (BlockPos pos : architecturalInterior) {
@@ -506,7 +507,7 @@ public final class MansionFeature extends Structure {
                                 RandomSource random, BoundingBox bounds, ChunkPos chunkPos, BlockPos pivot) {
             long order = TRACE_ORDER.incrementAndGet();
             if (TRACE) {
-                BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=BEGIN thread={} timestamp={} orderIndex={}",
+                if (false) BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=BEGIN thread={} timestamp={} orderIndex={}",
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
                 traceLootLifecycle(level, bounds, "T0", order);
                 traceFences(level, bounds, "F0", order);
@@ -520,7 +521,7 @@ public final class MansionFeature extends Structure {
             if (TRACE && isDungeonStructuralTemplate()) traceWaterlogTransitions(level, authoredStates, "P0");
             super.postProcess(level, structureManager, generator, random, bounds, chunkPos, pivot);
             if (TRACE) {
-                BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=AFTER_TEMPLATE thread={} timestamp={} orderIndex={}",
+                if (false) BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=AFTER_TEMPLATE thread={} timestamp={} orderIndex={}",
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
                 traceLootLifecycle(level, bounds, "T1", order);
                 traceFences(level, bounds, "F1", order);
@@ -587,7 +588,7 @@ public final class MansionFeature extends Structure {
                     DUNGEON_ENVELOPE.add(new EnvelopePiece(serverLevel, diagnosticTemplate, staticAuthoredDry, architecturalInterior));
                     if (DUNGEON_ENVELOPE.size() > 512) DUNGEON_ENVELOPE.remove(0);
                 }
-                BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=END thread={} timestamp={} orderIndex={}",
+                if (false) BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=END thread={} timestamp={} orderIndex={}",
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
             }
             if (isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
@@ -757,13 +758,65 @@ public final class MansionFeature extends Structure {
                 if (!authored.hasProperty(BlockStateProperties.WATERLOGGED)) continue;
                 if (authored.getValue(BlockStateProperties.WATERLOGGED)) { wetPreserved++; continue; }
                 dryChecked++;
-                BlockState runtime = level.getBlockState(entry.getKey());
+                BlockState runtime = level.getBlockState(pos);
                 if (runtime.is(authored.getBlock()) && runtime.hasProperty(BlockStateProperties.WATERLOGGED)
                     && runtime.getValue(BlockStateProperties.WATERLOGGED)) { level.setBlock(pos, authored, 3); dryRestored++; }
             }
+            Set<BlockPos> closedSources = new java.util.HashSet<>();
+            Map<String, Integer> replacementHistogram = new HashMap<>();
+            int candidates = 0, internalSkipped = 0, unknownSkipped = 0;
+            for (var entry : authoredStates.entrySet()) {
+                BlockState authored = entry.getValue();
+                BlockPos dryPos = entry.getKey();
+                if (!clip.isInside(dryPos) || !(authored.isAir() || (authored.hasProperty(BlockStateProperties.WATERLOGGED)
+                    && !authored.getValue(BlockStateProperties.WATERLOGGED)))) continue;
+                for (Direction face : Direction.values()) {
+                    BlockPos sourcePos = dryPos.relative(face);
+                    if (authoredStates.containsKey(sourcePos)) { internalSkipped++; continue; }
+                    var fluid = level.getFluidState(sourcePos);
+                    if (!fluid.is(Fluids.WATER) || !fluid.isSource()) continue;
+                    candidates++;
+                    if (closedSources.contains(sourcePos)) continue;
+                    BlockState replacement = naturalClosureState(level, sourcePos, authoredStates);
+                    if (replacement == null) { unknownSkipped++; continue; }
+                    closedSources.add(sourcePos);
+                    level.setBlock(sourcePos, replacement, 3);
+                    replacementHistogram.merge(replacement.getBlock().builtInRegistryHolder().key().location().toString(), 1, Integer::sum);
+                    if (TRACE) BiomeMakeover.LOGGER.info("[BM_FLUID_SOURCE_BOUNDARY] mansionId={} ordinal={} template={} dryPos={} sourcePos={} face={} sourceOwnedByOtherPiece=false classification=EXTERNAL_AQUIFER_SOURCE",
+                        level.getLevel().dimension().location() + ":" + mansionOrigin, mansionPieceOrdinal, diagnosticTemplate, dryPos, sourcePos, face);
+                }
+            }
+            for (var entry : authoredStates.entrySet()) {
+                if (!clip.isInside(entry.getKey())) continue;
+                BlockState authored = entry.getValue();
+                if (authored.isAir() && !level.getFluidState(entry.getKey()).isEmpty()) level.setBlock(entry.getKey(), authored, 3);
+                else if (authored.hasProperty(BlockStateProperties.WATERLOGGED) && !authored.getValue(BlockStateProperties.WATERLOGGED)
+                    && level.getBlockState(entry.getKey()).hasProperty(BlockStateProperties.WATERLOGGED)
+                    && level.getBlockState(entry.getKey()).getValue(BlockStateProperties.WATERLOGGED)) level.setBlock(entry.getKey(), authored, 3);
+            }
+            if (TRACE) BiomeMakeover.LOGGER.info("[BM_FLUID_SOURCE_CLOSURE] mansionId={} ordinal={} template={} chunk={} candidateSources={} internalOwnedSkipped={} intentionalOpeningSkipped={} externalSourcesClosed={} replacementHistogram={}",
+                level.getLevel().dimension().location() + ":" + mansionOrigin, mansionPieceOrdinal, diagnosticTemplate,
+                ((clip.minX() >> 4) + "," + (clip.minZ() >> 4)), candidates, internalSkipped, unknownSkipped,
+                closedSources.size(), replacementHistogram);
             if (TRACE) BiomeMakeover.LOGGER.info("[BM_PLACEMENT_FLUID_FIX] mansionId={} ordinal={} template={} chunk={} explicitAirChecked={} waterRemovedFromExplicitAir={} dryWaterloggableChecked={} waterloggedFalseRestored={} authoredWetPreserved={}",
                 level.getLevel().dimension().location() + ":" + mansionOrigin, mansionPieceOrdinal, diagnosticTemplate,
                 ((clip.minX() >> 4) + "," + (clip.minZ() >> 4)), airChecked, airRemoved, dryChecked, dryRestored, wetPreserved);
+        }
+
+        private BlockState naturalClosureState(WorldGenLevel level, BlockPos sourcePos, Map<BlockPos, BlockState> authoredStates) {
+            Map<Block, Integer> counts = new HashMap<>();
+            for (Direction direction : Direction.values()) {
+                BlockPos candidatePos = sourcePos.relative(direction);
+                if (authoredStates.containsKey(candidatePos) || level.getBlockEntity(candidatePos) != null) continue;
+                BlockState candidate = level.getBlockState(candidatePos);
+                if (!candidate.getFluidState().isEmpty() || !candidate.isCollisionShapeFullBlock(level, candidatePos)
+                    || candidate.getBlock().builtInRegistryHolder().key().location().getNamespace().equals("biomemakeover")) continue;
+                counts.merge(candidate.getBlock(), 1, Integer::sum);
+            }
+            Block selected = counts.entrySet().stream().max(Map.Entry.<Block, Integer>comparingByValue()
+                .thenComparing(entry -> entry.getKey().builtInRegistryHolder().key().location().toString(), Comparator.reverseOrder()))
+                .map(Map.Entry::getKey).orElse(Blocks.STONE);
+            return selected.defaultBlockState();
         }
 
         private void traceCrops(WorldGenLevel level, String phase) {
