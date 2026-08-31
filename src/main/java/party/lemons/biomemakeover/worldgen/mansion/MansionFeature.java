@@ -79,6 +79,7 @@ public final class MansionFeature extends Structure {
     private static final Map<String, Set<String>> EXPECTED_ORDINALS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Set<String>> EXPECTED_PLACEMENTS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Set<String>> PLACED_PLACEMENTS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Set<String> COVERAGE_MISMATCH_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Map<String, Set<String>> PLACED_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> EXECUTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final CopyOnWriteArrayList<EnvelopePiece> DUNGEON_ENVELOPE = new CopyOnWriteArrayList<>();
@@ -159,6 +160,8 @@ public final class MansionFeature extends Structure {
         }
         EXPECTED_PLACEMENTS.put(key, Set.copyOf(placements));
         PLACED_PLACEMENTS.putIfAbsent(key, java.util.concurrent.ConcurrentHashMap.newKeySet());
+        if (Boolean.getBoolean("bm.mansion.trace")) BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=LAYOUT_COMPLETE mansionId={} structuralPieces={} expectedPlacementCount={} unionPositions={}",
+            key, ids.size(), placements.size(), pieces.stream().filter(Piece::isDungeonStructuralTemplate).mapToInt(piece -> piece.dungeonAuthoredStates().size()).sum());
         PLACED_PIECES.putIfAbsent(key, java.util.concurrent.ConcurrentHashMap.newKeySet());
     }
 
@@ -604,6 +607,17 @@ public final class MansionFeature extends Structure {
                 if (TRACE) BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=CHUNK_PLACED mansionId={} ordinal={} template={} chunk=[{},{}] placedPlacementCount={} expectedPlacementCount={} newAck={}",
                     mansionId, mansionPieceOrdinal, diagnosticTemplate, chunkPos.x, chunkPos.z,
                     PLACED_PLACEMENTS.get(mansionId).size(), EXPECTED_PLACEMENTS.getOrDefault(mansionId, Set.of()).size(), newAck);
+                Set<String> expected = EXPECTED_PLACEMENTS.getOrDefault(mansionId, Set.of());
+                Set<String> placed = PLACED_PLACEMENTS.getOrDefault(mansionId, Set.of());
+                if (placed.size() >= expected.size() && !placed.equals(expected) && COVERAGE_MISMATCH_LOGGED.add(mansionId) && TRACE) {
+                    Set<String> missing = new java.util.HashSet<>(expected); missing.removeAll(placed);
+                    Set<String> unexpected = new java.util.HashSet<>(placed); unexpected.removeAll(expected);
+                    BiomeMakeover.LOGGER.info("[BM_RECONCILE_COVERAGE_MISMATCH] mansionId={} expectedCount={} placedCount={} missingCount={} unexpectedCount={} missing={} unexpected={}",
+                        mansionId, expected.size(), placed.size(), missing.size(), unexpected.size(), missing.stream().limit(50).toList(), unexpected.stream().limit(50).toList());
+                }
+                if (TRACE && mansionPieceOrdinal == 170) BiomeMakeover.LOGGER.info("[BM_PLACEMENT_COVERAGE] ordinal=170 template={} pieceBounds={} expectedChunks={} observedChunks={} missing={} unexpected={}",
+                    diagnosticTemplate, getBoundingBox(), expected.stream().filter(k -> k.startsWith("170:")).toList(), placed.stream().filter(k -> k.startsWith("170:")).toList(),
+                    expected.stream().filter(k -> k.startsWith("170:") && !placed.contains(k)).toList(), placed.stream().filter(k -> k.startsWith("170:") && !expected.contains(k)).toList());
             }
             if (!TRACE && isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                 DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
