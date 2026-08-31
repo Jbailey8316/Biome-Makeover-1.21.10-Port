@@ -71,6 +71,7 @@ import party.lemons.biomemakeover.worldgen.mansion.RoomType;
  * templates are intentionally activated by later 11A stages.
  */
 public final class MansionFeature extends Structure {
+    private static final boolean ARCHAEology_TRACE = false;
     private static final CopyOnWriteArrayList<DelayedFluidTrace> DELAYED_FLUID_TRACES = new CopyOnWriteArrayList<>();
     private static final ThreadLocal<BlockPos> LAYOUT_ORIGIN = new ThreadLocal<>();
     private static final ThreadLocal<List<Piece>> LAYOUT_PIECES = new ThreadLocal<>();
@@ -112,7 +113,6 @@ public final class MansionFeature extends Structure {
                         entry.mansionId(), result.correctedAir(), result.correctedWaterlogged(), result.authoredWetPreserved());
                     BiomeMakeover.LOGGER.info("[BM_DUNGEON_RECONCILE] phase=R0 mansionId={} explicitDryWater={} authoredFalseNowWaterlogged={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
                         entry.mansionId(), result.explicitDryWater(), result.authoredFalseNowWaterlogged(), result.correctedAir(), result.correctedWaterlogged(), result.authoredWetPreserved());
-                    BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=SERVER_ACCEPT template={} registrationId={}", entry.template, entry.order);
                     entry.snapshot(level, "D0");
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=REMOVE mansionId={}", entry.mansionId());
                 }
@@ -180,21 +180,19 @@ public final class MansionFeature extends Structure {
             BlockState authored = entry.getValue();
             BlockPos pos = entry.getKey();
             if (authored.isAir()) {
-                if (level.getFluidState(pos).is(Fluids.WATER)) { level.setBlock(pos, authored, 3); correctedAir++; }
+                // Verification-only in R.17M. Per-placement correction owns mutation.
             } else if (authored.hasProperty(BlockStateProperties.WATERLOGGED)
                 && authored.getValue(BlockStateProperties.WATERLOGGED)) {
                 authoredWetPreserved++;
             } else if (authored.hasProperty(BlockStateProperties.WATERLOGGED)
                 && !authored.getValue(BlockStateProperties.WATERLOGGED)) {
-                BlockState runtime = level.getBlockState(pos);
-                if (runtime.is(authored.getBlock()) && runtime.hasProperty(BlockStateProperties.WATERLOGGED)
-                    && runtime.getValue(BlockStateProperties.WATERLOGGED)) { level.setBlock(pos, authored, 3); correctedWaterlogged++; }
-                }
+                // Verification-only in R.17M. Per-placement correction owns mutation.
             }
+        }
         int explicitDryWater = 0, authoredFalseNowWaterlogged = 0;
         for (var entry : union.entrySet()) {
             BlockState authored = entry.getValue();
-            if (authored.isAir() && level.getFluidState(entry.getKey()).is(Fluids.WATER)) explicitDryWater++;
+            if (authored.isAir() && !level.getFluidState(entry.getKey()).isEmpty()) explicitDryWater++;
             if (authored.hasProperty(BlockStateProperties.WATERLOGGED) && !authored.getValue(BlockStateProperties.WATERLOGGED)
                 && level.getBlockState(entry.getKey()).hasProperty(BlockStateProperties.WATERLOGGED)
                 && level.getBlockState(entry.getKey()).getValue(BlockStateProperties.WATERLOGGED)) authoredFalseNowWaterlogged++;
@@ -573,7 +571,7 @@ public final class MansionFeature extends Structure {
             // Mansion dungeon templates explicitly authored these states as dry;
             // restore only those transformed template cells, leaving authored wet
             // states and all surrounding world fluid untouched.
-            if (isDungeonStructuralTemplate()) restoreAuthoredDryWaterloggedStates(level, authoredStates);
+            if (isDungeonStructuralTemplate()) correctReleasedFluidStateForCurrentClip(level, authoredStates, bounds);
             if (TRACE) traceFluidInterior(level, "W2", order);
             if (TRACE) traceCrops(level, "C2");
             if (TRACE && isDungeonStructuralTemplate()) traceWaterlogTransitions(level, authoredStates, "P2");
@@ -584,14 +582,10 @@ public final class MansionFeature extends Structure {
                 traceFluidInterior(level, "W3", order);
                 traceCrops(level, "C3");
                 if (isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
-                    BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_BEGIN template={} orderIndex={} workerThread={} registrationId={}",
-                        diagnosticTemplate, order, Thread.currentThread().getName(), order);
                     DELAYED_FLUID_TRACES.add(new DelayedFluidTrace(serverLevel, diagnosticTemplate,
                         placeSettings.getRotation(), mansionOrigin, staticAuthoredDry, architecturalInterior, authoredStates, order));
                     DUNGEON_ENVELOPE.add(new EnvelopePiece(serverLevel, diagnosticTemplate, staticAuthoredDry, architecturalInterior));
                     if (DUNGEON_ENVELOPE.size() > 512) DUNGEON_ENVELOPE.remove(0);
-                    BiomeMakeover.LOGGER.info("[BM_DELAYED_TRACE] event=REGISTER_END template={} orderIndex={} registrationId={}",
-                        diagnosticTemplate, order, order);
                 }
                 BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=END thread={} timestamp={} orderIndex={}",
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
@@ -666,6 +660,7 @@ public final class MansionFeature extends Structure {
         }
 
         private void traceFluids(WorldGenLevel level, BoundingBox bounds, String phase, long order) {
+            if (!ARCHAEology_TRACE) return;
             int water = 0;
             BoundingBox sample = new BoundingBox(bounds.minX() - 1, bounds.minY() - 1, bounds.minZ() - 1,
                 bounds.maxX() + 1, bounds.maxY() + 1, bounds.maxZ() + 1);
@@ -683,6 +678,7 @@ public final class MansionFeature extends Structure {
          * diagnostics-only and never mutates world state.
          */
         private void traceFluidInterior(WorldGenLevel level, String phase, long order) {
+            if (!ARCHAEology_TRACE) return;
             if (!isDungeonStructuralTemplate()) return;
             int authoredDry = 0, waterInDry = 0, sourceInDry = 0, flowingInDry = 0;
             int authoredWater = 0, wetWaterloggable = 0, dryWaterloggable = 0, openings = 0;
@@ -734,6 +730,7 @@ public final class MansionFeature extends Structure {
         }
 
         private void traceWaterlogTransitions(WorldGenLevel level, Map<BlockPos, BlockState> authoredStates, String phase) {
+            if (!ARCHAEology_TRACE) return;
             int count = 0;
             for (var entry : authoredStates.entrySet()) {
                 BlockState authored = entry.getValue();
@@ -746,17 +743,27 @@ public final class MansionFeature extends Structure {
             }
         }
 
-        private void restoreAuthoredDryWaterloggedStates(WorldGenLevel level, Map<BlockPos, BlockState> authoredStates) {
+        private void correctReleasedFluidStateForCurrentClip(WorldGenLevel level, Map<BlockPos, BlockState> authoredStates, BoundingBox clip) {
+            int airChecked = 0, airRemoved = 0, dryChecked = 0, dryRestored = 0, wetPreserved = 0;
             for (var entry : authoredStates.entrySet()) {
                 BlockState authored = entry.getValue();
-                if (!authored.hasProperty(BlockStateProperties.WATERLOGGED)
-                    || authored.getValue(BlockStateProperties.WATERLOGGED)) continue;
+                BlockPos pos = entry.getKey();
+                if (!clip.isInside(pos)) continue;
+                if (authored.isAir()) {
+                    airChecked++;
+                    if (!level.getFluidState(pos).isEmpty()) { level.setBlock(pos, authored, 3); airRemoved++; }
+                    continue;
+                }
+                if (!authored.hasProperty(BlockStateProperties.WATERLOGGED)) continue;
+                if (authored.getValue(BlockStateProperties.WATERLOGGED)) { wetPreserved++; continue; }
+                dryChecked++;
                 BlockState runtime = level.getBlockState(entry.getKey());
                 if (runtime.is(authored.getBlock()) && runtime.hasProperty(BlockStateProperties.WATERLOGGED)
-                    && runtime.getValue(BlockStateProperties.WATERLOGGED)) {
-                    level.setBlock(entry.getKey(), authored, 3);
-                }
+                    && runtime.getValue(BlockStateProperties.WATERLOGGED)) { level.setBlock(pos, authored, 3); dryRestored++; }
             }
+            if (TRACE) BiomeMakeover.LOGGER.info("[BM_PLACEMENT_FLUID_FIX] mansionId={} ordinal={} template={} chunk={} explicitAirChecked={} waterRemovedFromExplicitAir={} dryWaterloggableChecked={} waterloggedFalseRestored={} authoredWetPreserved={}",
+                level.getLevel().dimension().location() + ":" + mansionOrigin, mansionPieceOrdinal, diagnosticTemplate,
+                ((clip.minX() >> 4) + "," + (clip.minZ() >> 4)), airChecked, airRemoved, dryChecked, dryRestored, wetPreserved);
         }
 
         private void traceCrops(WorldGenLevel level, String phase) {
