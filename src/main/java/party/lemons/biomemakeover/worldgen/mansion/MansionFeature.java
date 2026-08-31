@@ -113,6 +113,7 @@ public final class MansionFeature extends Structure {
                         entry.mansionId(), result.correctedAir(), result.correctedWaterlogged(), result.authoredWetPreserved());
                     BiomeMakeover.LOGGER.info("[BM_DUNGEON_RECONCILE] phase=R0 mansionId={} explicitDryWater={} authoredFalseNowWaterlogged={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
                         entry.mansionId(), result.explicitDryWater(), result.authoredFalseNowWaterlogged(), result.correctedAir(), result.correctedWaterlogged(), result.authoredWetPreserved());
+                    if (tracing) analyzeHydraulicGeometry(level, entry.mansionOrigin);
                     entry.snapshot(level, "D0");
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=REMOVE mansionId={}", entry.mansionId());
                 }
@@ -143,6 +144,80 @@ public final class MansionFeature extends Structure {
         for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES)
             if (candidate.level == level && candidate.mansionOrigin.equals(mansionOrigin)) count++;
         return count;
+    }
+
+    /** Read-only, one-shot connectivity audit over the completed structural envelope. */
+    private static void analyzeHydraulicGeometry(ServerLevel level, BlockPos mansionOrigin) {
+        Map<BlockPos, BlockState> union = new HashMap<>();
+        for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES)
+            if (candidate.level == level && candidate.mansionOrigin.equals(mansionOrigin)) union.putAll(candidate.authoredStates);
+        if (union.isEmpty()) return;
+        int minX = union.keySet().stream().mapToInt(BlockPos::getX).min().orElse(0) - 1;
+        int maxX = union.keySet().stream().mapToInt(BlockPos::getX).max().orElse(0) + 1;
+        int minY = union.keySet().stream().mapToInt(BlockPos::getY).min().orElse(0) - 1;
+        int maxY = union.keySet().stream().mapToInt(BlockPos::getY).max().orElse(0) + 1;
+        int minZ = union.keySet().stream().mapToInt(BlockPos::getZ).min().orElse(0) - 1;
+        int maxZ = union.keySet().stream().mapToInt(BlockPos::getZ).max().orElse(0) + 1;
+        long volume = (long)(maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
+        if (volume > 600_000L) {
+            BiomeMakeover.LOGGER.info("[BM_HYDRAULIC_SUMMARY] mansionId={} analysisCells=0 structuralInteriorCells=0 exteriorConnectedCells=0 interiorExteriorConnectedCells=0 leakFaces=0 sourceWaterLeakFaces=0 flowingWaterLeakFaces=0 airLeakFaces=0 waterloggedLeakFaces=0 dungeonLeakFaces=0 stairLeakFaces=0 bossLeakFaces=0 skippedVolume={}", mansionId(level, mansionOrigin), volume);
+            return;
+        }
+        Set<BlockPos> interior = new java.util.HashSet<>();
+        for (var entry : union.entrySet()) if (entry.getValue().isAir()) interior.add(entry.getKey());
+        Set<BlockPos> exterior = new java.util.HashSet<>();
+        java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+        for (int x = minX; x <= maxX; x++) for (int y = minY; y <= maxY; y++) for (int z = minZ; z <= maxZ; z++) {
+            if (x != minX && x != maxX && y != minY && y != maxY && z != minZ && z != maxZ) continue;
+            BlockPos p = new BlockPos(x, y, z);
+            if (isHydraulicPassable(level, p) && exterior.add(p)) queue.add(p);
+        }
+        while (!queue.isEmpty()) {
+            BlockPos p = queue.remove();
+            for (Direction d : Direction.values()) {
+                BlockPos n = p.relative(d);
+                if (n.getX() < minX || n.getX() > maxX || n.getY() < minY || n.getY() > maxY || n.getZ() < minZ || n.getZ() > maxZ) continue;
+                if (isHydraulicPassable(level, n) && exterior.add(n)) queue.add(n);
+            }
+        }
+        int leak = 0, sourceLeaks = 0, flowingLeaks = 0, airLeaks = 0, wetLeaks = 0, dungeonLeaks = 0, stairLeaks = 0, bossLeaks = 0;
+        int explicitDryWater = 0, authoredWetWater = 0, omittedInteriorWater = 0, exteriorWater = 0, unknownWater = 0;
+        for (BlockPos p : union.keySet()) {
+            BlockState authored = union.get(p);
+            var fluid = level.getFluidState(p);
+            if (authored.isAir() && !fluid.isEmpty()) { explicitDryWater++; if (exterior.contains(p)) exteriorWater++; else omittedInteriorWater++; }
+            else if (authored.hasProperty(BlockStateProperties.WATERLOGGED) && authored.getValue(BlockStateProperties.WATERLOGGED)) authoredWetWater++;
+            if (!interior.contains(p)) continue;
+            for (Direction d : Direction.values()) {
+                BlockPos n = p.relative(d);
+                if (!exterior.contains(n)) continue;
+                leak++;
+                var nf = level.getFluidState(n);
+                if (nf.is(Fluids.WATER) && nf.isSource()) sourceLeaks++; else if (nf.is(Fluids.WATER)) flowingLeaks++; else airLeaks++;
+                if (level.getBlockState(p).hasProperty(BlockStateProperties.WATERLOGGED)) wetLeaks++;
+                String template = union.get(p).getBlock().builtInRegistryHolder().key().location().toString();
+                if (template.contains("boss_room")) bossLeaks++; else if (template.contains("stair")) stairLeaks++; else dungeonLeaks++;
+                if (leak <= 100) BiomeMakeover.LOGGER.info("[BM_HYDRAULIC_LEAK_FACE] mansionId={} interiorPos={} exteriorPos={} face={} interiorRuntimeState={} exteriorRuntimeState={} fluidState={} source={} nearestTemplate={} nearestPieceOrdinal={} bossRoom={} stair={}",
+                    mansionId(level, mansionOrigin), p, n, d, level.getBlockState(p), level.getBlockState(n), nf, nf.isSource(), template, -1, template.contains("boss_room"), template.contains("stair"));
+            }
+        }
+        BiomeMakeover.LOGGER.info("[BM_HYDRAULIC_SUMMARY] mansionId={} analysisCells={} structuralInteriorCells={} exteriorConnectedCells={} interiorExteriorConnectedCells={} leakFaces={} sourceWaterLeakFaces={} flowingWaterLeakFaces={} airLeakFaces={} waterloggedLeakFaces={} dungeonLeakFaces={} stairLeakFaces={} bossLeakFaces={}",
+            mansionId(level, mansionOrigin), volume, interior.size(), exterior.size(), interior.stream().filter(exterior::contains).count(), leak, sourceLeaks, flowingLeaks, airLeaks, wetLeaks, dungeonLeaks, stairLeaks, bossLeaks);
+        BiomeMakeover.LOGGER.info("[BM_HYDRAULIC_WATER_VOLUME] mansionId={} explicitDryWater={} authoredWetWater={} omittedInteriorWater={} exteriorConnectedWater={} unknownWater={}",
+            mansionId(level, mansionOrigin), explicitDryWater, authoredWetWater, omittedInteriorWater, exteriorWater, unknownWater);
+        int bossInterior = 0, bossWater = 0, bossExterior = 0, bossLeak = 0;
+        for (BlockPos p : interior) if (union.getOrDefault(p, Blocks.AIR.defaultBlockState()).getBlock().builtInRegistryHolder().key().location().toString().contains("boss_room")) { bossInterior++; if (!level.getFluidState(p).isEmpty()) bossWater++; if (exterior.contains(p)) bossExterior++; }
+        BiomeMakeover.LOGGER.info("[BM_BOSS_HYDRAULIC_SUMMARY] mansionId={} bossInteriorCells={} bossWaterCells={} bossExteriorConnectedCells={} bossLeakFaces={} sourceLeakFaces={} flowingLeakFaces={} airLeakFaces={}",
+            mansionId(level, mansionOrigin), bossInterior, bossWater, bossExterior, bossLeak, 0, 0, 0);
+    }
+
+    private static boolean isHydraulicPassable(ServerLevel level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        return state.isAir() || !level.getFluidState(pos).isEmpty() || state.hasProperty(BlockStateProperties.WATERLOGGED);
+    }
+
+    private static String mansionId(ServerLevel level, BlockPos origin) {
+        return level.dimension().location() + ":" + origin;
     }
 
     private static void registerExpectedPieces(BlockPos origin, List<Piece> pieces) {
