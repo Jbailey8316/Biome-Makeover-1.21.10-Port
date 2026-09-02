@@ -27,6 +27,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnorePr
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Blocks;
@@ -72,6 +73,8 @@ import party.lemons.biomemakeover.worldgen.mansion.RoomType;
  */
 public final class MansionFeature extends Structure {
     private static final boolean ARCHAEology_TRACE = false;
+    private static final boolean VANILLA_LIQUID_PARITY = Boolean.getBoolean("bm.mansion.trial_liquid_parity");
+    private static final Set<String> TRIAL_LIQUID_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final CopyOnWriteArrayList<DelayedFluidTrace> DELAYED_FLUID_TRACES = new CopyOnWriteArrayList<>();
     private static final ThreadLocal<BlockPos> LAYOUT_ORIGIN = new ThreadLocal<>();
     private static final ThreadLocal<List<Piece>> LAYOUT_PIECES = new ThreadLocal<>();
@@ -582,7 +585,8 @@ public final class MansionFeature extends Structure {
 
         private static StructurePlaceSettings settings(Rotation rotation, boolean wall) {
             return new StructurePlaceSettings().setIgnoreEntities(true)
-                .setRotation(rotation).setMirror(Mirror.NONE)
+            .setRotation(rotation).setMirror(Mirror.NONE)
+                .setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING)
                 .addProcessor(wall ? BlockIgnoreProcessor.STRUCTURE_AND_AIR : BlockIgnoreProcessor.STRUCTURE_BLOCK);
         }
 
@@ -684,7 +688,11 @@ public final class MansionFeature extends Structure {
             // Mansion dungeon templates explicitly authored these states as dry;
             // restore only those transformed template cells, leaving authored wet
             // states and all surrounding world fluid untouched.
-            if (isDungeonStructuralTemplate()) correctReleasedFluidStateForCurrentClip(level, authoredStates, bounds);
+            if (isDungeonStructuralTemplate() && !VANILLA_LIQUID_PARITY) correctReleasedFluidStateForCurrentClip(level, authoredStates, bounds);
+            if (VANILLA_LIQUID_PARITY && isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
+                String key = serverLevel.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature;
+                if (TRIAL_LIQUID_LOGGED.add(key) && TRACE) BiomeMakeover.LOGGER.info("[BM_TRIAL_LIQUID_PARITY] liquidMode=IGNORE_WATERLOGGING nativeVanillaPlacement=true customDryCorrectionEnabled=false customSourceClosureEnabled=false");
+            }
             if (TRACE) traceFluidInterior(level, "W2", order);
             if (TRACE) traceCrops(level, "C2");
             if (TRACE && isDungeonStructuralTemplate()) traceWaterlogTransitions(level, authoredStates, "P2");
