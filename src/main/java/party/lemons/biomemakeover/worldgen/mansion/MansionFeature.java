@@ -89,6 +89,7 @@ public final class MansionFeature extends Structure {
     private static final Set<String> RUNTIME_REGISTERED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Set<String> CROP_PHASE_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Set<String> CROP_DISAPPEAR_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final CopyOnWriteArrayList<LateFinalization> LATE_FINALIZATIONS = new CopyOnWriteArrayList<>();
 
     private static final class LayoutMetadata {
         final String key, signature; final BlockPos origin; final Set<String> ordinals, placements; final int unionSize, bossPieces;
@@ -123,6 +124,7 @@ public final class MansionFeature extends Structure {
                 && EXECUTED_MANSIONS.add(mansionId)) {
                 ReconcileResult result = reconcileCompletedDungeon(level, entry.order, entry.mansionOrigin, entry.layoutSignature);
                 if (result.executed()) {
+                    LATE_FINALIZATIONS.addIfAbsent(createLateFinalization(level, entry.mansionOrigin, entry.layoutSignature));
                     int bossCleared = reconcileBossRoomFinalAir(level, entry.mansionOrigin, entry.layoutSignature);
                     if (tracing) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} explicitAirCleared={}", entry.mansionId(), bossCleared);
                     int cropsRestored = reconcileCropsFinal(level, entry.mansionOrigin, entry.layoutSignature);
@@ -146,6 +148,16 @@ public final class MansionFeature extends Structure {
             String phase = switch (entry.age) { case 1 -> "D1"; case 5 -> "D5"; case 20 -> "D20"; case 100 -> "D100"; default -> null; };
             if (phase != null) entry.snapshot(level, phase);
             if (tracing && entry.age <= 2) traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C" + (6 + entry.age));
+            for (LateFinalization late : LATE_FINALIZATIONS) if (late.level == level) {
+                late.age++;
+                if (late.age == 1) {
+                    int boss = 0, crops = 0;
+                    for (BlockPos p : late.bossAir) if (!level.getFluidState(p).isEmpty()) { level.setBlock(p, Blocks.AIR.defaultBlockState(), 2); boss++; }
+                    for (var e : late.crops.entrySet()) if (!level.getBlockState(e.getKey()).is(e.getValue().getBlock())) { level.setBlock(e.getKey(), e.getValue(), 2); crops++; }
+                    if (tracing) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} phase=C7 explicitAirCleared={} cropStatesRestored={}", late.id, boss, crops);
+                }
+                if (late.age >= 2) LATE_FINALIZATIONS.remove(late);
+            }
             if (entry.age >= 100 || (!tracing && EXECUTED_MANSIONS.contains(entry.mansionId()))) DELAYED_FLUID_TRACES.remove(entry);
         }
     }
@@ -355,6 +367,21 @@ public final class MansionFeature extends Structure {
             }
         }
         return restored;
+    }
+
+    private static LateFinalization createLateFinalization(ServerLevel level, BlockPos origin, String signature) {
+        Map<BlockPos, BlockState> crops = new HashMap<>(); Set<BlockPos> boss = new java.util.HashSet<>();
+        for (DelayedFluidTrace c : DELAYED_FLUID_TRACES) if (c.level == level && c.mansionOrigin.equals(origin) && c.layoutSignature.equals(signature)) for (var e : c.authoredStates.entrySet()) {
+            String n = BuiltInRegistries.BLOCK.getKey(e.getValue().getBlock()).toString();
+            if (n.contains("wheat") || n.contains("carrot") || n.contains("potato") || n.contains("beetroot") || n.contains("melon_stem") || n.contains("pumpkin_stem")) crops.putIfAbsent(e.getKey(), e.getValue());
+            if (c.template.contains("/boss_room") && e.getValue().isAir()) boss.add(e.getKey());
+        }
+        return new LateFinalization(level, mansionId(level, origin, signature), crops, boss);
+    }
+
+    private static final class LateFinalization {
+        final ServerLevel level; final String id; final Map<BlockPos, BlockState> crops; final Set<BlockPos> bossAir; int age;
+        LateFinalization(ServerLevel level, String id, Map<BlockPos, BlockState> crops, Set<BlockPos> bossAir) { this.level = level; this.id = id; this.crops = Map.copyOf(crops); this.bossAir = Set.copyOf(bossAir); }
     }
 
     private static void traceCropPhase(ServerLevel level, BlockPos origin, String signature, String phase) {
