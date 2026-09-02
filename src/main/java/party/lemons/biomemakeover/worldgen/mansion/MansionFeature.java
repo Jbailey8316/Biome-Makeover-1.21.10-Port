@@ -120,6 +120,10 @@ public final class MansionFeature extends Structure {
                 && PLACED_PLACEMENTS.getOrDefault(mansionId, Set.of()).equals(EXPECTED_PLACEMENTS.get(mansionId))
                 && EXECUTED_MANSIONS.add(mansionId)) {
                 ReconcileResult result = reconcileCompletedDungeon(level, entry.order, entry.mansionOrigin, entry.layoutSignature);
+                if (result.executed()) {
+                    int bossCleared = reconcileBossRoomFinalAir(level, entry.mansionOrigin, entry.layoutSignature);
+                    if (tracing) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} explicitAirCleared={}", entry.mansionId(), bossCleared);
+                }
                 if (tracing && result.executed()) {
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=READY mansionId={} pieceCount={} unionPositions={}", entry.mansionId(), countMansionPieces(level, entry.mansionOrigin, entry.layoutSignature), unionSize(level, entry.mansionOrigin, entry.layoutSignature));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_BEGIN mansionId={} unionPositions={}", entry.mansionId(), unionSize(level, entry.mansionOrigin, entry.layoutSignature));
@@ -311,6 +315,24 @@ public final class MansionFeature extends Structure {
                 && level.getBlockState(entry.getKey()).getValue(BlockStateProperties.WATERLOGGED)) authoredFalseNowWaterlogged++;
         }
         return new ReconcileResult(true, correctedAir, correctedWaterlogged, authoredWetPreserved, explicitDryWater, authoredFalseNowWaterlogged);
+    }
+
+    /** Final, boss-room-only safety net for water that re-enters after placement. */
+    private static int reconcileBossRoomFinalAir(ServerLevel level, BlockPos origin, String signature) {
+        int cleared = 0;
+        Set<BlockPos> seen = new java.util.HashSet<>();
+        for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
+            if (candidate.level != level || !candidate.mansionOrigin.equals(origin) || !candidate.layoutSignature.equals(signature)
+                || !candidate.template.contains("/boss_room")) continue;
+            for (var entry : candidate.authoredStates.entrySet()) {
+                if (!entry.getValue().isAir() || !seen.add(entry.getKey())) continue;
+                if (!level.getFluidState(entry.getKey()).isEmpty()) {
+                    level.setBlock(entry.getKey(), Blocks.AIR.defaultBlockState(), 2);
+                    cleared++;
+                }
+            }
+        }
+        return cleared;
     }
 
     private record EnvelopePiece(ServerLevel level, String template, Set<BlockPos> authoredDry, Set<BlockPos> architecturalInterior) {
@@ -709,6 +731,7 @@ public final class MansionFeature extends Structure {
                     }
                 }
             }
+            restoreSerializedCrops(level, bounds);
             // Modern structure placement can merge an existing source fluid into
             // waterloggable blocks even when keepLiquids(false) is set.  Released
             // Mansion dungeon templates explicitly authored these states as dry;
@@ -995,15 +1018,30 @@ public final class MansionFeature extends Structure {
         }
 
         private void traceCrops(WorldGenLevel level, String phase) {
+            // BM_CROP_TRACE is retained as the historical diagnostic name; runtime output is bounded.
             for (Block crop : new Block[] {Blocks.WHEAT, Blocks.CARROTS, Blocks.POTATOES, Blocks.BEETROOTS,
                 Blocks.MELON_STEM, Blocks.PUMPKIN_STEM}) {
                 for (var info : template.filterBlocks(templatePosition, placeSettings, crop)) {
                     BlockPos support = info.pos().below();
-                    BiomeMakeover.LOGGER.info("[BM_CROP_TRACE] template={} local={} world={} serializedState={} phase={} runtimeState={} supportState={}",
+                    BiomeMakeover.LOGGER.info("[BM_CROP_RUNTIME] template={} localPos={} worldPos={} serializedState={} phase={} runtimeState={} supportState={} inClip={}",
                         diagnosticTemplate, info.pos().subtract(templatePosition), info.pos(), info.state(), phase,
-                        level.getBlockState(info.pos()), level.getBlockState(support));
+                        level.getBlockState(info.pos()), level.getBlockState(support), true);
                 }
             }
+        }
+
+        private void restoreSerializedCrops(WorldGenLevel level, BoundingBox clip) {
+            if (!isDungeonStructuralTemplate()) return;
+            int restored = 0;
+            for (Block crop : new Block[] {Blocks.WHEAT, Blocks.CARROTS, Blocks.POTATOES, Blocks.BEETROOTS,
+                Blocks.MELON_STEM, Blocks.PUMPKIN_STEM, Blocks.ATTACHED_MELON_STEM, Blocks.ATTACHED_PUMPKIN_STEM}) {
+                for (var info : template.filterBlocks(templatePosition, placeSettings, crop)) {
+                    if (!clip.isInside(info.pos())) continue;
+                    BlockState runtime = level.getBlockState(info.pos());
+                    if (!runtime.equals(info.state()) && level.setBlock(info.pos(), info.state(), 2)) restored++;
+                }
+            }
+            if (TRACE && restored > 0) BiomeMakeover.LOGGER.info("[BM_CROP_PARITY] template={} restoredSerializedCrops={} clip={}", diagnosticTemplate, restored, clip);
         }
 
         private List<BlockPos> dungeonArchitecturalInterior(BoundingBox bounds) {
