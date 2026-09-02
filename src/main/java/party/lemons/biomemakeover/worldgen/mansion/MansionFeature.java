@@ -89,6 +89,7 @@ public final class MansionFeature extends Structure {
     private static final Set<String> RUNTIME_REGISTERED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Set<String> CROP_PHASE_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Set<String> CROP_DISAPPEAR_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final Set<String> LATE_SUMMARY_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final CopyOnWriteArrayList<LateFinalization> LATE_FINALIZATIONS = new CopyOnWriteArrayList<>();
 
     private static final class LayoutMetadata {
@@ -386,6 +387,7 @@ public final class MansionFeature extends Structure {
 
     private static void traceCropPhase(ServerLevel level, BlockPos origin, String signature, String phase) {
         String mansion = mansionId(level, origin, signature);
+        if (LATE_SUMMARY_LOGGED.add(mansion + ":" + phase)) emitLateSummaries(level, mansion, phase, origin, signature);
         for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
             if (candidate.level != level || !candidate.mansionOrigin.equals(origin) || !candidate.layoutSignature.equals(signature)) continue;
             for (var entry : candidate.authoredStates.entrySet()) {
@@ -397,6 +399,21 @@ public final class MansionFeature extends Structure {
                 if (CROP_PHASE_LOGGED.add(key)) BiomeMakeover.LOGGER.info("[BM_CROP_RUNTIME] mansionId={} template={} localPos=<serialized> worldPos={} serializedState={} phase={} runtimeState={} supportState={} inClip=true", mansion, candidate.template, entry.getKey(), authored, phase, runtime, level.getBlockState(entry.getKey().below()));
                 if (!runtime.is(authored.getBlock()) && CROP_DISAPPEAR_LOGGED.add(mansion + ":" + entry.getKey())) BiomeMakeover.LOGGER.info("[BM_CROP_DISAPPEAR] mansionId={} template={} pieceOrdinal=-1 localPos=<serialized> worldPos={} serializedState={} previousState={} newState={} phase={} supportState={} lastKnownWritingPiece=unknown lastKnownWritingTemplate=unknown", mansion, candidate.template, entry.getKey(), authored, authored, runtime, phase, level.getBlockState(entry.getKey().below()));
             }
+        }
+    }
+
+    private static void emitLateSummaries(ServerLevel level, String mansion, String phase, BlockPos origin, String signature) {
+        int expected = 0, present = 0, supportMissing = 0, air = 0, water = 0, source = 0, flowing = 0;
+        String template = "serialized";
+        for (DelayedFluidTrace c : DELAYED_FLUID_TRACES) if (c.level == level && c.mansionOrigin.equals(origin) && c.layoutSignature.equals(signature)) {
+            if (c.template.contains("/boss_room")) for (var e : c.authoredStates.entrySet()) if (e.getValue().isAir()) { air++; var f = level.getFluidState(e.getKey()); if (!f.isEmpty()) { water++; if (f.isSource()) source++; else flowing++; } }
+            for (var e : c.authoredStates.entrySet()) { String n = BuiltInRegistries.BLOCK.getKey(e.getValue().getBlock()).toString(); if (!(n.contains("wheat") || n.contains("carrot") || n.contains("potato") || n.contains("beetroot") || n.contains("melon_stem") || n.contains("pumpkin_stem"))) continue; expected++; if (level.getBlockState(e.getKey()).is(e.getValue().getBlock())) present++; if (!level.getBlockState(e.getKey().below()).is(Blocks.FARMLAND)) supportMissing++; template = c.template; }
+        }
+        switch (phase) {
+            case "C5" -> { BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_LATE_AUDIT] mansionId={} phase=C5 explicitAirChecked={} waterFound={} sourceWaterFound={} flowingWaterFound={}", mansion, air, water, source, flowing); BiomeMakeover.LOGGER.info("[BM_CROP_LATE_SUMMARY] mansionId={} template={} phase=C5 expected={} present={} missing={} supportMissing={}", mansion, template, expected, present, expected-present, supportMissing); }
+            case "C6" -> { BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_LATE_AUDIT] mansionId={} phase=C6 explicitAirChecked={} waterFound={} sourceWaterFound={} flowingWaterFound={}", mansion, air, water, source, flowing); BiomeMakeover.LOGGER.info("[BM_CROP_LATE_SUMMARY] mansionId={} template={} phase=C6 expected={} present={} missing={} supportMissing={}", mansion, template, expected, present, expected-present, supportMissing); }
+            case "C7" -> { BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_LATE_AUDIT] mansionId={} phase=C7 explicitAirChecked={} waterFound={} sourceWaterFound={} flowingWaterFound={}", mansion, air, water, source, flowing); BiomeMakeover.LOGGER.info("[BM_CROP_LATE_SUMMARY] mansionId={} template={} phase=C7 expected={} present={} missing={} supportMissing={}", mansion, template, expected, present, expected-present, supportMissing); }
+            case "C8" -> { BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_LATE_AUDIT] mansionId={} phase=C8 explicitAirChecked={} waterFound={} sourceWaterFound={} flowingWaterFound={}", mansion, air, water, source, flowing); BiomeMakeover.LOGGER.info("[BM_CROP_LATE_SUMMARY] mansionId={} template={} phase=C8 expected={} present={} missing={} supportMissing={}", mansion, template, expected, present, expected-present, supportMissing); }
         }
     }
 
