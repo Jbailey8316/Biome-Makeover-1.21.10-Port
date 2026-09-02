@@ -73,7 +73,8 @@ import party.lemons.biomemakeover.worldgen.mansion.RoomType;
  */
 public final class MansionFeature extends Structure {
     private static final boolean ARCHAEology_TRACE = false;
-    private static final boolean VANILLA_LIQUID_PARITY = Boolean.getBoolean("bm.mansion.trial_liquid_parity");
+    /** Native 1.21.10 Trial-Chamber liquid semantics are the production default. */
+    private static final boolean VANILLA_LIQUID_PARITY = true;
     private static final Set<String> TRIAL_LIQUID_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final CopyOnWriteArrayList<DelayedFluidTrace> DELAYED_FLUID_TRACES = new CopyOnWriteArrayList<>();
     private static final ThreadLocal<BlockPos> LAYOUT_ORIGIN = new ThreadLocal<>();
@@ -688,7 +689,7 @@ public final class MansionFeature extends Structure {
             // Mansion dungeon templates explicitly authored these states as dry;
             // restore only those transformed template cells, leaving authored wet
             // states and all surrounding world fluid untouched.
-            if (isDungeonStructuralTemplate() && !VANILLA_LIQUID_PARITY) correctReleasedFluidStateForCurrentClip(level, authoredStates, bounds);
+            // Legacy R17 authored-fluid mutation is retired; native liquid settings are authoritative.
             if (VANILLA_LIQUID_PARITY && diagnosticTemplate.contains("/boss_room")) clearBossRoomAuthoredAir(level, authoredStates, bounds);
             if (VANILLA_LIQUID_PARITY && isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                 String key = serverLevel.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature;
