@@ -263,7 +263,7 @@ public final class MansionFeature extends Structure {
         // Candidate construction is pure: runtime maps are populated lazily by
         // the first actual Piece.postProcess callback.
         if (Boolean.getBoolean("bm.mansion.trace")) BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=LAYOUT_COMPLETE mansionId={} structuralPieces={} expectedPlacementCount={} unionPositions={}",
-            key, ids.size(), placements.size(), pieces.stream().filter(Piece::isDungeonStructuralTemplate).mapToInt(piece -> piece.dungeonAuthoredStates().size()).sum());
+            key, ids.size(), placements.size(), completeUnion.size());
     }
 
     private static String layoutSignature(List<Piece> pieces) {
