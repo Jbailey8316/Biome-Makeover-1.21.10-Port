@@ -87,6 +87,8 @@ public final class MansionFeature extends Structure {
     private static final Map<String, Integer> EXPECTED_UNION_SIZES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Integer> EXPECTED_BOSS_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> RUNTIME_REGISTERED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final Set<String> CROP_PHASE_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final Set<String> CROP_DISAPPEAR_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private static final class LayoutMetadata {
         final String key, signature; final BlockPos origin; final Set<String> ordinals, placements; final int unionSize, bossPieces;
@@ -123,8 +125,12 @@ public final class MansionFeature extends Structure {
                 if (result.executed()) {
                     int bossCleared = reconcileBossRoomFinalAir(level, entry.mansionOrigin, entry.layoutSignature);
                     if (tracing) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} explicitAirCleared={}", entry.mansionId(), bossCleared);
+                    int cropsRestored = reconcileCropsFinal(level, entry.mansionOrigin, entry.layoutSignature);
+                    if (tracing) traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C6");
+                    if (tracing && cropsRestored > 0) BiomeMakeover.LOGGER.info("[BM_CROP_PARITY] mansionId={} finalSerializedCropsRestored={}", entry.mansionId(), cropsRestored);
                 }
                 if (tracing && result.executed()) {
+                    traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C5");
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=READY mansionId={} pieceCount={} unionPositions={}", entry.mansionId(), countMansionPieces(level, entry.mansionOrigin, entry.layoutSignature), unionSize(level, entry.mansionOrigin, entry.layoutSignature));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_BEGIN mansionId={} unionPositions={}", entry.mansionId(), unionSize(level, entry.mansionOrigin, entry.layoutSignature));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_END mansionId={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
@@ -139,6 +145,7 @@ public final class MansionFeature extends Structure {
             entry.age++;
             String phase = switch (entry.age) { case 1 -> "D1"; case 5 -> "D5"; case 20 -> "D20"; case 100 -> "D100"; default -> null; };
             if (phase != null) entry.snapshot(level, phase);
+            if (tracing && entry.age <= 2) traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C" + (6 + entry.age));
             if (entry.age >= 100 || (!tracing && EXECUTED_MANSIONS.contains(entry.mansionId()))) DELAYED_FLUID_TRACES.remove(entry);
         }
     }
@@ -333,6 +340,37 @@ public final class MansionFeature extends Structure {
             }
         }
         return cleared;
+    }
+
+    private static int reconcileCropsFinal(ServerLevel level, BlockPos origin, String signature) {
+        int restored = 0;
+        Set<BlockPos> seen = new java.util.HashSet<>();
+        for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
+            if (candidate.level != level || !candidate.mansionOrigin.equals(origin) || !candidate.layoutSignature.equals(signature)) continue;
+            for (var entry : candidate.authoredStates.entrySet()) {
+                BlockState authored = entry.getValue();
+                String id = BuiltInRegistries.BLOCK.getKey(authored.getBlock()).toString();
+                if (!(id.contains("wheat") || id.contains("carrot") || id.contains("potato") || id.contains("beetroot") || id.contains("melon_stem") || id.contains("pumpkin_stem")) || !seen.add(entry.getKey())) continue;
+                if (!level.getBlockState(entry.getKey()).is(authored.getBlock())) { level.setBlock(entry.getKey(), authored, 2); restored++; }
+            }
+        }
+        return restored;
+    }
+
+    private static void traceCropPhase(ServerLevel level, BlockPos origin, String signature, String phase) {
+        String mansion = mansionId(level, origin, signature);
+        for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES) {
+            if (candidate.level != level || !candidate.mansionOrigin.equals(origin) || !candidate.layoutSignature.equals(signature)) continue;
+            for (var entry : candidate.authoredStates.entrySet()) {
+                BlockState authored = entry.getValue();
+                String id = BuiltInRegistries.BLOCK.getKey(authored.getBlock()).toString();
+                if (!(id.contains("wheat") || id.contains("carrot") || id.contains("potato") || id.contains("beetroot") || id.contains("melon_stem") || id.contains("pumpkin_stem"))) continue;
+                String key = mansion + ":" + phase + ":" + entry.getKey();
+                BlockState runtime = level.getBlockState(entry.getKey());
+                if (CROP_PHASE_LOGGED.add(key)) BiomeMakeover.LOGGER.info("[BM_CROP_RUNTIME] mansionId={} template={} localPos=<serialized> worldPos={} serializedState={} phase={} runtimeState={} supportState={} inClip=true", mansion, candidate.template, entry.getKey(), authored, phase, runtime, level.getBlockState(entry.getKey().below()));
+                if (!runtime.is(authored.getBlock()) && CROP_DISAPPEAR_LOGGED.add(mansion + ":" + entry.getKey())) BiomeMakeover.LOGGER.info("[BM_CROP_DISAPPEAR] mansionId={} template={} pieceOrdinal=-1 localPos=<serialized> worldPos={} serializedState={} previousState={} newState={} phase={} supportState={} lastKnownWritingPiece=unknown lastKnownWritingTemplate=unknown", mansion, candidate.template, entry.getKey(), authored, authored, runtime, phase, level.getBlockState(entry.getKey().below()));
+            }
+        }
     }
 
     private record EnvelopePiece(ServerLevel level, String template, Set<BlockPos> authoredDry, Set<BlockPos> architecturalInterior) {
@@ -732,6 +770,7 @@ public final class MansionFeature extends Structure {
                 }
             }
             restoreSerializedCrops(level, bounds);
+            if (TRACE) traceCrops(level, "C4");
             // Modern structure placement can merge an existing source fluid into
             // waterloggable blocks even when keepLiquids(false) is set.  Released
             // Mansion dungeon templates explicitly authored these states as dry;
