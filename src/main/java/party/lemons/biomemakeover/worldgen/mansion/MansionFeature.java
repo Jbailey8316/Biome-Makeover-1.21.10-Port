@@ -242,6 +242,10 @@ public final class MansionFeature extends Structure {
         return mansionId(level, origin) + ":" + signature;
     }
 
+    private static String serverKey(BlockPos origin, String signature) {
+        return "minecraft:overworld:" + origin + ":" + signature;
+    }
+
     private static void registerExpectedPieces(BlockPos origin, List<Piece> pieces) {
         String signature = layoutSignature(pieces);
         for (Piece piece : pieces) piece.layoutSignature = signature;
@@ -545,6 +549,10 @@ public final class MansionFeature extends Structure {
         private final int mansionPieceOrdinal;
         private String layoutSignature;
         private LayoutMetadata layoutMetadata;
+        private Set<String> persistedOrdinals = Set.of();
+        private Set<String> persistedPlacements = Set.of();
+        private int persistedUnionSize = -1;
+        private int persistedBossPieces = -1;
         private MansionDetails details;
         private String diagnosticTemplate;
 
@@ -581,7 +589,18 @@ public final class MansionFeature extends Structure {
                 : templatePosition;
             this.mansionPieceOrdinal = tag.getInt("MansionPieceOrdinal").orElse(-1);
             this.layoutSignature = tag.getStringOr("MansionLayoutSignature", "legacy");
-            this.layoutMetadata = null;
+            this.persistedOrdinals = splitMetadataSet(tag.getStringOr("MansionExpectedOrdinals", ""));
+            this.persistedPlacements = splitMetadataSet(tag.getStringOr("MansionExpectedPlacements", ""));
+            this.persistedUnionSize = tag.getInt("MansionUnionSize").orElse(-1);
+            this.persistedBossPieces = tag.getInt("MansionBossPieces").orElse(-1);
+            this.layoutMetadata = persistedOrdinals.isEmpty() || persistedPlacements.isEmpty() || persistedUnionSize < 0
+                ? null : new LayoutMetadata(serverKey(mansionOrigin, layoutSignature), layoutSignature, mansionOrigin,
+                    persistedOrdinals, persistedPlacements, persistedUnionSize, Math.max(0, persistedBossPieces));
+        }
+
+        private static Set<String> splitMetadataSet(String value) {
+            if (value == null || value.isEmpty()) return Set.of();
+            return Set.of(value.split("\\n"));
         }
 
         private static StructurePlaceSettings settings(Rotation rotation, boolean wall) {
@@ -602,6 +621,12 @@ public final class MansionFeature extends Structure {
             tag.putInt("MansionOriginZ", mansionOrigin.getZ());
             tag.putInt("MansionPieceOrdinal", mansionPieceOrdinal);
             tag.putString("MansionLayoutSignature", layoutSignature == null ? "legacy" : layoutSignature);
+            if (layoutMetadata != null) {
+                tag.putString("MansionExpectedOrdinals", String.join("\n", layoutMetadata.ordinals));
+                tag.putString("MansionExpectedPlacements", String.join("\n", layoutMetadata.placements));
+                tag.putInt("MansionUnionSize", layoutMetadata.unionSize);
+                tag.putInt("MansionBossPieces", layoutMetadata.bossPieces);
+            }
             if (details != null) {
                 MansionDetails.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, details).result().ifPresent(value -> tag.put("Details", value));
             }
@@ -714,6 +739,11 @@ public final class MansionFeature extends Structure {
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
             }
             if (isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
+                if (layoutMetadata == null) {
+                    String missingKey = serverLevel.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature;
+                    if (RUNTIME_REGISTERED.add("missing:" + missingKey)) BiomeMakeover.LOGGER.warn("[BM_MANSION_RUNTIME_METADATA_MISSING] mansionLayoutKey={} template={} ordinal={} -- skipping reconciliation bookkeeping", missingKey, diagnosticTemplate, mansionPieceOrdinal);
+                    return;
+                }
                 String mansionId = serverLevel.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature;
                 if (layoutMetadata != null && RUNTIME_REGISTERED.add(mansionId)) {
                     EXPECTED_PIECES.putIfAbsent(mansionId, layoutMetadata.ordinals.size());
