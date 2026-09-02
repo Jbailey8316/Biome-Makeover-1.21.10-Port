@@ -689,6 +689,7 @@ public final class MansionFeature extends Structure {
             // restore only those transformed template cells, leaving authored wet
             // states and all surrounding world fluid untouched.
             if (isDungeonStructuralTemplate() && !VANILLA_LIQUID_PARITY) correctReleasedFluidStateForCurrentClip(level, authoredStates, bounds);
+            if (VANILLA_LIQUID_PARITY && diagnosticTemplate.contains("/boss_room")) clearBossRoomAuthoredAir(level, authoredStates, bounds);
             if (VANILLA_LIQUID_PARITY && isDungeonStructuralTemplate() && level.getLevel() instanceof ServerLevel serverLevel) {
                 String key = serverLevel.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature;
                 if (TRIAL_LIQUID_LOGGED.add(key) && TRACE) BiomeMakeover.LOGGER.info("[BM_TRIAL_LIQUID_PARITY] liquidMode=IGNORE_WATERLOGGING nativeVanillaPlacement=true customDryCorrectionEnabled=false customSourceClosureEnabled=false");
@@ -947,6 +948,19 @@ public final class MansionFeature extends Structure {
                 .thenComparing(entry -> entry.getKey().builtInRegistryHolder().key().location().toString(), Comparator.reverseOrder()))
                 .map(Map.Entry::getKey).orElse(Blocks.STONE);
             return selected.defaultBlockState();
+        }
+
+        private void clearBossRoomAuthoredAir(WorldGenLevel level, Map<BlockPos, BlockState> authoredStates, BoundingBox clip) {
+            int checked = 0, cleared = 0;
+            for (var entry : authoredStates.entrySet()) {
+                if (!clip.isInside(entry.getKey()) || !entry.getValue().isAir()) continue;
+                checked++;
+                if (!level.getFluidState(entry.getKey()).isEmpty()) {
+                    level.setBlock(entry.getKey(), entry.getValue(), 3);
+                    cleared++;
+                }
+            }
+            if (TRACE) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FLUID] template={} explicitAirChecked={} explicitAirCleared={} clip={}", diagnosticTemplate, checked, cleared, clip);
         }
 
         private void traceCrops(WorldGenLevel level, String phase) {
