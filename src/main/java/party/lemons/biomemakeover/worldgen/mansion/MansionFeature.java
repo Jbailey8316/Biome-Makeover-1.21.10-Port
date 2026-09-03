@@ -91,6 +91,7 @@ public final class MansionFeature extends Structure {
     private static final Set<String> CROP_DISAPPEAR_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Set<String> LATE_SUMMARY_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final CopyOnWriteArrayList<LateFinalization> LATE_FINALIZATIONS = new CopyOnWriteArrayList<>();
+    private static final CopyOnWriteArrayList<Piece.BossBoundaryTrace> BOSS_BOUNDARY_TRACES = new CopyOnWriteArrayList<>();
 
     private static final class LayoutMetadata {
         final String key, signature; final BlockPos origin; final Set<String> ordinals, placements; final int unionSize, bossPieces;
@@ -143,11 +144,14 @@ public final class MansionFeature extends Structure {
                     if (tracing) analyzeHydraulicGeometry(level, entry.mansionOrigin, entry.layoutSignature);
                     entry.snapshot(level, "D0");
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=REMOVE mansionId={}", entry.mansionId());
+                    snapshotBossBoundary(level, entry.mansionId(), "READY");
                 }
             }
             entry.age++;
             String phase = switch (entry.age) { case 1 -> "D1"; case 5 -> "D5"; case 20 -> "D20"; case 100 -> "D100"; default -> null; };
             if (phase != null) entry.snapshot(level, phase);
+            if (tracing && entry.age == 2) snapshotBossBoundary(level, entry.mansionId(), "C8");
+            if (tracing && entry.age == 20) snapshotBossBoundary(level, entry.mansionId(), "D20S");
             if (tracing && entry.age <= 2) traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C" + (6 + entry.age));
             for (LateFinalization late : LATE_FINALIZATIONS) if (late.level == level) {
                 late.age++;
@@ -160,6 +164,15 @@ public final class MansionFeature extends Structure {
                 if (late.age >= 2) LATE_FINALIZATIONS.remove(late);
             }
             if (entry.age >= 100 || (!tracing && EXECUTED_MANSIONS.contains(entry.mansionId()))) DELAYED_FLUID_TRACES.remove(entry);
+        }
+    }
+
+    private static void snapshotBossBoundary(ServerLevel level, String mansionId, String phase) {
+        for (Piece.BossBoundaryTrace trace : BOSS_BOUNDARY_TRACES) {
+            if (trace.level == level && trace.mansionId.equals(mansionId)) {
+                trace.snapshot(phase);
+                if ("D20S".equals(phase)) BOSS_BOUNDARY_TRACES.remove(trace);
+            }
         }
     }
 
@@ -752,6 +765,10 @@ public final class MansionFeature extends Structure {
         public void postProcess(WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator,
                                 RandomSource random, BoundingBox bounds, ChunkPos chunkPos, BlockPos pivot) {
             long order = TRACE_ORDER.incrementAndGet();
+            if (Boolean.getBoolean("bm.mansion.trace") && diagnosticTemplate.contains("/boss_room")
+                && level.getLevel() instanceof ServerLevel serverLevel) {
+                BossBoundaryTrace.register(serverLevel, this);
+            }
             if (TRACE) {
                 if (false) BiomeMakeover.LOGGER.info("[BM_PIECE_TRACE] template={} rot={} bounds={} phase=BEGIN thread={} timestamp={} orderIndex={}",
                     diagnosticTemplate, placeSettings.getRotation(), bounds, Thread.currentThread().getName(), System.currentTimeMillis(), order);
@@ -899,6 +916,143 @@ public final class MansionFeature extends Structure {
 
         private boolean isDungeonStructuralTemplate() {
             return diagnosticTemplate.contains("/dungeon/") || diagnosticTemplate.contains("/boss_room");
+        }
+
+        private static final class BossBoundaryTrace {
+            private final ServerLevel level;
+            private final String mansionId;
+            private final String templateName;
+            private final int ordinal;
+            private final Rotation rotation;
+            private final Mirror mirror;
+            private final BlockPos templateOrigin;
+            private final BoundingBox pieceBounds;
+            private final Set<BlockPos> explicitAir;
+            private final Map<BlockPos, BlockState> serialized;
+            private final Set<String> snapshots = new java.util.HashSet<>();
+            private final Map<BlockPos, String> readyBoundaryFluids = new HashMap<>();
+            private final Map<BlockPos, Direction> readyBoundaryFaces = new HashMap<>();
+
+            private BossBoundaryTrace(ServerLevel level, Piece piece) {
+                this.level = level;
+                this.mansionId = level.dimension().location() + ":" + piece.mansionOrigin + ":" + piece.layoutSignature;
+                this.templateName = piece.diagnosticTemplate;
+                this.ordinal = piece.mansionPieceOrdinal;
+                this.rotation = piece.placeSettings.getRotation();
+                this.mirror = piece.placeSettings.getMirror();
+                this.templateOrigin = piece.templatePosition;
+                this.pieceBounds = piece.getBoundingBox();
+                this.serialized = serializedCells(piece);
+                this.explicitAir = new java.util.HashSet<>();
+                for (var entry : serialized.entrySet()) if (entry.getValue().isAir()) explicitAir.add(entry.getKey());
+            }
+
+            private static void register(ServerLevel level, Piece piece) {
+                String id = level.dimension().location() + ":" + piece.mansionOrigin + ":" + piece.layoutSignature;
+                for (BossBoundaryTrace existing : BOSS_BOUNDARY_TRACES)
+                    if (existing.level == level && existing.mansionId.equals(id)) return;
+                BossBoundaryTrace trace = new BossBoundaryTrace(level, piece);
+                BOSS_BOUNDARY_TRACES.add(trace);
+                BiomeMakeover.LOGGER.info("[BM_BOSS_BOUNDARY_IDENTITY] mansionId={} pieceOrdinal={} template={} rotation={} mirror={} templateOrigin={} pieceBounds={} worldMin=[{},{},{}] worldMax=[{},{},{}] explicitAirCount={} solidCount={} authoredWaterCount={}",
+                    trace.mansionId, trace.ordinal, trace.templateName, trace.rotation, trace.mirror, trace.templateOrigin, trace.pieceBounds,
+                    trace.pieceBounds.minX(), trace.pieceBounds.minY(), trace.pieceBounds.minZ(), trace.pieceBounds.maxX(), trace.pieceBounds.maxY(), trace.pieceBounds.maxZ(),
+                    trace.explicitAir.size(), trace.solidCount(), trace.authoredWaterCount());
+            }
+
+            private static Map<BlockPos, BlockState> serializedCells(Piece piece) {
+                Map<BlockPos, BlockState> cells = new HashMap<>();
+                for (Block block : BuiltInRegistries.BLOCK)
+                    for (var info : piece.template.filterBlocks(piece.templatePosition, piece.placeSettings, block))
+                        cells.put(info.pos(), info.state());
+                return cells;
+            }
+
+            private int solidCount() {
+                int count = 0;
+                for (BlockState state : serialized.values()) if (!state.isAir() && !state.getFluidState().is(Fluids.WATER)) count++;
+                return count;
+            }
+
+            private int authoredWaterCount() {
+                int count = 0;
+                for (BlockState state : serialized.values()) if (state.getFluidState().is(Fluids.WATER)) count++;
+                return count;
+            }
+
+            private void snapshot(String phase) {
+                if (!snapshots.add(phase)) return;
+                Map<Direction, Integer> source = new HashMap<>(), air = new HashMap<>();
+                for (Direction direction : Direction.values()) { source.put(direction, 0); air.put(direction, 0); }
+                int boundary = 0, bossSolid = 0, otherMansion = 0, naturalSolid = 0, externalAir = 0, sourceWater = 0, flowing = 0, waterlogged = 0, unknown = 0;
+                int opening = 0, openingMansion = 0, openingAir = 0, openingSource = 0, openingFlowing = 0;
+                for (BlockPos bossAir : explicitAir) for (Direction direction : Direction.values()) {
+                    BlockPos outside = bossAir.relative(direction);
+                    if (explicitAir.contains(outside)) continue;
+                    boundary++;
+                    BlockState state = level.getBlockState(outside);
+                    var fluid = level.getFluidState(outside);
+                    if ("READY".equals(phase)) {
+                        readyBoundaryFluids.put(outside, fluid.toString());
+                        readyBoundaryFaces.put(outside, direction);
+                    }
+                    boolean mansion = otherMansionPosition(outside);
+                    String category;
+                    if (serialized.containsKey(outside) && !serialized.get(outside).isAir()) { category = "BOSS_SOLID"; bossSolid++; }
+                    else if (mansion) { category = "OTHER_MANSION_BLOCK"; otherMansion++; }
+                    else if (fluid.is(Fluids.WATER) && fluid.isSource()) { category = "SOURCE_WATER"; sourceWater++; source.merge(direction, 1, Integer::sum); if ("READY".equals(phase)) emitWater(phase, bossAir, outside, direction, state, true, opening); }
+                    else if (fluid.is(Fluids.WATER)) { category = "FLOWING_WATER"; flowing++; openingFlowing++; }
+                    else if (state.hasProperty(BlockStateProperties.WATERLOGGED) && state.getValue(BlockStateProperties.WATERLOGGED)) { category = "WATERLOGGED_BLOCK"; waterlogged++; }
+                    else if (state.isAir()) { category = "EXTERNAL_AIR"; externalAir++; air.merge(direction, 1, Integer::sum); }
+                    else { category = "NATURAL_SOLID"; naturalSolid++; }
+                    if (mansion || category.equals("EXTERNAL_AIR") || category.equals("SOURCE_WATER") || category.equals("FLOWING_WATER")) {
+                        opening++;
+                        if (mansion) openingMansion++;
+                        if (category.equals("EXTERNAL_AIR")) openingAir++;
+                        if (category.equals("SOURCE_WATER")) openingSource++;
+                    }
+                }
+                BiomeMakeover.LOGGER.info("[BM_BOSS_BOUNDARY_SUMMARY] mansionId={} phase={} rotation={} explicitAirCells={} boundaryFaces={} bossSolidFaces={} otherMansionFaces={} naturalSolidFaces={} externalAirFaces={} sourceWaterFaces={} flowingWaterFaces={} waterloggedFaces={} unknownFaces={} northSource={} southSource={} eastSource={} westSource={} upSource={} downSource={} northExternalAir={} southExternalAir={} eastExternalAir={} westExternalAir={} upExternalAir={} downExternalAir={}",
+                    mansionId, phase, rotation, explicitAir.size(), boundary, bossSolid, otherMansion, naturalSolid, externalAir, sourceWater, flowing, waterlogged, unknown,
+                    source.get(Direction.NORTH), source.get(Direction.SOUTH), source.get(Direction.EAST), source.get(Direction.WEST), source.get(Direction.UP), source.get(Direction.DOWN),
+                    air.get(Direction.NORTH), air.get(Direction.SOUTH), air.get(Direction.EAST), air.get(Direction.WEST), air.get(Direction.UP), air.get(Direction.DOWN));
+                if ("READY".equals(phase)) {
+                    BiomeMakeover.LOGGER.info("[BM_BOSS_OPENING_SUMMARY] mansionId={} rotation={} openingFaces={} openingToMansion={} openingToNaturalAir={} openingToSourceWater={} openingToFlowingWater={}",
+                        mansionId, rotation, opening, openingMansion, openingAir, openingSource, openingFlowing);
+                }
+                if ("READY".equals(phase) || "D20S".equals(phase)) proximity(phase);
+                if ("C8".equals(phase) || "D20S".equals(phase)) {
+                    for (var entry : readyBoundaryFluids.entrySet()) {
+                        var current = level.getFluidState(entry.getKey()).toString();
+                        if (entry.getValue().equals(current) || level.getFluidState(entry.getKey()).isEmpty()) continue;
+                        BiomeMakeover.LOGGER.info("[BM_BOSS_BOUNDARY_CHANGE] mansionId={} outsidePos={} face={} readyFluid={} c8Fluid={}",
+                            mansionId, entry.getKey(), readyBoundaryFaces.get(entry.getKey()), entry.getValue(), current);
+                    }
+                }
+            }
+
+            private void emitWater(String phase, BlockPos bossAir, BlockPos outside, Direction face, BlockState state, boolean source, int opening) {
+                BiomeMakeover.LOGGER.info("[BM_BOSS_BOUNDARY_WATER] mansionId={} phase={} bossAirPos={} outsidePos={} face={} outsideState={} fluidSource={} distanceFromBossDoor={} nearestBossOpening={}",
+                    mansionId, phase, bossAir, outside, face, state, source, "UNKNOWN", "UNKNOWN");
+            }
+
+            private void proximity(String phase) {
+                Set<BlockPos> seen1 = new java.util.HashSet<>(), seen2 = new java.util.HashSet<>();
+                BlockPos nearest = null; int direct = 0, source1 = 0, source2 = 0, flowing1 = 0, flowing2 = 0; double nearestDistance = Double.POSITIVE_INFINITY; Direction nearestDirection = null;
+                for (BlockPos p : explicitAir) for (Direction d : Direction.values()) {
+                    BlockPos p1 = p.relative(d); if (explicitAir.contains(p1)) continue;
+                    var f1 = level.getFluidState(p1); if (f1.is(Fluids.WATER)) { seen1.add(p1); if (f1.isSource()) { source1++; direct++; } else flowing1++; if (nearest == null) { nearest=p1; nearestDistance=1; nearestDirection=d; } }
+                    BlockPos p2 = p1.relative(d); if (explicitAir.contains(p2)) continue;
+                    var f2 = level.getFluidState(p2); if (f2.is(Fluids.WATER)) { seen2.add(p2); if (f2.isSource()) source2++; else flowing2++; if (nearest == null) { nearest=p2; nearestDistance=2; nearestDirection=d; } }
+                }
+                BiomeMakeover.LOGGER.info("[BM_BOSS_WATER_PROXIMITY] mansionId={} phase={} directSourceFaces={} sourceWithin1={} sourceWithin2={} flowingWithin1={} flowingWithin2={} nearestSourceDistance={} nearestSourcePos={} nearestSourceDirection={}",
+                    mansionId, phase, direct, seen1.stream().filter(p -> level.getFluidState(p).isSource()).count(), seen2.stream().filter(p -> level.getFluidState(p).isSource()).count(), flowing1, flowing2,
+                    Double.isInfinite(nearestDistance) ? -1 : nearestDistance, nearest, nearestDirection);
+            }
+
+            private boolean otherMansionPosition(BlockPos pos) {
+                for (EnvelopePiece piece : DUNGEON_ENVELOPE) if (piece.level() == level && piece.architecturalInterior().contains(pos)) return true;
+                return false;
+            }
         }
 
 
