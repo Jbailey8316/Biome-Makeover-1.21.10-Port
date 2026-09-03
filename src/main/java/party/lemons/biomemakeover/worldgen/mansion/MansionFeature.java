@@ -121,8 +121,7 @@ public final class MansionFeature extends Structure {
         for (DelayedFluidTrace entry : DELAYED_FLUID_TRACES) {
             if (entry.level != level) continue;
             String mansionId = entry.mansionId();
-            if (EXPECTED_PIECES.containsKey(mansionId)
-                && PLACED_PLACEMENTS.getOrDefault(mansionId, Set.of()).equals(EXPECTED_PLACEMENTS.get(mansionId))
+            if (isFinalPlacementComplete(mansionId)
                 && EXECUTED_MANSIONS.add(mansionId)) {
                 ReconcileResult result = reconcileCompletedDungeon(level, entry.order, entry.mansionOrigin, entry.layoutSignature);
                 if (result.executed()) {
@@ -132,6 +131,9 @@ public final class MansionFeature extends Structure {
                     int cropsRestored = reconcileCropsFinal(level, entry.mansionOrigin, entry.layoutSignature);
                     if (tracing) traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C6");
                     if (tracing && cropsRestored > 0) BiomeMakeover.LOGGER.info("[BM_CROP_PARITY] mansionId={} finalSerializedCropsRestored={}", entry.mansionId(), cropsRestored);
+                    if (tracing) BiomeMakeover.LOGGER.info("[BM_CROP_FINALIZATION_READY] mansionId={} placedPlacementCount={} expectedPlacementCount={} registeredCropTargets={} ready={}",
+                        entry.mansionId(), PLACED_PLACEMENTS.getOrDefault(mansionId, Set.of()).size(), EXPECTED_PLACEMENTS.getOrDefault(mansionId, Set.of()).size(),
+                        cropTargetCount(level, entry.mansionOrigin, entry.layoutSignature), true);
                 }
                 if (tracing && result.executed()) {
                     traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C5");
@@ -150,19 +152,20 @@ public final class MansionFeature extends Structure {
             entry.age++;
             String phase = switch (entry.age) { case 1 -> "D1"; case 5 -> "D5"; case 20 -> "D20"; case 100 -> "D100"; default -> null; };
             if (phase != null) entry.snapshot(level, phase);
-            if (tracing && entry.age == 2) snapshotBossBoundary(level, entry.mansionId(), "C8");
-            if (tracing && entry.age == 20) snapshotBossBoundary(level, entry.mansionId(), "D20S");
-            if (tracing && entry.age <= 2) traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C" + (6 + entry.age));
             for (LateFinalization late : LATE_FINALIZATIONS) if (late.level == level) {
+                if (!late.ready) continue;
+                if (late.age < 0) { late.age++; continue; }
                 late.age++;
                 if (late.age == 1) {
                     int boss = 0, crops = 0;
                     for (BlockPos p : late.bossAir) if (!level.getFluidState(p).isEmpty()) { level.setBlock(p, Blocks.AIR.defaultBlockState(), 2); boss++; }
-                    for (var e : late.crops.entrySet()) if (!level.getBlockState(e.getKey()).is(e.getValue().getBlock())) { level.setBlock(e.getKey(), e.getValue(), 2); crops++; }
+                    for (var e : late.crops.entrySet()) if (!level.getBlockState(e.getKey()).equals(e.getValue())) { level.setBlock(e.getKey(), e.getValue(), 2); crops++; }
                     if (tracing) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} phase=C7 explicitAirCleared={} cropStatesRestored={}", late.id, boss, crops);
                 }
                 if (late.age >= 2) LATE_FINALIZATIONS.remove(late);
             }
+            if (tracing && entry.age <= 2) traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C" + (6 + entry.age));
+            tickBossBoundaryTraces(level);
             if (entry.age >= 100 || (!tracing && EXECUTED_MANSIONS.contains(entry.mansionId()))) DELAYED_FLUID_TRACES.remove(entry);
         }
     }
@@ -171,9 +174,31 @@ public final class MansionFeature extends Structure {
         for (Piece.BossBoundaryTrace trace : BOSS_BOUNDARY_TRACES) {
             if (trace.level == level && trace.mansionId.equals(mansionId)) {
                 trace.snapshot(phase);
-                if ("D20S".equals(phase)) BOSS_BOUNDARY_TRACES.remove(trace);
+                if ("READY".equals(phase)) trace.ready = true;
             }
         }
+    }
+
+    private static void tickBossBoundaryTraces(ServerLevel level) {
+        for (Piece.BossBoundaryTrace trace : BOSS_BOUNDARY_TRACES) {
+            if (trace.level != level || !trace.ready) continue;
+            trace.age++;
+            if (trace.age == 2) trace.snapshot("C8");
+            if (trace.age == 20) trace.snapshot("D20S");
+            if (trace.age == 45) { trace.snapshot("D45S"); BOSS_BOUNDARY_TRACES.remove(trace); }
+        }
+    }
+
+    private static boolean isFinalPlacementComplete(String mansionId) {
+        Set<String> expectedPlacements = EXPECTED_PLACEMENTS.get(mansionId);
+        Set<String> expectedOrdinals = EXPECTED_ORDINALS.get(mansionId);
+        if (expectedPlacements == null || expectedOrdinals == null) return false;
+        Set<String> placedPlacements = PLACED_PLACEMENTS.getOrDefault(mansionId, Set.of());
+        Set<String> placedPieces = PLACED_PIECES.getOrDefault(mansionId, Set.of());
+        return placedPlacements.size() == expectedPlacements.size()
+            && placedPlacements.equals(expectedPlacements)
+            && placedPieces.size() == expectedOrdinals.size()
+            && placedPieces.containsAll(expectedOrdinals);
     }
 
     /**
@@ -394,8 +419,19 @@ public final class MansionFeature extends Structure {
     }
 
     private static final class LateFinalization {
-        final ServerLevel level; final String id; final Map<BlockPos, BlockState> crops; final Set<BlockPos> bossAir; int age;
-        LateFinalization(ServerLevel level, String id, Map<BlockPos, BlockState> crops, Set<BlockPos> bossAir) { this.level = level; this.id = id; this.crops = Map.copyOf(crops); this.bossAir = Set.copyOf(bossAir); }
+        final ServerLevel level; final String id; final Map<BlockPos, BlockState> crops; final Set<BlockPos> bossAir; final boolean ready; int age = -1;
+        LateFinalization(ServerLevel level, String id, Map<BlockPos, BlockState> crops, Set<BlockPos> bossAir) { this.level = level; this.id = id; this.crops = Map.copyOf(crops); this.bossAir = Set.copyOf(bossAir); this.ready = true; }
+    }
+
+    private static int cropTargetCount(ServerLevel level, BlockPos origin, String signature) {
+        Set<BlockPos> targets = new java.util.HashSet<>();
+        for (DelayedFluidTrace candidate : DELAYED_FLUID_TRACES)
+            if (candidate.level == level && candidate.mansionOrigin.equals(origin) && candidate.layoutSignature.equals(signature))
+                for (var entry : candidate.authoredStates.entrySet()) {
+                    String id = BuiltInRegistries.BLOCK.getKey(entry.getValue().getBlock()).toString();
+                    if (id.contains("wheat") || id.contains("carrot") || id.contains("potato") || id.contains("beetroot") || id.contains("melon_stem") || id.contains("pumpkin_stem")) targets.add(entry.getKey());
+                }
+        return targets.size();
     }
 
     private static void traceCropPhase(ServerLevel level, BlockPos origin, String signature, String phase) {
@@ -932,6 +968,8 @@ public final class MansionFeature extends Structure {
             private final Set<String> snapshots = new java.util.HashSet<>();
             private final Map<BlockPos, String> readyBoundaryFluids = new HashMap<>();
             private final Map<BlockPos, Direction> readyBoundaryFaces = new HashMap<>();
+            private boolean ready;
+            private int age;
 
             private BossBoundaryTrace(ServerLevel level, Piece piece) {
                 this.level = level;
@@ -981,6 +1019,8 @@ public final class MansionFeature extends Structure {
 
             private void snapshot(String phase) {
                 if (!snapshots.add(phase)) return;
+                if ("D20S".equals(phase)) BiomeMakeover.LOGGER.info("[BM_BOSS_BOUNDARY_SNAPSHOT] phase=D20S mansionId={}", mansionId);
+                if ("D45S".equals(phase)) BiomeMakeover.LOGGER.info("[BM_BOSS_BOUNDARY_SNAPSHOT] phase=D45S mansionId={}", mansionId);
                 Map<Direction, Integer> source = new HashMap<>(), air = new HashMap<>();
                 for (Direction direction : Direction.values()) { source.put(direction, 0); air.put(direction, 0); }
                 int boundary = 0, bossSolid = 0, otherMansion = 0, naturalSolid = 0, externalAir = 0, sourceWater = 0, flowing = 0, waterlogged = 0, unknown = 0;
@@ -1019,7 +1059,8 @@ public final class MansionFeature extends Structure {
                     BiomeMakeover.LOGGER.info("[BM_BOSS_OPENING_SUMMARY] mansionId={} rotation={} openingFaces={} openingToMansion={} openingToNaturalAir={} openingToSourceWater={} openingToFlowingWater={}",
                         mansionId, rotation, opening, openingMansion, openingAir, openingSource, openingFlowing);
                 }
-                if ("READY".equals(phase) || "D20S".equals(phase)) proximity(phase);
+                if ("READY".equals(phase) || "D20S".equals(phase) || "D45S".equals(phase)) proximity(phase);
+                sourcePath(phase);
                 if ("C8".equals(phase) || "D20S".equals(phase)) {
                     for (var entry : readyBoundaryFluids.entrySet()) {
                         var current = level.getFluidState(entry.getKey()).toString();
@@ -1048,6 +1089,80 @@ public final class MansionFeature extends Structure {
                     mansionId, phase, direct, seen1.stream().filter(p -> level.getFluidState(p).isSource()).count(), seen2.stream().filter(p -> level.getFluidState(p).isSource()).count(), flowing1, flowing2,
                     Double.isInfinite(nearestDistance) ? -1 : nearestDistance, nearest, nearestDirection);
             }
+
+            private void sourcePath(String phase) {
+                BoundingBox expanded = new BoundingBox(pieceBounds.minX() - 3, pieceBounds.minY() - 3, pieceBounds.minZ() - 3,
+                    pieceBounds.maxX() + 3, pieceBounds.maxY() + 3, pieceBounds.maxZ() + 3);
+                List<BoundaryFace> faces = boundaryFaces();
+                Set<BlockPos> sources = new java.util.HashSet<>();
+                for (int x = expanded.minX(); x <= expanded.maxX(); x++) for (int y = expanded.minY(); y <= expanded.maxY(); y++) for (int z = expanded.minZ(); z <= expanded.maxZ(); z++) {
+                    BlockPos source = new BlockPos(x, y, z);
+                    if (!level.getFluidState(source).is(Fluids.WATER) || !level.getFluidState(source).isSource()) continue;
+                    int distance = faces.stream().mapToInt(face -> source.distManhattan(face.outside())).min().orElse(Integer.MAX_VALUE);
+                    if (distance <= 2) sources.add(source);
+                }
+                for (BlockPos source : sources) {
+                    PathResult path = findSourcePath(source, expanded, faces);
+                    BiomeMakeover.LOGGER.info("[BM_BOSS_SOURCE_PATH] mansionId={} sourcePos={} bossRotation={} nearestBossAir={} distance={} pathExists={} pathLength={} entryPos={} entryFace={} entryClassification={}",
+                        mansionId, source, rotation, path.nearestBossAir(), path.distance(), path.exists(), path.length(), path.entryPos(), path.entryFace(), path.classification());
+                }
+            }
+
+            private List<BoundaryFace> boundaryFaces() {
+                List<BoundaryFace> faces = new java.util.ArrayList<>();
+                for (BlockPos bossAir : explicitAir) for (Direction direction : Direction.values()) {
+                    BlockPos outside = bossAir.relative(direction);
+                    if (explicitAir.contains(outside)) continue;
+                    faces.add(new BoundaryFace(bossAir, outside, direction, boundaryCategory(outside)));
+                }
+                return faces;
+            }
+
+            private String boundaryCategory(BlockPos outside) {
+                if (serialized.containsKey(outside) && !serialized.get(outside).isAir()) return "BOSS_SOLID";
+                if (otherMansionPosition(outside)) return "OTHER_MANSION_BLOCK";
+                var fluid = level.getFluidState(outside);
+                BlockState state = level.getBlockState(outside);
+                if (fluid.is(Fluids.WATER) && fluid.isSource()) return "SOURCE_WATER";
+                if (fluid.is(Fluids.WATER)) return "FLOWING_WATER";
+                if (state.hasProperty(BlockStateProperties.WATERLOGGED) && state.getValue(BlockStateProperties.WATERLOGGED)) return "WATERLOGGED_BLOCK";
+                if (state.isAir()) return "EXTERNAL_AIR";
+                return "NATURAL_SOLID";
+            }
+
+            private PathResult findSourcePath(BlockPos source, BoundingBox expanded, List<BoundaryFace> faces) {
+                Map<BlockPos, Integer> distance = new HashMap<>();
+                java.util.ArrayDeque<BlockPos> queue = new java.util.ArrayDeque<>();
+                distance.put(source, 0); queue.add(source);
+                BoundaryFace hit = null; int hitLength = -1;
+                while (!queue.isEmpty()) {
+                    BlockPos current = queue.remove();
+                    int currentDistance = distance.get(current);
+                    for (BoundaryFace face : faces) if (face.outside().equals(current) && !"BOSS_SOLID".equals(face.category())) { hit = face; hitLength = currentDistance; break; }
+                    if (hit != null) break;
+                    for (Direction direction : Direction.values()) {
+                        BlockPos next = current.relative(direction);
+                        if (!expanded.isInside(next) || distance.containsKey(next)) continue;
+                        var fluid = level.getFluidState(next);
+                        BlockState state = level.getBlockState(next);
+                        if (fluid.is(Fluids.WATER) || (state.hasProperty(BlockStateProperties.WATERLOGGED) && state.getValue(BlockStateProperties.WATERLOGGED))) {
+                            distance.put(next, currentDistance + 1); queue.add(next);
+                        }
+                    }
+                }
+                if (hit == null) return new PathResult(false, -1, null, -1, null, null, "NEITHER");
+                String classification = switch (hit.category()) {
+                    case "OTHER_MANSION_BLOCK" -> "INTENDED_OR_OPEN_BOSS_BOUNDARY";
+                    case "EXTERNAL_AIR" -> "EXTERNAL_AIR_BOSS_BOUNDARY";
+                    case "WATERLOGGED_BLOCK" -> "WATERLOGGABLE_BOSS_BOUNDARY";
+                    case "SOURCE_WATER", "FLOWING_WATER" -> "OPEN_WATER_BOSS_BOUNDARY";
+                    default -> "NEITHER";
+                };
+                return new PathResult(true, hitLength, hit.bossAir(), hitLength, hit.outside(), hit.face(), classification);
+            }
+
+            private record BoundaryFace(BlockPos bossAir, BlockPos outside, Direction face, String category) {}
+            private record PathResult(boolean exists, int length, BlockPos nearestBossAir, int distance, BlockPos entryPos, Direction entryFace, String classification) {}
 
             private boolean otherMansionPosition(BlockPos pos) {
                 for (EnvelopePiece piece : DUNGEON_ENVELOPE) if (piece.level() == level && piece.architecturalInterior().contains(pos)) return true;
