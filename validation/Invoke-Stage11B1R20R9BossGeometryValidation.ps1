@@ -11,7 +11,7 @@ $checks=[ordered]@{
  'water cell compare'=$boss.Contains('BM_BOSS_WATER_CELL_COMPARE') -and $boss.Contains('canonicalClassification')
  'source classifier'=$boss.Contains('BM_BOSS_SOURCE_CELL_CLASSIFY') -and $boss.Contains('OMITTED_OR_UNSERIALIZED') -and $boss.Contains('STRUCTURE_VOID')
  'seed invariant'=$boss.Contains('BM_BOSS_TRACE_SEED_CHECK') -and $boss.Contains('missingFromTrace') -and $boss.Contains('extraInTrace')
- 'reverse trace uses canonical seeds'=$boss.Contains('for (BlockPos seed : explicitAir)') -and $boss.Contains('traceWaterComponent(seed, expanded, visited)')
+ 'reverse trace uses canonical seeds'=$boss.Contains('Set<BlockPos> seeds = capturedSeeds == null ? currentWaterSeeds() : capturedSeeds') -and $boss.Contains('traceWaterComponent(seed, expanded, visited)')
  'bounds expansion four'=$boss.Contains('pieceBounds.minX() - 4') -and $boss.Contains('pieceBounds.maxX() + 4')
  'no source BFS'=-not $boss.Contains('findSourcePath') -and -not $boss.Contains('candidateSources')
  'scheduler unchanged'=$source.Contains('age >= 400') -and $source.Contains('age >= 900') -and $source.Contains('readyTick')

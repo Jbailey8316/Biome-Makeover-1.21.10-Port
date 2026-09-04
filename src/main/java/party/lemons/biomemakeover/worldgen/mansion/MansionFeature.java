@@ -95,6 +95,14 @@ public final class MansionFeature extends Structure {
     private static final Map<String, Map<BlockPos, BlockState>> CROP_TARGETS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> CROP_EXPECTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Map<String, BossGeometry> BOSS_GEOMETRIES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, MarkerFluidStats> MARKER_FLUID_STATS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Set<BlockPos>> BOSS_C8_WATER_CELLS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, Map<BlockPos, net.minecraft.world.level.material.FluidState>> BOSS_C8_WATER_STATES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static final class MarkerFluidStats {
+        int markerCount, fluidBearingBefore, sourceBearingBefore, corrected, fluidBearingAfter, sourceBearingAfter;
+        int emitted;
+    }
 
     private record BossGeometry(Map<BlockPos, BlockState> serialized, Set<BlockPos> explicitAir, Set<BlockPos> solid,
                                 Set<BlockPos> authoredWater, Set<BlockPos> otherSerialized, BoundingBox pieceBounds,
@@ -150,6 +158,9 @@ public final class MansionFeature extends Structure {
                     if (tracing) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} explicitAirCleared={}", entry.mansionId(), bossCleared);
                 }
                 if (tracing && result.executed()) {
+                    MarkerFluidStats markerStats = MARKER_FLUID_STATS.get(entry.mansionId());
+                    if (markerStats != null) BiomeMakeover.LOGGER.info("[BM_DATA_MARKER_FLUID_SUMMARY] mansionId={} markerCount={} fluidBearingBefore={} sourceBearingBefore={} corrected={} fluidBearingAfter={} sourceBearingAfter={}",
+                        entry.mansionId(), markerStats.markerCount, markerStats.fluidBearingBefore, markerStats.sourceBearingBefore, markerStats.corrected, markerStats.fluidBearingAfter, markerStats.sourceBearingAfter);
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=READY mansionId={} pieceCount={} unionPositions={}", entry.mansionId(), countMansionPieces(level, entry.mansionOrigin, entry.layoutSignature), unionSize(level, entry.mansionOrigin, entry.layoutSignature));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_BEGIN mansionId={} unionPositions={}", entry.mansionId(), unionSize(level, entry.mansionOrigin, entry.layoutSignature));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_END mansionId={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
@@ -185,6 +196,7 @@ public final class MansionFeature extends Structure {
                 }
             }
             if (late.age == 2 && tracing) {
+                late.tickBossBoundary(level);
                 emitLatePhase(level, late.origin, late.signature, "C8");
                 emitCropFinalizationResult(level, late, 0, "C8");
                 late.retention(level, "C8");
@@ -192,7 +204,7 @@ public final class MansionFeature extends Structure {
             late.tickBossBoundary(level);
             long ageTicks = late.readyTick < 0 ? -1 : level.getGameTime() - late.readyTick;
             if (ageTicks >= 400) late.retention(level, "D20S");
-            if (ageTicks >= 900) { late.retention(level, "D45S"); LATE_FINALIZATIONS.remove(late.id, late); }
+            if (ageTicks >= 900) { late.retention(level, "D45S"); LATE_FINALIZATIONS.remove(late.id, late); BOSS_C8_WATER_CELLS.remove(late.id); BOSS_C8_WATER_STATES.remove(late.id); MARKER_FLUID_STATS.remove(late.id); }
         }
     }
 
@@ -529,8 +541,14 @@ public final class MansionFeature extends Structure {
             if (!level.getBlockState(e.getKey().below()).is(Blocks.FARMLAND)) supportMissing++;
         }
         BossGeometry geometry = BOSS_GEOMETRIES.get(mansion);
-        if (geometry != null) for (BlockPos pos : geometry.explicitAir()) {
-            air++; var f = level.getFluidState(pos); if (!f.isEmpty()) { water++; if (f.isSource()) source++; else flowing++; }
+        if (geometry != null) {
+            Set<BlockPos> c8Water = "C8".equals(phase) ? BOSS_C8_WATER_CELLS.get(mansion) : null;
+            Map<BlockPos, net.minecraft.world.level.material.FluidState> c8States = "C8".equals(phase) ? BOSS_C8_WATER_STATES.get(mansion) : null;
+            for (BlockPos pos : geometry.explicitAir()) {
+                air++;
+                var f = c8States == null ? level.getFluidState(pos) : c8States.getOrDefault(pos, Fluids.EMPTY.defaultFluidState());
+                if (!f.isEmpty()) { water++; if (f.isSource()) source++; else flowing++; }
+            }
         }
         for (DelayedFluidTrace c : DELAYED_FLUID_TRACES) if (c.level == level && c.mansionOrigin.equals(origin) && c.layoutSignature.equals(signature)
             && (c.template.contains("room_big_10") || c.template.contains("room_8"))) template = c.template;
@@ -863,7 +881,32 @@ public final class MansionFeature extends Structure {
 
         @Override protected void handleDataMarker(String metadata, BlockPos position, ServerLevelAccessor level,
                                                    RandomSource random, BoundingBox bounds) {
-            // Boss markers remain deferred to Stage 12; arena markers are inert.
+            BlockState expected = switch (metadata) {
+                case "boss" -> Blocks.AIR.defaultBlockState();
+                case "arena_pos" -> Blocks.SMOOTH_QUARTZ.defaultBlockState();
+                default -> null;
+            };
+            if (expected == null) return;
+            BlockState before = level.getBlockState(position);
+            var fluidBefore = level.getFluidState(position);
+            String id = level.getLevel() instanceof ServerLevel server
+                ? mansionId(server, mansionOrigin, layoutSignature) : null;
+            if (id != null) {
+                MarkerFluidStats stats = MARKER_FLUID_STATS.computeIfAbsent(id, ignored -> new MarkerFluidStats());
+                stats.markerCount++;
+                if (!fluidBefore.isEmpty()) stats.fluidBearingBefore++;
+                if (fluidBefore.isSource()) stats.sourceBearingBefore++;
+                level.setBlock(position, expected, 2);
+                BlockState after = level.getBlockState(position);
+                var fluidAfter = level.getFluidState(position);
+                if (TRACE && !fluidBefore.isEmpty() && stats.emitted++ < 16)
+                    BiomeMakeover.LOGGER.info("[BM_DATA_MARKER_FLUID] mansionId={} template={} markerMetadata={} worldPos={} rotation={} runtimeBefore={} fluidBefore={} sourceBefore={} releasedExpectedState={} runtimeAfter={} fluidAfter={} sourceAfter={} releasedSemanticApplied={}",
+                        id, diagnosticTemplate, metadata, position, placeSettings.getRotation(), before, fluidBefore, fluidBefore.isSource(), expected,
+                        after, fluidAfter, fluidAfter.isSource(), after.equals(expected));
+                if (!fluidBefore.isEmpty()) stats.corrected++;
+                if (!fluidAfter.isEmpty()) stats.fluidBearingAfter++;
+                if (fluidAfter.isSource()) stats.sourceBearingAfter++;
+            }
         }
 
         /**
@@ -1130,6 +1173,15 @@ public final class MansionFeature extends Structure {
 
             private void snapshot(String phase) {
                 if (!snapshots.add(phase)) return;
+                Set<BlockPos> c8WaterCells = Set.of();
+                if ("C8".equals(phase)) {
+                    java.util.HashSet<BlockPos> captured = new java.util.HashSet<>();
+                    Map<BlockPos, net.minecraft.world.level.material.FluidState> capturedStates = new HashMap<>();
+                    for (BlockPos pos : geometry.explicitAir()) { var fluid = level.getFluidState(pos); if (fluid.is(Fluids.WATER)) { captured.add(pos); capturedStates.put(pos, fluid); } }
+                    c8WaterCells = Set.copyOf(captured);
+                    BOSS_C8_WATER_CELLS.put(mansionId, c8WaterCells);
+                    BOSS_C8_WATER_STATES.put(mansionId, Map.copyOf(capturedStates));
+                }
                 if ("D20S".equals(phase)) BiomeMakeover.LOGGER.info("[BM_BOSS_BOUNDARY_SNAPSHOT] phase=D20S mansionId={}", mansionId);
                 if ("D45S".equals(phase)) BiomeMakeover.LOGGER.info("[BM_BOSS_BOUNDARY_SNAPSHOT] phase=D45S mansionId={}", mansionId);
                 Map<Direction, Integer> source = new HashMap<>(), air = new HashMap<>();
@@ -1170,9 +1222,9 @@ public final class MansionFeature extends Structure {
                     BiomeMakeover.LOGGER.info("[BM_BOSS_OPENING_SUMMARY] mansionId={} rotation={} openingFaces={} openingToMansion={} openingToNaturalAir={} openingToSourceWater={} openingToFlowingWater={}",
                         mansionId, rotation, opening, openingMansion, openingAir, openingSource, openingFlowing);
                 }
-                if ("C8".equals(phase)) { emitGeometryCompare(); emitWaterCellCompare(); emitTraceSeedCheck(); emitSourceCellClassify(); }
+                if ("C8".equals(phase)) { emitGeometryCompare(); emitWaterCellCompare(c8WaterCells, BOSS_C8_WATER_STATES.get(mansionId)); emitTraceSeedCheck(c8WaterCells); emitSourceCellClassify(); }
                 if ("READY".equals(phase) || "D20S".equals(phase) || "D45S".equals(phase)) proximity(phase);
-                if ("C5".equals(phase) || "C6".equals(phase) || "C8".equals(phase) || "D20S".equals(phase) || "D45S".equals(phase)) waterComponentTrace(phase);
+                if ("C5".equals(phase) || "C6".equals(phase) || "C8".equals(phase) || "D20S".equals(phase) || "D45S".equals(phase)) waterComponentTrace(phase, "C8".equals(phase) ? c8WaterCells : null);
                 if ("C8".equals(phase) || "D20S".equals(phase)) {
                     for (var entry : readyBoundaryFluids.entrySet()) {
                         var current = level.getFluidState(entry.getKey()).toString();
@@ -1193,11 +1245,11 @@ public final class MansionFeature extends Structure {
                     Integer.toHexString(geometry.explicitAir().hashCode()), Integer.toHexString(legacy.hashCode()));
             }
 
-            private void emitWaterCellCompare() {
-                Set<BlockPos> legacy = legacyBossAir(level, mansionId); int emitted = 0;
-                for (BlockPos pos : legacy) {
-                    var fluid = level.getFluidState(pos);
-                    if (!fluid.is(Fluids.WATER) || emitted++ >= 32) continue;
+            private void emitWaterCellCompare(Set<BlockPos> waterCells, Map<BlockPos, net.minecraft.world.level.material.FluidState> capturedStates) {
+                int emitted = 0;
+                for (BlockPos pos : waterCells) {
+                    var fluid = capturedStates.getOrDefault(pos, Fluids.EMPTY.defaultFluidState());
+                    if (emitted++ >= 32) continue;
                     BlockState canonical = geometry.serialized().get(pos);
                     BiomeMakeover.LOGGER.info("[BM_BOSS_WATER_CELL_COMPARE] mansionId={} worldPos={} localPos={} runtimeBlock={} fluidSource={} fluidAmount={} inCanonicalAir={} inLegacyAuditAir={} canonicalTemplateState={} canonicalClassification={} insidePieceBounds={} distanceToPieceEdge={}",
                         mansionId, pos, pos.subtract(templateOrigin), level.getBlockState(pos), fluid.isSource(), fluid.getAmount(), geometry.explicitAir().contains(pos), true,
@@ -1205,10 +1257,8 @@ public final class MansionFeature extends Structure {
                 }
             }
 
-            private void emitTraceSeedCheck() {
-                Set<BlockPos> audit = new java.util.HashSet<>();
-                for (BlockPos pos : geometry.explicitAir()) if (level.getFluidState(pos).is(Fluids.WATER)) audit.add(pos);
-                Set<BlockPos> seeds = new java.util.HashSet<>(audit);
+            private void emitTraceSeedCheck(Set<BlockPos> audit) {
+                Set<BlockPos> seeds = Set.copyOf(audit);
                 Set<BlockPos> missing = new java.util.HashSet<>(audit); missing.removeAll(seeds);
                 Set<BlockPos> extra = new java.util.HashSet<>(seeds); extra.removeAll(audit);
                 BiomeMakeover.LOGGER.info("[BM_BOSS_TRACE_SEED_CHECK] mansionId={} auditWaterCells={} traceSeedCells={} missingFromTrace={} extraInTrace={}", mansionId, audit.size(), seeds.size(), missing.size(), extra.size());
@@ -1264,13 +1314,14 @@ public final class MansionFeature extends Structure {
                     Double.isInfinite(nearestDistance) ? -1 : nearestDistance, nearest, nearestDirection);
             }
 
-            private void waterComponentTrace(String phase) {
+            private void waterComponentTrace(String phase, Set<BlockPos> capturedSeeds) {
                 long started = System.nanoTime();
                 BoundingBox expanded = new BoundingBox(pieceBounds.minX() - 4, pieceBounds.minY() - 4, pieceBounds.minZ() - 4,
                     pieceBounds.maxX() + 4, pieceBounds.maxY() + 4, pieceBounds.maxZ() + 4);
                 Set<BlockPos> visited = new java.util.HashSet<>();
                 List<WaterComponent> components = new java.util.ArrayList<>();
-                for (BlockPos seed : explicitAir) {
+                Set<BlockPos> seeds = capturedSeeds == null ? currentWaterSeeds() : capturedSeeds;
+                for (BlockPos seed : seeds) {
                     if (!expanded.isInside(seed) || visited.contains(seed) || !level.getFluidState(seed).is(Fluids.WATER)) continue;
                     WaterComponent component = traceWaterComponent(seed, expanded, visited);
                     components.add(component);
@@ -1288,6 +1339,12 @@ public final class MansionFeature extends Structure {
                         component.entryBossAir, component.entryOutside, component.entryFace, component.pathLength);
                 BiomeMakeover.LOGGER.info("[BM_BOSS_TRACE_PERF] mansionId={} phase={} visitedFluidCells={} components={} elapsedMicros={}",
                     mansionId, phase, visited.size(), components.size(), (System.nanoTime() - started) / 1000L);
+            }
+
+            private Set<BlockPos> currentWaterSeeds() {
+                Set<BlockPos> result = new java.util.HashSet<>();
+                for (BlockPos pos : explicitAir) if (level.getFluidState(pos).is(Fluids.WATER)) result.add(pos);
+                return result;
             }
 
             private WaterComponent traceWaterComponent(BlockPos seed, BoundingBox expanded, Set<BlockPos> visited) {
