@@ -40,3 +40,7 @@ Includes:
 ## Phase 4 - Remaining Biomes
 
 Continue biome-by-biome until complete.
+
+## Future Stage 12 designs
+
+- [Mythas Mansion Trial and Boss Enhancement](design/mansion-trial-boss-enhancement.md) — design recorded; implementation deferred.
