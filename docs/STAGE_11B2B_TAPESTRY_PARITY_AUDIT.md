@@ -143,3 +143,34 @@ The temporary Prism diagnostic, if retained during testing, is trace-gated
 and limited to 16 representative placements per Mansion. It is not a gameplay
 contract and must be removed or reduced to a negligible guard after runtime
 acceptance.
+
+## R.1 renderer and advancement repair
+
+The Prism wall-tapestry failure was traced to model geometry, not texture
+lookup. Released 1.20.1 uses one custom 64x64 flag model with three parts:
+
+- `flag`: cloth at `(-10, 0, -2)`, size `20x35x1`, with three lower tassels;
+- `pole`: `(-1, -30, -1)`, size `2x42x2`;
+- `bar`: `(-10, -32, -1)`, size `20x2x2`.
+
+The released world transform is exact: standing form translates to
+`(0.5, 0.5, 0.5)` and rotates around positive Y by
+`-(ROTATION_16 * 360 / 16)` degrees. Wall form translates to
+`(0.5, -0.1666666716337204, 0.5)`, rotates around positive Y by
+`-FACING.toYRot()` degrees, then translates `(0, -0.3125, -0.4375)`.
+Both forms then scale `(0.66, -0.66, -0.66)`. The wall form hides the pole
+but retains the bar and cloth. The port previously used vanilla `BannerModel`
+geometry, whose pivot/orientation contract differs from the released model;
+R.1 restores the released custom geometry while retaining the released
+directional math.
+
+R.1 also restores the released `biomemakeover:biomemakeover/mansion` parent
+advancement under the modern singular `advancement` resource directory. The
+all-tapestries advancement retains its 17 released item predicates; the load
+failure was caused by the missing parent resource, not by changing tapestry
+IDs.
+
+The temporary client diagnostic is gated by `-Dbm.mansion.trace=true`, emits
+at most 16 instance records, and reports the selected form, facing/rotation,
+texture, transform, and support block. It is diagnostic-only and does not
+alter tapestry behavior.

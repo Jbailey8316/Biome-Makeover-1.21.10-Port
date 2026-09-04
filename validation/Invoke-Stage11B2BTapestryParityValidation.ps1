@@ -12,8 +12,10 @@ $standing = Join-Path $Root 'src/main/java/party/lemons/biomemakeover/worldgen/m
 $wall = Join-Path $Root 'src/main/java/party/lemons/biomemakeover/worldgen/mansion/MansionWallTapestryBlock.java'
 $entity = Join-Path $Root 'src/main/java/party/lemons/biomemakeover/init/BMBlockEntities.java'
 $client = Join-Path $Root 'src/client/java/party/lemons/biomemakeover/client/BiomeMakeoverClient.java'
-foreach ($path in @($java,$feature,$standing,$wall,$entity,$client)) { if (-not (Test-Path -LiteralPath $path)) { throw "Missing tapestry source: $path" } }
-$source = (Get-Content $java -Raw) + (Get-Content $feature -Raw) + (Get-Content $standing -Raw) + (Get-Content $wall -Raw) + (Get-Content $entity -Raw) + (Get-Content $client -Raw)
+$renderer = Join-Path $Root 'src/client/java/party/lemons/biomemakeover/client/render/MansionTapestryRenderer.java'
+$model = Join-Path $Root 'src/client/java/party/lemons/biomemakeover/client/model/TapestryModel.java'
+foreach ($path in @($java,$feature,$standing,$wall,$entity,$client,$renderer,$model)) { if (-not (Test-Path -LiteralPath $path)) { throw "Missing tapestry source: $path" } }
+$source = (Get-Content $java -Raw) + (Get-Content $feature -Raw) + (Get-Content $standing -Raw) + (Get-Content $wall -Raw) + (Get-Content $entity -Raw) + (Get-Content $client -Raw) + (Get-Content $renderer -Raw) + (Get-Content $model -Raw)
 
 if (([regex]::Matches((Get-Content $java -Raw), 'mansionStandingTapestry\("')).Count -ne 17) { throw 'Released standing variant count is not 17' }
 if (([regex]::Matches((Get-Content $java -Raw), 'mansionWallTapestry\("')).Count -ne 17) { throw 'Released wall variant count is not 17' }
@@ -35,6 +37,9 @@ if ($source -notmatch 'ROTATION_16' -or $source -notmatch 'HORIZONTAL_FACING') {
 if ($source -notmatch 'rotate\(' -or $source -notmatch 'mirror\(') { throw 'Released rotation/mirror transforms missing' }
 if ($source -notmatch 'canSurvive' -or $source -notmatch 'updateShape') { throw 'Released support/survival contract missing' }
 if ($source -notmatch 'TAPESTRY_KEY' -or $source -notmatch 'MansionTapestryRenderer') { throw 'Shared tapestry BlockEntity/renderer registration missing' }
+if ($source -notmatch 'flag' -or $source -notmatch 'pole' -or $source -notmatch 'bar' -or $source -notmatch 'createBodyLayer') { throw 'Released custom tapestry geometry missing' }
+foreach ($direction in @('NORTH','SOUTH','EAST','WEST')) { if ($source -notmatch 'HORIZONTAL_FACING' -or $source -notmatch 'toYRot') { throw "Wall transform contract missing for $direction" } }
+if ($source -notmatch 'ROTATION_16' -or $source -notmatch '22\.5F') { throw 'Standing rotation transform contract missing' }
 if ($feature -and (Get-Content $feature -Raw) -notmatch 'case "tapestry"') { throw 'Mansion tapestry marker dispatch missing' }
 if ($source -match 'Trial Spawner|Emerald Key|EMERALD_KEY|Mythas') { throw 'Stage 12/Mythas gameplay leaked into tapestry implementation' }
 
@@ -44,6 +49,14 @@ foreach ($color in $colors) {
 }
 if (-not (Test-Path (Join-Path $Root 'src/main/resources/data/biomemakeover/tags/block/tapestries.json'))) { throw 'Tapestry tag missing' }
 if (-not (Test-Path (Join-Path $Root 'src/main/resources/data/biomemakeover/advancement/biomemakeover/all_tapestries.json'))) { throw 'All-tapestries advancement missing' }
+$advancementPath = Join-Path $Root 'src/main/resources/data/biomemakeover/advancement/biomemakeover/all_tapestries.json'
+$advancement = Get-Content $advancementPath -Raw | ConvertFrom-Json
+if ($advancement.parent -ne 'biomemakeover:biomemakeover/mansion') { throw 'All-tapestries parent does not match released contract' }
+$parentPath = Join-Path $Root 'src/main/resources/data/biomemakeover/advancement/biomemakeover/mansion.json'
+if (-not (Test-Path -LiteralPath $parentPath)) { throw 'All-tapestries advancement parent missing' }
+$criteria = $advancement.criteria.get_shrooms.conditions.items
+if (@($criteria).Count -ne 17) { throw "Expected 17 all-tapestries item criteria, found $(@($criteria).Count)" }
+foreach ($criterion in $criteria) { if (-not $criterion.items -or $criterion.items.Count -ne 1) { throw 'Malformed tapestry advancement item predicate' } }
 
 $templates = @(Get-ChildItem (Join-Path $Root 'src/main/resources/data/biomemakeover/structure/mansion') -Recurse -Filter '*.nbt')
 if ($templates.Count -ne 168) { throw "Expected 168 Mansion templates, found $($templates.Count)" }
@@ -70,6 +83,23 @@ if (-not [string]::IsNullOrWhiteSpace($Jar)) {
         foreach ($entry in @('data/biomemakeover/tags/block/tapestries.json','data/biomemakeover/advancement/biomemakeover/all_tapestries.json')) {
             if ($names -notcontains $entry) { throw "Compiled JAR missing: $entry" }
         }
+        foreach ($entry in @('data/biomemakeover/advancement/biomemakeover/mansion.json','party/lemons/biomemakeover/client/model/TapestryModel.class','party/lemons/biomemakeover/client/render/MansionTapestryRenderer.class')) {
+            if ($names -notcontains $entry) { throw "Compiled JAR missing: $entry" }
+        }
+        $rendererEntry = $zip.GetEntry('party/lemons/biomemakeover/client/render/MansionTapestryRenderer.class')
+        $rendererStream = $rendererEntry.Open()
+        $rendererBytes = New-Object System.Collections.Generic.List[byte]
+        $buffer = New-Object byte[] 4096
+        while (($read = $rendererStream.Read($buffer, 0, $buffer.Length)) -gt 0) { for ($i = 0; $i -lt $read; $i++) { $rendererBytes.Add($buffer[$i]) } }
+        $rendererStream.Dispose()
+        $rendererText = [Text.Encoding]::ASCII.GetString($rendererBytes.ToArray())
+        if ($rendererText -notmatch 'BM_TAPESTRY_RENDER') { throw 'Compiled JAR missing diagnostic marker: BM_TAPESTRY_RENDER' }
+        $clientEntry = $zip.GetEntry('party/lemons/biomemakeover/client/BiomeMakeoverClient.class')
+        $clientStream = $clientEntry.Open()
+        $clientBytes = New-Object System.Collections.Generic.List[byte]
+        while (($read = $clientStream.Read($buffer, 0, $buffer.Length)) -gt 0) { for ($i = 0; $i -lt $read; $i++) { $clientBytes.Add($buffer[$i]) } }
+        $clientStream.Dispose()
+        if ([Text.Encoding]::ASCII.GetString($clientBytes.ToArray()) -notmatch 'BM_TAPESTRY_RENDER_REGISTER') { throw 'Compiled JAR missing diagnostic marker: BM_TAPESTRY_RENDER_REGISTER' }
         if ($names -notcontains 'party/lemons/biomemakeover/block/entity/TapestryBlockEntity.class') { throw 'Compiled JAR missing TapestryBlockEntity' }
     } finally { $zip.Dispose() }
 }
