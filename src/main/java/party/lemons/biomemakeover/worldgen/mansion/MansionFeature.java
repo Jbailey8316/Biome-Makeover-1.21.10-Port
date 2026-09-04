@@ -90,7 +90,7 @@ public final class MansionFeature extends Structure {
     private static final Set<String> CROP_PHASE_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Set<String> CROP_DISAPPEAR_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Set<String> LATE_SUMMARY_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
-    private static final CopyOnWriteArrayList<LateFinalization> LATE_FINALIZATIONS = new CopyOnWriteArrayList<>();
+    private static final Map<String, LateFinalization> LATE_FINALIZATIONS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final CopyOnWriteArrayList<Piece.BossBoundaryTrace> BOSS_BOUNDARY_TRACES = new CopyOnWriteArrayList<>();
     private static final Map<String, Map<BlockPos, BlockState>> CROP_TARGETS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> CROP_EXPECTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
@@ -134,13 +134,12 @@ public final class MansionFeature extends Structure {
                         BiomeMakeover.LOGGER.warn("[BM_CROP_TARGET_REGISTRATION_MISSING] mansionId={} registeredCropTargets={} -- C7/C8 crop mutation suppressed", mansionId, registeredCropTargets);
                     if (tracing) BiomeMakeover.LOGGER.info("[BM_CROP_FINALIZATION_READY] mansionId={} placedPlacementCount={} expectedPlacementCount={} registeredCropTargets={} ready={}",
                         mansionId, PLACED_PLACEMENTS.getOrDefault(mansionId, Set.of()).size(), EXPECTED_PLACEMENTS.getOrDefault(mansionId, Set.of()).size(), registeredCropTargets, cropReady);
-                    LATE_FINALIZATIONS.addIfAbsent(createLateFinalization(level, entry.mansionOrigin, entry.layoutSignature, cropReady));
+                    LateFinalization late = createLateFinalization(level, entry.mansionOrigin, entry.layoutSignature, cropReady);
+                    LATE_FINALIZATIONS.putIfAbsent(mansionId, late);
                     int bossCleared = reconcileBossRoomFinalAir(level, entry.mansionOrigin, entry.layoutSignature);
                     if (tracing) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} explicitAirCleared={}", entry.mansionId(), bossCleared);
-                    if (tracing) traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C6");
                 }
                 if (tracing && result.executed()) {
-                    traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C5");
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=READY mansionId={} pieceCount={} unionPositions={}", entry.mansionId(), countMansionPieces(level, entry.mansionOrigin, entry.layoutSignature), unionSize(level, entry.mansionOrigin, entry.layoutSignature));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_BEGIN mansionId={} unionPositions={}", entry.mansionId(), unionSize(level, entry.mansionOrigin, entry.layoutSignature));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_END mansionId={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
@@ -151,27 +150,36 @@ public final class MansionFeature extends Structure {
                     entry.snapshot(level, "D0");
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=REMOVE mansionId={}", entry.mansionId());
                     snapshotBossBoundary(level, entry.mansionId(), "READY");
+                    emitLatePhase(level, entry.mansionOrigin, entry.layoutSignature, "C5");
+                    emitLatePhase(level, entry.mansionOrigin, entry.layoutSignature, "C6");
                 }
             }
             entry.age++;
             String phase = switch (entry.age) { case 1 -> "D1"; case 5 -> "D5"; case 20 -> "D20"; case 100 -> "D100"; default -> null; };
             if (phase != null) entry.snapshot(level, phase);
-            for (LateFinalization late : LATE_FINALIZATIONS) if (late.level == level) {
-                if (!late.ready) { if (late.age++ >= 0) LATE_FINALIZATIONS.remove(late); continue; }
+            for (LateFinalization late : LATE_FINALIZATIONS.values()) if (late.level == level) {
+                if (!late.ready) { if (late.age++ >= 0) LATE_FINALIZATIONS.remove(late.id, late); continue; }
                 if (late.age < 0) { late.age++; continue; }
                 late.age++;
                 if (late.age == 1) {
                     int boss = 0, crops = 0;
                     for (BlockPos p : late.bossAir) if (!level.getFluidState(p).isEmpty()) { level.setBlock(p, Blocks.AIR.defaultBlockState(), 2); boss++; }
                     for (var e : late.crops.entrySet()) if (!level.getBlockState(e.getKey()).equals(e.getValue())) { level.setBlock(e.getKey(), e.getValue(), 2); crops++; }
-                    if (tracing) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} phase=C7 explicitAirCleared={} cropStatesRestored={}", late.id, boss, crops);
+                    if (tracing) {
+                        BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} phase=C7 explicitAirCleared={} cropStatesRestored={}", late.id, boss, crops);
+                        emitLatePhase(level, late.origin, late.signature, "C7");
+                        emitCropFinalizationResult(level, late, crops, "C7");
+                    }
                 }
-                if (late.age >= 2) LATE_FINALIZATIONS.remove(late);
+                if (late.age == 2 && tracing) {
+                    emitLatePhase(level, late.origin, late.signature, "C8");
+                    emitCropFinalizationResult(level, late, 0, "C8");
+                }
+                late.tickBossBoundary(level);
+                if (late.age >= 2 && late.bossTraceFinished()) LATE_FINALIZATIONS.remove(late.id, late);
             }
-            if (tracing && entry.age <= 2) traceCropPhase(level, entry.mansionOrigin, entry.layoutSignature, "C" + (6 + entry.age));
             if (entry.age >= 100 || (!tracing && EXECUTED_MANSIONS.contains(entry.mansionId()))) DELAYED_FLUID_TRACES.remove(entry);
         }
-        tickBossBoundaryTraces(level);
     }
 
     private static void snapshotBossBoundary(ServerLevel level, String mansionId, String phase) {
@@ -183,15 +191,6 @@ public final class MansionFeature extends Structure {
         }
     }
 
-    private static void tickBossBoundaryTraces(ServerLevel level) {
-        for (Piece.BossBoundaryTrace trace : BOSS_BOUNDARY_TRACES) {
-            if (trace.level != level || !trace.ready) continue;
-            long age = level.getGameTime() - trace.readyTick;
-            if (age >= 2) trace.snapshot("C8");
-            if (age >= 400) trace.snapshot("D20S");
-            if (age >= 900) { trace.snapshot("D45S"); BOSS_BOUNDARY_TRACES.remove(trace); }
-        }
-    }
 
     private static boolean isFinalPlacementComplete(String mansionId) {
         Set<String> expectedPlacements = EXPECTED_PLACEMENTS.get(mansionId);
@@ -404,12 +403,16 @@ public final class MansionFeature extends Structure {
             if (n.contains("wheat") || n.contains("carrot") || n.contains("potato") || n.contains("beetroot") || n.contains("melon_stem") || n.contains("pumpkin_stem")) crops.putIfAbsent(e.getKey(), e.getValue());
             if (c.template.contains("/boss_room") && e.getValue().isAir()) boss.add(e.getKey());
         }
-        return new LateFinalization(level, mansionId(level, origin, signature), crops, boss, ready);
+        String id = mansionId(level, origin, signature);
+        Piece.BossBoundaryTrace bossTrace = BOSS_BOUNDARY_TRACES.stream().filter(t -> t.mansionId().equals(id)).findFirst().orElse(null);
+        return new LateFinalization(level, id, origin, signature, crops, boss, ready, bossTrace);
     }
 
     private static final class LateFinalization {
-        final ServerLevel level; final String id; final Map<BlockPos, BlockState> crops; final Set<BlockPos> bossAir; final boolean ready; int age = -1;
-        LateFinalization(ServerLevel level, String id, Map<BlockPos, BlockState> crops, Set<BlockPos> bossAir, boolean ready) { this.level = level; this.id = id; this.crops = Map.copyOf(crops); this.bossAir = Set.copyOf(bossAir); this.ready = ready; }
+        final ServerLevel level; final String id; final BlockPos origin; final String signature; final Map<BlockPos, BlockState> crops; final Set<BlockPos> bossAir; final boolean ready; final Piece.BossBoundaryTrace bossTrace; final Set<String> phases = new java.util.HashSet<>(); String currentPhase = "READY"; int age = -1;
+        LateFinalization(ServerLevel level, String id, BlockPos origin, String signature, Map<BlockPos, BlockState> crops, Set<BlockPos> bossAir, boolean ready, Piece.BossBoundaryTrace bossTrace) { this.level = level; this.id = id; this.origin = origin; this.signature = signature; this.crops = Map.copyOf(crops); this.bossAir = Set.copyOf(bossAir); this.ready = ready; this.bossTrace = bossTrace; }
+        void tickBossBoundary(ServerLevel currentLevel) { if (bossTrace != null) bossTrace.tick(currentLevel); }
+        boolean bossTraceFinished() { return bossTrace == null || bossTrace.finished(); }
     }
 
     private static int cropTargetCount(ServerLevel level, BlockPos origin, String signature) {
@@ -447,6 +450,44 @@ public final class MansionFeature extends Structure {
                 if (!runtime.is(authored.getBlock()) && CROP_DISAPPEAR_LOGGED.add(mansion + ":" + entry.getKey())) BiomeMakeover.LOGGER.info("[BM_CROP_DISAPPEAR] mansionId={} template={} pieceOrdinal=-1 localPos=<serialized> worldPos={} serializedState={} previousState={} newState={} phase={} supportState={} lastKnownWritingPiece=unknown lastKnownWritingTemplate=unknown", mansion, candidate.template, entry.getKey(), authored, authored, runtime, phase, level.getBlockState(entry.getKey().below()));
             }
         }
+    }
+
+    private static void emitLatePhase(ServerLevel level, BlockPos origin, String signature, String phase) {
+        String id = mansionId(level, origin, signature);
+        LateFinalization late = LATE_FINALIZATIONS.get(id);
+        if (late == null || !late.ready || !isFinalPlacementComplete(id)) {
+            emitLateContractViolation(level, id, phase, late == null ? "NONE" : late.currentPhase, late, "authoritative readiness or placement completion missing");
+            return;
+        }
+        int ordinal = switch (phase) { case "C5" -> 1; case "C6" -> 2; case "C7" -> 3; case "C8" -> 4; default -> -1; };
+        if (ordinal < 1 || !late.phases.add(phase) || ordinal != late.phases.size()) {
+            emitLateContractViolation(level, id, phase, late.currentPhase, late, "duplicate or out-of-order phase");
+            return;
+        }
+        late.currentPhase = phase;
+        traceCropPhase(level, origin, signature, phase);
+    }
+
+    private static void emitLateContractViolation(ServerLevel level, String mansionId, String attemptedPhase, String currentPhase,
+                                                   LateFinalization late, String reason) {
+        String key = "contract:" + mansionId + ":" + attemptedPhase + ":" + reason;
+        if (!CROP_DISAPPEAR_LOGGED.add(key)) return;
+        BiomeMakeover.LOGGER.error("[BM_LATE_FINALIZATION_CONTRACT_VIOLATION] mansionId={} attemptedPhase={} currentPhase={} ready={} placedPlacementCount={} expectedPlacementCount={} placedPieceCount={} expectedPieceCount={} registeredCropTargets={} reason={}",
+            mansionId, attemptedPhase, currentPhase, late != null && late.ready,
+            PLACED_PLACEMENTS.getOrDefault(mansionId, Set.of()).size(), EXPECTED_PLACEMENTS.getOrDefault(mansionId, Set.of()).size(),
+            PLACED_PIECES.getOrDefault(mansionId, Set.of()).size(), EXPECTED_ORDINALS.getOrDefault(mansionId, Set.of()).size(), late == null ? 0 : late.crops.size(), reason);
+    }
+
+    private static void emitCropFinalizationResult(ServerLevel level, LateFinalization late, int restored, String phase) {
+        int present = 0, supportMissing = 0;
+        for (var entry : late.crops.entrySet()) {
+            if (level.getBlockState(entry.getKey()).is(entry.getValue().getBlock())) present++;
+            if (!level.getBlockState(entry.getKey().below()).is(Blocks.FARMLAND)) supportMissing++;
+        }
+        int missing = late.crops.size() - present;
+        int presentBefore = Math.max(0, present - restored);
+        BiomeMakeover.LOGGER.info("[BM_CROP_FINALIZATION_RESULT] mansionId={} phase={} expected={} presentBefore={} missingBefore={} restored={} presentAfter={} missingAfter={} supportMissing={}",
+            late.id, phase, late.crops.size(), presentBefore, late.crops.size() - presentBefore, restored, present, missing, supportMissing);
     }
 
     private static void emitLateSummaries(ServerLevel level, String mansion, String phase, BlockPos origin, String signature) {
@@ -1030,6 +1071,17 @@ public final class MansionFeature extends Structure {
                 int count = 0;
                 for (BlockState state : serialized.values()) if (state.getFluidState().is(Fluids.WATER)) count++;
                 return count;
+            }
+
+            private String mansionId() { return mansionId; }
+            private boolean finished() { return snapshots.contains("D45S"); }
+            private void tick(ServerLevel currentLevel) {
+                if (!ready || readyTick < 0) return;
+                long age = currentLevel.getGameTime() - readyTick;
+                if (age >= 2) snapshot("C8");
+                if (age >= 400) snapshot("D20S");
+                if (age >= 900) snapshot("D45S");
+                if (finished()) BOSS_BOUNDARY_TRACES.remove(this);
             }
 
             private void snapshot(String phase) {
