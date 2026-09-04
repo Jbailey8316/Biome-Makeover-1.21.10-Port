@@ -46,6 +46,7 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import party.lemons.biomemakeover.client.render.RootlingRenderer;
 import party.lemons.biomemakeover.client.render.MothRenderer;
 import party.lemons.biomemakeover.client.render.AltarRenderer;
+import party.lemons.biomemakeover.client.render.MansionTapestryRenderer;
 import party.lemons.biomemakeover.client.render.MushroomTraderRenderer;
 import party.lemons.biomemakeover.client.render.GhostRenderer;
 import party.lemons.biomemakeover.client.screen.AltarScreen;
@@ -112,6 +113,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         EntityRenderers.register(BMEntities.GHOST, GhostRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.LIGHTNING_BUG_BOTTLE,LightningBugBottleRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.ALTAR,AltarRenderer::new);
+        BlockEntityRenderers.register(BMBlockEntities.TAPESTRY,MansionTapestryRenderer::new);
         MenuScreens.register(BMMenus.ALTAR,AltarScreen::new);
         AltarBlockEntity.setClientSoundStarter(altar -> Minecraft.getInstance().getSoundManager().play(
             new AltarCursingSound(altar, altar.getLevel() == null ? net.minecraft.util.RandomSource.create() : altar.getLevel().random)));

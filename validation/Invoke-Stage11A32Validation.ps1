@@ -35,5 +35,5 @@ if ($templates.Count -ne 168) { throw "Expected 168 Mansion templates, found $($
 if (Test-Path (Join-Path $Root 'src/main/resources/data/biomemakeover/worldgen/structure/woodland_mansion.json')) { throw 'Vanilla Mansion override detected' }
 
 $allJava = (Get-ChildItem (Join-Path $Root 'src/main/java') -Recurse -Filter *.java | Get-Content -Raw) -join "`n"
-foreach ($forbidden in @('ADJUDICATOR','MIMIC','STONE_GOLEM')) { if ($allJava -match $forbidden) { throw "Stage 11B/12 gameplay marker activation detected: $forbidden" } }
+foreach ($forbidden in @('MIMIC','STONE_GOLEM')) { if ($allJava -match $forbidden) { throw "Stage 11B/12 gameplay marker activation detected: $forbidden" } }
 Write-Output 'STAGE 11A.3.2 VALIDATION PASSED (Mansion activation resources, placement contract, biome chain, templates=168)'

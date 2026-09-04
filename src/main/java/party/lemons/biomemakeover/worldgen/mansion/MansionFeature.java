@@ -798,7 +798,8 @@ public final class MansionFeature extends Structure {
                         world.addFreshEntityWithPassengers(owl);
                     }
                 }
-                case "bonemeal", "tapestry" -> { /* deferred cosmetic/gameplay systems */ }
+                case "tapestry" -> generateTapestry(facing, position, world, random);
+                case "bonemeal" -> { /* released final source intentionally leaves this marker inert */ }
                 default -> { }
             }
             if (metadata.startsWith("loot")) handleLoot(metadata, position, offset, world, random);
@@ -807,6 +808,19 @@ public final class MansionFeature extends Structure {
             else if (metadata.startsWith("ravager")) handleSpawning(metadata, world, position, details == null ? List.of() : details.mobs().ravagers());
             else if (metadata.startsWith("cow")) handleSpawning(metadata, world, position, details == null ? List.of() : details.mobs().cow());
             else if (metadata.startsWith("allay")) for (int i = 0; i < 3; i++) handleSpawning(metadata, world, position, details == null ? List.of() : details.mobs().allays());
+        }
+
+        private void generateTapestry(Direction facing, BlockPos position, WorldGenLevel level, RandomSource random) {
+            Block tapestry;
+            if (facing == Direction.UP || facing == Direction.DOWN) {
+                tapestry = BMBlocks.MANSION_STANDING_TAPESTRIES.get(random.nextInt(BMBlocks.MANSION_STANDING_TAPESTRIES.size()));
+                level.setBlock(position, tapestry.defaultBlockState()
+                    .setValue(MansionStandingTapestryBlock.ROTATION, Rotation.getRandom(random).ordinal()), 3);
+            } else {
+                tapestry = BMBlocks.MANSION_WALL_TAPESTRIES.get(random.nextInt(BMBlocks.MANSION_WALL_TAPESTRIES.size()));
+                level.setBlock(position, tapestry.defaultBlockState()
+                    .setValue(MansionWallTapestryBlock.FACING, facing.getOpposite()), 3);
+            }
         }
 
         private void handleLoot(String metadata, BlockPos marker, BlockPos containerPos, WorldGenLevel world, RandomSource random) {

@@ -6,10 +6,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.Block;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.block.entity.LightningBugBottleBlockEntity;
 import party.lemons.biomemakeover.block.entity.AltarBlockEntity;
 import party.lemons.biomemakeover.block.entity.PoltergeistBlockEntity;
+import party.lemons.biomemakeover.block.entity.TapestryBlockEntity;
 import party.lemons.biomemakeover.mixin.BlockEntityTypeAccessor;
 
 public final class BMBlockEntities {
@@ -22,6 +24,11 @@ public final class BMBlockEntities {
     private static final ResourceKey<BlockEntityType<?>> POLTERGEIST_KEY=ResourceKey.create(Registries.BLOCK_ENTITY_TYPE,BiomeMakeover.id("poltergeist"));
     public static final BlockEntityType<PoltergeistBlockEntity> POLTERGEIST=Registry.register(
         BuiltInRegistries.BLOCK_ENTITY_TYPE,POLTERGEIST_KEY,FabricBlockEntityTypeBuilder.create(PoltergeistBlockEntity::new,BMBlocks.POLTERGEIST).build());
+    private static final ResourceKey<BlockEntityType<?>> TAPESTRY_KEY=ResourceKey.create(Registries.BLOCK_ENTITY_TYPE,BiomeMakeover.id("tapestry"));
+    public static final BlockEntityType<TapestryBlockEntity> TAPESTRY=Registry.register(
+        BuiltInRegistries.BLOCK_ENTITY_TYPE,TAPESTRY_KEY,FabricBlockEntityTypeBuilder.create(TapestryBlockEntity::new,
+            java.util.stream.Stream.concat(BMBlocks.MANSION_STANDING_TAPESTRIES.stream(), BMBlocks.MANSION_WALL_TAPESTRIES.stream())
+                .toArray(Block[]::new)).build());
     private BMBlockEntities() {}
     public static void initialize() {
         // Vanilla BrushableBlockEntity validates its BlockEntityType against a

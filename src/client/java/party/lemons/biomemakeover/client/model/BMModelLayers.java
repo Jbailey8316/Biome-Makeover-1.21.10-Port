@@ -3,6 +3,7 @@ package party.lemons.biomemakeover.client.model;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import party.lemons.biomemakeover.BiomeMakeover;
+import net.minecraft.client.model.BannerModel;
 
 public final class BMModelLayers {
     public static final ModelLayerLocation OWL = new ModelLayerLocation(BiomeMakeover.id("owl"), "main");
@@ -17,6 +18,8 @@ public final class BMModelLayers {
     public static final ModelLayerLocation ROOTLING = new ModelLayerLocation(BiomeMakeover.id("rootling"), "main");
     public static final ModelLayerLocation MOTH = new ModelLayerLocation(BiomeMakeover.id("moth"), "main");
     public static final ModelLayerLocation GHOST = new ModelLayerLocation(BiomeMakeover.id("ghost"), "main");
+    public static final ModelLayerLocation TAPESTRY_STANDING = new ModelLayerLocation(BiomeMakeover.id("tapestry"), "standing");
+    public static final ModelLayerLocation TAPESTRY_WALL = new ModelLayerLocation(BiomeMakeover.id("tapestry"), "wall");
 
     private BMModelLayers() {}
 
@@ -33,5 +36,7 @@ public final class BMModelLayers {
         EntityModelLayerRegistry.registerModelLayer(ROOTLING, RootlingModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(MOTH, MothModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(GHOST, GhostModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(TAPESTRY_STANDING, () -> BannerModel.createBodyLayer(false));
+        EntityModelLayerRegistry.registerModelLayer(TAPESTRY_WALL, () -> BannerModel.createBodyLayer(true));
     }
 }

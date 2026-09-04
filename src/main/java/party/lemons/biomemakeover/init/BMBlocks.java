@@ -2,6 +2,7 @@ package party.lemons.biomemakeover.init;
 
 import java.util.Optional;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -20,6 +21,9 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.PlaceOnWaterBlockItem;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.StandingAndWallBlockItem;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -197,22 +201,70 @@ public final class BMBlocks {
         BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 6.0F).sound(SoundType.STONE));
     public static final Block DIRECTIONAL_DATA = registerNoItem("directional_data", MansionDirectionalDataBlock::new,
         BlockBehaviour.Properties.of().strength(-1.0F).noLootTable());
+    public static final Map<String, Item> TAPESTRY_ITEMS = new LinkedHashMap<>();
+    public static final Block WHITE_TAPESTRY = mansionStandingTapestry("white");
     public static final Block WHITE_WALL_TAPESTRY = mansionWallTapestry("white");
+    public static final Block ORANGE_TAPESTRY = mansionStandingTapestry("orange");
     public static final Block ORANGE_WALL_TAPESTRY = mansionWallTapestry("orange");
+    public static final Block MAGENTA_TAPESTRY = mansionStandingTapestry("magenta");
     public static final Block MAGENTA_WALL_TAPESTRY = mansionWallTapestry("magenta");
+    public static final Block LIGHT_BLUE_TAPESTRY = mansionStandingTapestry("light_blue");
     public static final Block LIGHT_BLUE_WALL_TAPESTRY = mansionWallTapestry("light_blue");
+    public static final Block YELLOW_TAPESTRY = mansionStandingTapestry("yellow");
     public static final Block YELLOW_WALL_TAPESTRY = mansionWallTapestry("yellow");
+    public static final Block LIME_TAPESTRY = mansionStandingTapestry("lime");
     public static final Block LIME_WALL_TAPESTRY = mansionWallTapestry("lime");
+    public static final Block PINK_TAPESTRY = mansionStandingTapestry("pink");
     public static final Block PINK_WALL_TAPESTRY = mansionWallTapestry("pink");
+    public static final Block GRAY_TAPESTRY = mansionStandingTapestry("gray");
     public static final Block GRAY_WALL_TAPESTRY = mansionWallTapestry("gray");
+    public static final Block LIGHT_GRAY_TAPESTRY = mansionStandingTapestry("light_gray");
     public static final Block LIGHT_GRAY_WALL_TAPESTRY = mansionWallTapestry("light_gray");
+    public static final Block CYAN_TAPESTRY = mansionStandingTapestry("cyan");
     public static final Block CYAN_WALL_TAPESTRY = mansionWallTapestry("cyan");
+    public static final Block PURPLE_TAPESTRY = mansionStandingTapestry("purple");
     public static final Block PURPLE_WALL_TAPESTRY = mansionWallTapestry("purple");
+    public static final Block BLUE_TAPESTRY = mansionStandingTapestry("blue");
     public static final Block BLUE_WALL_TAPESTRY = mansionWallTapestry("blue");
+    public static final Block BROWN_TAPESTRY = mansionStandingTapestry("brown");
     public static final Block BROWN_WALL_TAPESTRY = mansionWallTapestry("brown");
+    public static final Block GREEN_TAPESTRY = mansionStandingTapestry("green");
     public static final Block GREEN_WALL_TAPESTRY = mansionWallTapestry("green");
+    public static final Block RED_TAPESTRY = mansionStandingTapestry("red");
     public static final Block RED_WALL_TAPESTRY = mansionWallTapestry("red");
+    public static final Block BLACK_TAPESTRY = mansionStandingTapestry("black");
     public static final Block BLACK_WALL_TAPESTRY = mansionWallTapestry("black");
+    public static final Block ADJUDICATOR_TAPESTRY = mansionStandingTapestry("adjudicator");
+    public static final Block ADJUDICATOR_WALL_TAPESTRY = mansionWallTapestry("adjudicator");
+    static {
+        tapestryItem("white", WHITE_TAPESTRY, WHITE_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("orange", ORANGE_TAPESTRY, ORANGE_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("magenta", MAGENTA_TAPESTRY, MAGENTA_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("light_blue", LIGHT_BLUE_TAPESTRY, LIGHT_BLUE_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("yellow", YELLOW_TAPESTRY, YELLOW_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("lime", LIME_TAPESTRY, LIME_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("pink", PINK_TAPESTRY, PINK_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("gray", GRAY_TAPESTRY, GRAY_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("light_gray", LIGHT_GRAY_TAPESTRY, LIGHT_GRAY_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("cyan", CYAN_TAPESTRY, CYAN_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("purple", PURPLE_TAPESTRY, PURPLE_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("blue", BLUE_TAPESTRY, BLUE_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("brown", BROWN_TAPESTRY, BROWN_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("green", GREEN_TAPESTRY, GREEN_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("red", RED_TAPESTRY, RED_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("black", BLACK_TAPESTRY, BLACK_WALL_TAPESTRY, Rarity.UNCOMMON);
+        tapestryItem("adjudicator", ADJUDICATOR_TAPESTRY, ADJUDICATOR_WALL_TAPESTRY, Rarity.EPIC);
+    }
+    public static final List<Block> MANSION_STANDING_TAPESTRIES = List.of(
+        WHITE_TAPESTRY, ORANGE_TAPESTRY, MAGENTA_TAPESTRY, LIGHT_BLUE_TAPESTRY,
+        YELLOW_TAPESTRY, LIME_TAPESTRY, PINK_TAPESTRY, GRAY_TAPESTRY,
+        LIGHT_GRAY_TAPESTRY, CYAN_TAPESTRY, PURPLE_TAPESTRY, BLUE_TAPESTRY,
+        BROWN_TAPESTRY, GREEN_TAPESTRY, RED_TAPESTRY, BLACK_TAPESTRY, ADJUDICATOR_TAPESTRY);
+    public static final List<Block> MANSION_WALL_TAPESTRIES = List.of(
+        WHITE_WALL_TAPESTRY, ORANGE_WALL_TAPESTRY, MAGENTA_WALL_TAPESTRY, LIGHT_BLUE_WALL_TAPESTRY,
+        YELLOW_WALL_TAPESTRY, LIME_WALL_TAPESTRY, PINK_WALL_TAPESTRY, GRAY_WALL_TAPESTRY,
+        LIGHT_GRAY_WALL_TAPESTRY, CYAN_WALL_TAPESTRY, PURPLE_WALL_TAPESTRY, BLUE_WALL_TAPESTRY,
+        BROWN_WALL_TAPESTRY, GREEN_WALL_TAPESTRY, RED_WALL_TAPESTRY, BLACK_WALL_TAPESTRY, ADJUDICATOR_WALL_TAPESTRY);
     public static final Block POLTERGEIST = register("poltergeist", PoltergeistBlock::new,
         BlockBehaviour.Properties.of().strength(1.0F).mapColor(MapColor.WARPED_WART_BLOCK)
             .sound(SoundType.LODESTONE).lightLevel(state -> state.getValue(PoltergeistBlock.ENABLED) ? 7 : 0)
@@ -310,10 +362,31 @@ public final class BMBlocks {
     private static ResourceKey<ConfiguredFeature<?, ?>> configured(String path) {
         return ResourceKey.create(Registries.CONFIGURED_FEATURE, BiomeMakeover.id(path));
     }
+    private static ResourceLocation tapestryTexture(String color) {
+        return BiomeMakeover.id("textures/tapestry/" + color + "_tapestry.png");
+    }
+
+    private static BlockBehaviour.Properties tapestryProperties() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.WOOL).strength(1.0F)
+            .instrument(NoteBlockInstrument.BASS).sound(SoundType.WOOD).noCollision().noOcclusion()
+            .pushReaction(PushReaction.DESTROY);
+    }
+
+    private static Block mansionStandingTapestry(String color) {
+        return registerNoItem(color + "_tapestry", p -> new party.lemons.biomemakeover.worldgen.mansion.MansionStandingTapestryBlock(p, tapestryTexture(color)), tapestryProperties());
+    }
+
     private static Block mansionWallTapestry(String color) {
-        return registerNoItem(color + "_wall_tapestry", MansionWallTapestryBlock::new,
-            BlockBehaviour.Properties.of().mapColor(MapColor.WOOL).strength(1.0F).noCollision().noOcclusion()
-                .pushReaction(PushReaction.DESTROY));
+        return registerNoItem(color + "_wall_tapestry", p -> new MansionWallTapestryBlock(p, tapestryTexture(color)), tapestryProperties());
+    }
+
+    private static void tapestryItem(String color, Block standing, Block wall, Rarity rarity) {
+        ResourceLocation id = BiomeMakeover.id(color + "_tapestry");
+        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
+        Item item = Registry.register(BuiltInRegistries.ITEM, key,
+            new StandingAndWallBlockItem(standing, wall, net.minecraft.core.Direction.DOWN,
+                new Item.Properties().setId(key).stacksTo(16).rarity(rarity).useBlockDescriptionPrefix()));
+        TAPESTRY_ITEMS.put(color, item);
     }
 
     private static BlockBehaviour.Properties fungusPlant(MapColor color) {
@@ -589,6 +662,7 @@ public final class BMBlocks {
             WILLOW.values().forEach(entries::accept); SWAMP_CYPRESS.values().forEach(entries::accept);
             entries.accept(DRIED_PEAT); entries.accept(PEAT_FARMLAND); PEAT_MASONRY.values().forEach(entries::accept);
             entries.accept(REED_THATCH); entries.accept(REED_THATCH_SLAB); entries.accept(REED_THATCH_STAIRS);
+            TAPESTRY_ITEMS.values().forEach(entries::accept);
         });
     }
 

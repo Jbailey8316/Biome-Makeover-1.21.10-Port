@@ -5,7 +5,7 @@ $templateRoot = Join-Path $Root 'src/main/resources/data/biomemakeover/structure
 if (!(Test-Path -LiteralPath $feature)) { throw 'MansionFeature source is missing' }
 if (!(Test-Path -LiteralPath $templateRoot)) { throw 'Mansion template root is missing' }
 $text = Get-Content -LiteralPath $feature -Raw
-foreach ($required in @('template.filterBlocks', 'BMBlocks.DIRECTIONAL_DATA', 'consumeDirectionalMetadata', 'Blocks.AIR.defaultBlockState')) {
+foreach ($required in @('template.filterBlocks', 'BMBlocks.DIRECTIONAL_DATA', 'handleDirectionalMetadata', 'Blocks.AIR.defaultBlockState', 'case "tapestry"')) {
   if ($text.IndexOf($required, [StringComparison]::Ordinal) -lt 0) { throw "Directional Data consumer missing: $required" }
 }
 $templates = @(Get-ChildItem -LiteralPath $templateRoot -Recurse -Filter '*.nbt')
