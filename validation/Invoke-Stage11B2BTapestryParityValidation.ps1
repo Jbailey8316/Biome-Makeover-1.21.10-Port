@@ -30,6 +30,14 @@ foreach ($color in $colors) {
         "src/main/resources/data/biomemakeover/loot_table/blocks/$($color)_tapestry.json")) {
         if (-not (Test-Path -LiteralPath (Join-Path $Root $path))) { throw "Missing tapestry resource: $path" }
     }
+    Add-Type -AssemblyName System.Drawing
+    $bitmap = [System.Drawing.Bitmap]::new((Join-Path $Root "src/main/resources/assets/biomemakeover/textures/tapestry/$($color)_tapestry.png"))
+    try {
+        if ($bitmap.Width -ne 64 -or $bitmap.Height -ne 64) { throw "Invalid tapestry dimensions: $color" }
+        $nonWhite = 0
+        for ($x = 0; $x -lt $bitmap.Width; $x++) { for ($y = 0; $y -lt $bitmap.Height; $y++) { $pixel = $bitmap.GetPixel($x, $y); if ($pixel.A -gt 0 -and ($pixel.R -ne 255 -or $pixel.G -ne 255 -or $pixel.B -ne 255)) { $nonWhite++ } } }
+        if ($nonWhite -eq 0) { throw "Blank/white tapestry texture: $color" }
+    } finally { $bitmap.Dispose() }
     if ($source.IndexOf(('tapestryItem("{0}"' -f $color), [StringComparison]::Ordinal) -lt 0) { throw "Missing BlockItem registration: $color" }
 }
 if ($source -notmatch 'MansionTapestryBlock') { throw 'Shared tapestry block substrate missing' }
@@ -38,6 +46,8 @@ if ($source -notmatch 'rotate\(' -or $source -notmatch 'mirror\(') { throw 'Rele
 if ($source -notmatch 'canSurvive' -or $source -notmatch 'updateShape') { throw 'Released support/survival contract missing' }
 if ($source -notmatch 'TAPESTRY_KEY' -or $source -notmatch 'MansionTapestryRenderer') { throw 'Shared tapestry BlockEntity/renderer registration missing' }
 if ($source -notmatch 'flag' -or $source -notmatch 'pole' -or $source -notmatch 'bar' -or $source -notmatch 'createBodyLayer') { throw 'Released custom tapestry geometry missing' }
+if ($source -notmatch 'submitModelPart' -or $source -notmatch 'entitySolid\(state\.block\.tapestryTexture\(\)\)') { throw 'Selected tapestry texture is not bound through direct model-part rendering' }
+if ($source -notmatch 'LayerDefinition\.create\(mesh, 64, 64\)' -or $source -notmatch 'texOffs\(0, 0\)') { throw 'Released 64x64 tapestry UV contract missing' }
 foreach ($direction in @('NORTH','SOUTH','EAST','WEST')) { if ($source -notmatch 'HORIZONTAL_FACING' -or $source -notmatch 'toYRot') { throw "Wall transform contract missing for $direction" } }
 if ($source -notmatch 'ROTATION_16' -or $source -notmatch '22\.5F') { throw 'Standing rotation transform contract missing' }
 if ($feature -and (Get-Content $feature -Raw) -notmatch 'case "tapestry"') { throw 'Mansion tapestry marker dispatch missing' }
@@ -54,6 +64,10 @@ $advancement = Get-Content $advancementPath -Raw | ConvertFrom-Json
 if ($advancement.parent -ne 'biomemakeover:biomemakeover/mansion') { throw 'All-tapestries parent does not match released contract' }
 $parentPath = Join-Path $Root 'src/main/resources/data/biomemakeover/advancement/biomemakeover/mansion.json'
 if (-not (Test-Path -LiteralPath $parentPath)) { throw 'All-tapestries advancement parent missing' }
+$parent = Get-Content $parentPath -Raw | ConvertFrom-Json
+$location = $parent.criteria.ghost_town.conditions.player[0].predicate.location
+if (-not $location.structures -or @($location.structures).Count -ne 1 -or $location.structures[0] -ne 'biomemakeover:mansion') { throw 'Mansion advancement does not use the released structure location predicate' }
+if ($parent.criteria.ghost_town.trigger -eq 'minecraft:tick') { throw 'Mansion advancement uses an unconditional tick criterion' }
 $criteria = $advancement.criteria.get_shrooms.conditions.items
 if (@($criteria).Count -ne 17) { throw "Expected 17 all-tapestries item criteria, found $(@($criteria).Count)" }
 foreach ($criterion in $criteria) { if (-not $criterion.items -or $criterion.items.Count -ne 1) { throw 'Malformed tapestry advancement item predicate' } }
@@ -79,6 +93,17 @@ if (-not [string]::IsNullOrWhiteSpace($Jar)) {
                 "data/biomemakeover/loot_table/blocks/${color}_tapestry.json")) {
                 if ($names -notcontains $entry) { throw "Compiled JAR missing: $entry" }
             }
+            $sourceTexture = [IO.File]::ReadAllBytes((Join-Path $Root "src/main/resources/assets/biomemakeover/textures/tapestry/${color}_tapestry.png"))
+            $textureEntry = $zip.GetEntry("assets/biomemakeover/textures/tapestry/${color}_tapestry.png")
+            if ($textureEntry.Length -ne $sourceTexture.Length) { throw "Compiled tapestry texture size differs: $color" }
+            $entryStream = $textureEntry.Open()
+            $entryMemory = New-Object IO.MemoryStream
+            $entryStream.CopyTo($entryMemory)
+            $entryStream.Dispose()
+            $sourceHash = ([BitConverter]::ToString(([Security.Cryptography.SHA256]::Create().ComputeHash($sourceTexture))) -replace '-', '')
+            $entryHash = ([BitConverter]::ToString(([Security.Cryptography.SHA256]::Create().ComputeHash($entryMemory.ToArray()))) -replace '-', '')
+            $entryMemory.Dispose()
+            if ($sourceHash -ne $entryHash) { throw "Compiled tapestry texture bytes differ: $color" }
         }
         foreach ($entry in @('data/biomemakeover/tags/block/tapestries.json','data/biomemakeover/advancement/biomemakeover/all_tapestries.json')) {
             if ($names -notcontains $entry) { throw "Compiled JAR missing: $entry" }
@@ -93,7 +118,9 @@ if (-not [string]::IsNullOrWhiteSpace($Jar)) {
         while (($read = $rendererStream.Read($buffer, 0, $buffer.Length)) -gt 0) { for ($i = 0; $i -lt $read; $i++) { $rendererBytes.Add($buffer[$i]) } }
         $rendererStream.Dispose()
         $rendererText = [Text.Encoding]::ASCII.GetString($rendererBytes.ToArray())
-        if ($rendererText -notmatch 'BM_TAPESTRY_RENDER') { throw 'Compiled JAR missing diagnostic marker: BM_TAPESTRY_RENDER' }
+        foreach ($marker in @('BM_TAPESTRY_RENDER','BM_TAPESTRY_TEXTURE_BIND')) {
+            if ($rendererText -notmatch $marker) { throw "Compiled JAR missing diagnostic marker: $marker" }
+        }
         $clientEntry = $zip.GetEntry('party/lemons/biomemakeover/client/BiomeMakeoverClient.class')
         $clientStream = $clientEntry.Open()
         $clientBytes = New-Object System.Collections.Generic.List[byte]

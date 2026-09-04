@@ -44,6 +44,10 @@ public final class TapestryModel extends EntityModel<TapestryModel.State> {
         flag.y = state.flagY;
     }
 
+    public ModelPart flag() { return flag; }
+    public ModelPart pole() { return pole; }
+    public ModelPart bar() { return bar; }
+
     public static final class State extends EntityRenderState {
         public boolean poleVisible;
         public float flagXRot;

@@ -174,3 +174,23 @@ The temporary client diagnostic is gated by `-Dbm.mansion.trace=true`, emits
 at most 16 instance records, and reports the selected form, facing/rotation,
 texture, transform, and support block. It is diagnostic-only and does not
 alter tapestry behavior.
+
+## R.2 texture binding and Mansion criterion repair
+
+The R.1 PNG audit found no asset defect: all 17 released textures are 64x64,
+contain non-white opaque pixels, and the inspected adjudicator, red, black, and
+light-blue files match the released SHA-256 bytes. The R.1 custom model also
+retained the released UV coordinates. The repair therefore keeps the released
+`entitySolid(ResourceLocation)` pipeline and submits the released `flag`,
+`pole`, and `bar` parts directly through the modern `SubmitNodeCollector`,
+instead of relying on the deferred whole-model submission to bind the selected
+variant texture. A trace-gated `BM_TAPESTRY_TEXTURE_BIND` record reports the
+actual ResourceLocation, render type, UV summary, and resource presence/size.
+
+The released 1.20.1 advancement uses a location predicate for the Mansion.
+In 1.21.10 the location predicate field is `structures` (a one-element list),
+not the legacy singular `structure` field. The singular field was ignored by
+the newer codec, leaving an empty location predicate that granted on login.
+R.2 changes only that field to `"structures": ["biomemakeover:mansion"]`.
+The parent remains hidden=false, toast/chat enabled, and the all-tapestries
+advancement retains its 17 released item predicates and Mansion parent.

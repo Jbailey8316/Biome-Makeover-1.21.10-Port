@@ -16,7 +16,7 @@
         "player": [{
           "condition": "minecraft:entity_properties",
           "entity": "this",
-          "predicate": { "location": { "structure": "biomemakeover:mansion" } }
+          "predicate": { "location": { "structures": ["biomemakeover:mansion"] } }
         }]
       }
     }

@@ -3,6 +3,7 @@ package party.lemons.biomemakeover.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -10,7 +11,6 @@ import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.util.Unit;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -62,9 +62,14 @@ public final class MansionTapestryRenderer implements BlockEntityRenderer<Tapest
             pose.mulPose(Axis.YP.rotationDegrees(state.angle));
         }
         pose.scale(0.6666667F, -0.6666667F, -0.6666667F);
+        model.setupAnim(state.modelState);
         int light = state.lightCoords;
-        output.submitModel(model, state.modelState, pose, RenderType.entitySolid(state.block.tapestryTexture()), light,
-            OverlayTexture.NO_OVERLAY, -1, null, -1, state.breakProgress);
+        var renderType = RenderType.entitySolid(state.block.tapestryTexture());
+        output.submitModelPart(model.bar(), pose, renderType, light, OverlayTexture.NO_OVERLAY, null);
+        if (state.modelState.poleVisible) {
+            output.submitModelPart(model.pole(), pose, renderType, light, OverlayTexture.NO_OVERLAY, null);
+        }
+        output.submitModelPart(model.flag(), pose, renderType, light, OverlayTexture.NO_OVERLAY, null);
         pose.popPose();
     }
 
@@ -88,5 +93,20 @@ public final class MansionTapestryRenderer implements BlockEntityRenderer<Tapest
             state.hasProperty(MansionStandingTapestryBlock.ROTATION) ? state.getValue(MansionStandingTapestryBlock.ROTATION) : "NONE",
             renderState.block.tapestryTexture(), renderState.wall ? "0.5,-0.16666667,0.5;0,-0.3125,-0.4375" : "0.5,0.5,0.5",
             renderState.angle, support, level == null ? "UNKNOWN" : level.getBlockState(support));
+        var texture = renderState.block.tapestryTexture();
+        int textureSize = -1;
+        boolean present = false;
+        try {
+            var resource = Minecraft.getInstance().getResourceManager().getResource(texture);
+            if (resource.isPresent()) {
+                present = true;
+                try (var input = resource.get().open()) { textureSize = input.available(); }
+            }
+        } catch (Exception ignored) {
+            // Diagnostic only: resource lookup must never affect rendering.
+        }
+        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_TEXTURE_BIND] variant={} textureResource={} renderType={} vertexConsumerSource={} modelTextureWidth={} modelTextureHeight={} flagUvSummary={} textureResourcePresent={} textureResourceByteSize={}",
+            state.getBlock(), texture, "entitySolid(" + texture + ")", "SubmitNodeCollector.submitModelPart", 64, 64,
+            "flag=(0,0,20x35),(0,36,4x5),(10,36,4x5),(20,36,4x5);pole=(44,0,2x42);bar=(0,42,20x2)", present, textureSize);
     }
 }
