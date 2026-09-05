@@ -311,3 +311,24 @@ the existing `TapestryModel`, 64x64 artwork, and released item display base for
 all 17 items. The special base has no normal-model parent, removing the
 unresolved dependency without changing placed rendering or item/drop
 registration.
+
+## FINAL — parity freeze
+
+Stage 11B.2B is COMPLETE / PARITY FROZEN / RUNTIME ACCEPTED.
+
+The released contract is 17 tapestry variants, standing and wall forms sharing
+one inventory item, and 56 Mansion markers across 12 templates. Serialized
+marker FACING points toward the backing surface; the port now applies the
+Mansion piece mirror/rotation once, then derives the outward tapestry FACING
+with `opposite()`.
+
+The released wall drop relationship required the 1.21.10 wall blocks to use
+the corresponding standing block's loot table. Modern item definitions and a
+special-item renderer preserve the released 3D inventory, held, and dropped
+representation; the obsolete `minecraft:builtin/entity` route is not used.
+
+After Prism acceptance, temporary R.3–R.6.2 tapestry forensic logging,
+bookkeeping, and coordinate-trace plumbing were removed. Static validators
+remain and now validate production code, resources, loot, transforms, item
+definitions, special-renderer resolution, and advancement contracts directly.
+Mansion templates and all accepted parity systems remain unchanged.

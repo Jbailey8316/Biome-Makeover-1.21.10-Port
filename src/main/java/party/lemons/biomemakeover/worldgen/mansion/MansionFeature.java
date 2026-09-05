@@ -89,10 +89,6 @@ public final class MansionFeature extends Structure {
     private static final Map<String, LateFinalization> LATE_FINALIZATIONS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Map<BlockPos, BlockState>> CROP_TARGETS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> CROP_EXPECTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
-    private static final Map<String, Set<BlockPos>> TAPESTRY_POSITIONS = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final Set<String> TAPESTRY_FINAL_AUDITED = java.util.concurrent.ConcurrentHashMap.newKeySet();
-    private static final Set<String> TAPESTRY_MARKER_TRACED = java.util.concurrent.ConcurrentHashMap.newKeySet();
-    private static final Set<String> TAPESTRY_PLACED_TRACED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private static final class LayoutMetadata {
         final String key, signature; final BlockPos origin; final Set<String> ordinals, placements; final int unionSize, bossPieces;
@@ -136,7 +132,6 @@ public final class MansionFeature extends Structure {
                     LateFinalization late = createLateFinalization(level, entry.mansionOrigin, entry.layoutSignature, cropReady);
                     late.readyTick = level.getGameTime();
                     LATE_FINALIZATIONS.putIfAbsent(mansionId, late);
-                    if (tracing && TAPESTRY_FINAL_AUDITED.add(mansionId)) emitFinalTapestryAudit(level, mansionId);
                     int bossCleared = reconcileBossRoomFinalAir(level, entry.mansionOrigin, entry.layoutSignature);
                     if (tracing) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} explicitAirCleared={}", entry.mansionId(), bossCleared);
                 }
@@ -343,47 +338,6 @@ public final class MansionFeature extends Structure {
         int missing = late.crops.size() - present;
         BiomeMakeover.LOGGER.info("[BM_CROP_FINALIZATION_RESULT] mansionId={} phase={} expected={} restored={} presentAfter={} missingAfter={} supportMissing={}",
             late.id, phase, late.crops.size(), restored, present, missing, supportMissing);
-    }
-
-    private static void emitFinalTapestryAudit(ServerLevel level, String mansionId) {
-        Set<BlockPos> positions = TAPESTRY_POSITIONS.getOrDefault(mansionId, Set.of());
-        int supported = 0, unsupported = 0, survivalPass = 0, survivalFail = 0, facingMismatch = 0;
-        int wallCount = 0, standingCount = 0;
-        int detail = 0;
-        for (BlockPos pos : positions) {
-            BlockState state = level.getBlockState(pos);
-            BlockPos support;
-            String facing;
-            String expected;
-            if (state.getBlock() instanceof MansionWallTapestryBlock wall) {
-                wallCount++;
-                Direction direction = state.getValue(MansionWallTapestryBlock.FACING);
-                support = pos.relative(direction.getOpposite());
-                facing = direction.toString();
-                net.minecraft.core.Vec3i expectedVector = new net.minecraft.core.Vec3i(direction.getStepX(), direction.getStepY(), direction.getStepZ());
-                expected = expectedVector.toString();
-                if (!pos.subtract(support).equals(expectedVector)) facingMismatch++;
-            } else if (state.getBlock() instanceof MansionStandingTapestryBlock) {
-                standingCount++;
-                support = pos.below();
-                facing = "STANDING";
-                expected = new net.minecraft.core.Vec3i(0, 1, 0).toString();
-            } else {
-                continue;
-            }
-            BlockState supportState = level.getBlockState(support);
-            boolean survives = state.canSurvive(level, pos);
-            boolean supportSolid = supportState.isSolid();
-            if (supportSolid) supported++; else unsupported++;
-            if (survives) survivalPass++; else survivalFail++;
-            if ((!supportSolid || !survives) && detail++ < 16) {
-                BiomeMakeover.LOGGER.info("[BM_TAPESTRY_FINAL_STATE] mansionId={} variant={} blockPos={} facing={} supportPos={} supportBlock={} canSurvive={} blockMinusSupportVector={} expectedFacingVector={}",
-                    mansionId, BuiltInRegistries.BLOCK.getKey(state.getBlock()), pos, facing, support, supportState.getBlock(), survives,
-                    pos.subtract(support), expected);
-            }
-        }
-        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_FINAL_SUMMARY] mansionId={} tapestryCount={} wallTapestryCount={} standingTapestryCount={} supportedCount={} unsupportedCount={} survivalPassCount={} survivalFailCount={} facingSupportMismatchCount={}",
-            mansionId, wallCount + standingCount, wallCount, standingCount, supported, unsupported, survivalPass, survivalFail, facingMismatch);
     }
 
     private static Map<BlockPos, BlockState> cropTargets(ServerLevel level, BlockPos origin, String signature) {
@@ -819,13 +773,6 @@ public final class MansionFeature extends Structure {
             return interior;
         }
 
-        private static String neighborSummary(WorldGenLevel level, BlockPos pos) {
-            return "N=" + level.getBlockState(pos.north()).getBlock()
-                + ",E=" + level.getBlockState(pos.east()).getBlock()
-                + ",S=" + level.getBlockState(pos.south()).getBlock()
-                + ",W=" + level.getBlockState(pos.west()).getBlock();
-        }
-
         private void handleDirectionalMetadata(String metadata, Direction facing, BlockPos position,
                                                 WorldGenLevel world, RandomSource random) {
             handleDirectionalMetadata(metadata, facing, facing, position, world, random);
@@ -834,23 +781,6 @@ public final class MansionFeature extends Structure {
         private void handleDirectionalMetadata(String metadata, Direction serializedFacing, Direction facing,
                                                 BlockPos position, WorldGenLevel world, RandomSource random) {
             world.setBlock(position, Blocks.AIR.defaultBlockState(), 3);
-            if (TRACE && "tapestry".equals(metadata) && TAPESTRY_MARKER_TRACED.size() < 24) {
-                String key = mansionOrigin + ":" + position;
-                if (TAPESTRY_MARKER_TRACED.add(key)) {
-                    String neighbors = "N=" + world.getBlockState(position.north()).getBlock()
-                        + ",S=" + world.getBlockState(position.south()).getBlock()
-                        + ",E=" + world.getBlockState(position.east()).getBlock()
-                        + ",W=" + world.getBlockState(position.west()).getBlock()
-                        + ",U=" + world.getBlockState(position.above()).getBlock()
-                        + ",D=" + world.getBlockState(position.below()).getBlock();
-                    BlockPos candidateOpposite = position.relative(facing);
-                    BlockPos candidateFacing = position.relative(facing.getOpposite());
-                    BiomeMakeover.LOGGER.info("[BM_TAPESTRY_MARKER_DIRECTION] template={} markerWorldPos={} pieceOrigin={} pieceRotation={} pieceMirror={} markerLocalPos={} markerMetadata={} rawSerializedFacing={} transformedMarkerFacing={} chosenTapestryFacing={} backingPos={} backingBlock={} candidateSupportAtFacingOpposite={} candidateSupportAtFacing={} candidateBlockOpposite={} candidateBlockFacing={} neighbors={}",
-                        diagnosticTemplate, position, templatePosition, placeSettings.getRotation(), placeSettings.getMirror(), inverseMarkerPosition(position),
-                        metadata, serializedFacing, facing, facing.getOpposite(), candidateOpposite, world.getBlockState(candidateOpposite).getBlock(), candidateOpposite, candidateFacing,
-                        world.getBlockState(candidateOpposite).getBlock(), world.getBlockState(candidateFacing).getBlock(), neighbors);
-                }
-            }
             BlockPos offset = position.relative(facing);
             BlockState offsetState = world.getBlockState(offset);
             switch (metadata) {
@@ -870,7 +800,7 @@ public final class MansionFeature extends Structure {
                         world.addFreshEntityWithPassengers(owl);
                     }
                 }
-                case "tapestry" -> generateTapestry(facing, serializedFacing, position, world, random);
+                case "tapestry" -> generateTapestry(facing, position, world, random);
                 case "bonemeal" -> { /* released final source intentionally leaves this marker inert */ }
                 default -> { }
             }
@@ -882,17 +812,7 @@ public final class MansionFeature extends Structure {
             else if (metadata.startsWith("allay")) for (int i = 0; i < 3; i++) handleSpawning(metadata, world, position, details == null ? List.of() : details.mobs().allays());
         }
 
-        private BlockPos inverseMarkerPosition(BlockPos worldPosition) {
-            BlockPos relative = worldPosition.subtract(templatePosition);
-            return switch (placeSettings.getRotation()) {
-                case NONE -> relative;
-                case CLOCKWISE_90 -> new BlockPos(relative.getZ(), relative.getY(), -relative.getX());
-                case CLOCKWISE_180 -> new BlockPos(-relative.getX(), relative.getY(), -relative.getZ());
-                case COUNTERCLOCKWISE_90 -> new BlockPos(-relative.getZ(), relative.getY(), relative.getX());
-            };
-        }
-
-        private void generateTapestry(Direction facing, Direction serializedFacing, BlockPos position, WorldGenLevel level, RandomSource random) {
+        private void generateTapestry(Direction facing, BlockPos position, WorldGenLevel level, RandomSource random) {
             Block tapestry;
             if (facing == Direction.UP || facing == Direction.DOWN) {
                 tapestry = BMBlocks.MANSION_STANDING_TAPESTRIES.get(random.nextInt(BMBlocks.MANSION_STANDING_TAPESTRIES.size()));
@@ -902,23 +822,6 @@ public final class MansionFeature extends Structure {
                 tapestry = BMBlocks.MANSION_WALL_TAPESTRIES.get(random.nextInt(BMBlocks.MANSION_WALL_TAPESTRIES.size()));
                 level.setBlock(position, tapestry.defaultBlockState()
                     .setValue(MansionWallTapestryBlock.FACING, facing.getOpposite()), 3);
-            }
-            if (TRACE && TAPESTRY_PLACED_TRACED.size() < 24) {
-                String key = mansionOrigin + ":" + position;
-                if (TAPESTRY_PLACED_TRACED.add(key)) {
-                    BlockState actual = level.getBlockState(position);
-                    Direction actualFacing = actual.hasProperty(MansionWallTapestryBlock.FACING)
-                        ? actual.getValue(MansionWallTapestryBlock.FACING) : null;
-                    BlockPos support = actualFacing == null ? position.below() : position.relative(actualFacing.getOpposite());
-                    BiomeMakeover.LOGGER.info("[BM_TAPESTRY_PLACED_STATE] template={} worldPos={} pieceRotation={} rawFacing={} transformedFacing={} requestedTapestryFacing={} actualWorldBlock={} actualWorldFacing={} supportPos={} supportBlock={} canSurvive={}",
-                        diagnosticTemplate, position, placeSettings.getRotation(), serializedFacing, facing,
-                        facing == Direction.UP || facing == Direction.DOWN ? "STANDING" : facing.getOpposite(),
-                        actual.getBlock(), actualFacing, support, level.getBlockState(support).getBlock(), actual.canSurvive(level, position));
-                }
-            }
-            if (level.getLevel() instanceof ServerLevel serverLevel && layoutMetadata != null) {
-                String id = mansionId(serverLevel, mansionOrigin, layoutSignature);
-                TAPESTRY_POSITIONS.computeIfAbsent(id, ignored -> java.util.concurrent.ConcurrentHashMap.newKeySet()).add(position.immutable());
             }
         }
 

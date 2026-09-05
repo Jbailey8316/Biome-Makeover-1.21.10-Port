@@ -3,7 +3,6 @@ package party.lemons.biomemakeover.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -12,14 +11,10 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
 import party.lemons.biomemakeover.client.model.BMModelLayers;
 import party.lemons.biomemakeover.client.model.TapestryModel;
-import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.worldgen.mansion.MansionStandingTapestryBlock;
 import party.lemons.biomemakeover.worldgen.mansion.MansionTapestryBlock;
 import party.lemons.biomemakeover.worldgen.mansion.MansionWallTapestryBlock;
@@ -27,9 +22,6 @@ import party.lemons.biomemakeover.block.entity.TapestryBlockEntity;
 
 /** Released flag-style renderer for the Mansion tapestry family. */
 public final class MansionTapestryRenderer implements BlockEntityRenderer<TapestryBlockEntity, MansionTapestryRenderer.State> {
-    private static final boolean TRACE = Boolean.getBoolean("bm.mansion.trace");
-    private static final java.util.Set<String> TRACE_KEYS = new java.util.HashSet<>();
-    private static final java.util.Set<String> SPATIAL_KEYS = new java.util.HashSet<>();
     private final TapestryModel model;
 
     public MansionTapestryRenderer(BlockEntityRendererProvider.Context context) {
@@ -44,9 +36,6 @@ public final class MansionTapestryRenderer implements BlockEntityRenderer<Tapest
         BlockState blockState = entity.getBlockState();
         state.block = blockState.getBlock() instanceof MansionTapestryBlock tapestry ? tapestry : null;
         state.wall = blockState.getBlock() instanceof MansionWallTapestryBlock;
-        state.facing = state.wall ? blockState.getValue(MansionWallTapestryBlock.FACING) : null;
-        state.blockPosKey = entity.getBlockPos().toString();
-        state.supportPosKey = state.wall ? entity.getBlockPos().relative(state.facing.getOpposite()).toString() : "NONE";
         state.angle = state.wall ? -blockState.getValue(MansionWallTapestryBlock.FACING).toYRot()
             : -blockState.getValue(MansionStandingTapestryBlock.ROTATION) * 22.5F;
         state.modelState.poleVisible = !state.wall;
@@ -54,7 +43,6 @@ public final class MansionTapestryRenderer implements BlockEntityRenderer<Tapest
             (Math.floorMod(entity.getBlockPos().getX() * 7L + entity.getBlockPos().getY() * 9L + entity.getBlockPos().getZ() * 13L +
                 (entity.getLevel() == null ? 0L : entity.getLevel().getGameTime()), 100L) + partialTick) / 100.0F)) * Mth.PI;
         state.modelState.flagY = -32.0F;
-        if (TRACE) trace(entity, blockState, state);
     }
 
     @Override public void submit(State state, PoseStack pose, SubmitNodeCollector output, CameraRenderState camera) {
@@ -69,7 +57,6 @@ public final class MansionTapestryRenderer implements BlockEntityRenderer<Tapest
             pose.mulPose(Axis.YP.rotationDegrees(state.angle));
         }
         pose.scale(0.6666667F, -0.6666667F, -0.6666667F);
-        if (TRACE) traceSpatial(state, pose);
         model.setupAnim(state.modelState);
         int light = state.lightCoords;
         var renderType = RenderType.entitySolid(state.block.tapestryTexture());
@@ -85,65 +72,6 @@ public final class MansionTapestryRenderer implements BlockEntityRenderer<Tapest
         MansionTapestryBlock block;
         boolean wall;
         float angle;
-        Direction facing;
-        String blockPosKey;
-        String supportPosKey;
         final TapestryModel.State modelState = new TapestryModel.State();
-    }
-
-    private static void traceSpatial(State state, PoseStack pose) {
-        if (!state.wall || state.facing == null) return;
-        String key = state.blockPosKey;
-        synchronized (SPATIAL_KEYS) {
-            if (SPATIAL_KEYS.size() >= 16 || !SPATIAL_KEYS.add(key)) return;
-        }
-        Matrix4f matrix = new Matrix4f(pose.last().pose());
-        Vector3f localCenter = new Vector3f(0.0F, -14.5F / 16.0F, -1.5F / 16.0F);
-        Vector3f localNormal = new Vector3f(0.0F, 0.0F, -1.0F);
-        Vector3f localPole = new Vector3f(0.0F, -9.0F / 16.0F, 0.0F);
-        Vector3f localBar = new Vector3f(0.0F, -31.0F / 16.0F, 0.0F);
-        Vector3f worldCenter = matrix.transformPosition(new Vector3f(localCenter));
-        Vector3f worldNormal = matrix.transformDirection(new Vector3f(localNormal)).normalize();
-        Vector3f worldPole = matrix.transformPosition(new Vector3f(localPole));
-        Vector3f worldBar = matrix.transformPosition(new Vector3f(localBar));
-        Vector3f blockOrigin = matrix.transformPosition(new Vector3f(0.0F, 0.0F, 0.0F));
-        worldCenter.sub(blockOrigin);
-        worldPole.sub(blockOrigin);
-        worldBar.sub(blockOrigin);
-        Vector3f expected = new Vector3f(state.facing.getStepX(), state.facing.getStepY(), state.facing.getStepZ());
-        float dot = worldNormal.dot(expected);
-        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_SPATIAL] variant={} blockPos={} facing={} supportPos={} localFlagNormal={} worldFlagNormal={} expectedOutwardNormal={} normalDotExpected={} flagCenterLocal={} flagCenterWorldRelativeToBlock={} distanceFromSupportFace={} poleCenterWorldRelativeToBlock={} barCenterWorldRelativeToBlock={}",
-            state.block, state.blockPosKey, state.facing, state.supportPosKey, localNormal, worldNormal, expected, dot, localCenter, worldCenter,
-            worldCenter.dot(expected) + 0.5F, worldPole, worldBar);
-    }
-
-    private static void trace(TapestryBlockEntity entity, BlockState state, State renderState) {
-        String key = entity.getBlockPos() + ":" + state.getBlock();
-        synchronized (TRACE_KEYS) {
-            if (TRACE_KEYS.size() >= 16 || !TRACE_KEYS.add(key)) return;
-        }
-        var facing = state.hasProperty(MansionWallTapestryBlock.FACING) ? state.getValue(MansionWallTapestryBlock.FACING).toString() : "NONE";
-        var support = entity.getBlockPos().relative(renderState.wall ? state.getValue(MansionWallTapestryBlock.FACING).getOpposite() : net.minecraft.core.Direction.DOWN);
-        var level = entity.getLevel();
-        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_RENDER] form={} variant={} blockPos={} blockState={} facing={} standingRotation={} texture={} translate={} rotationAxis=Y rotationDegrees={} supportPos={} supportBlock={}",
-            renderState.wall ? "wall" : "standing", state.getBlock(), entity.getBlockPos(), state, facing,
-            state.hasProperty(MansionStandingTapestryBlock.ROTATION) ? state.getValue(MansionStandingTapestryBlock.ROTATION) : "NONE",
-            renderState.block.tapestryTexture(), renderState.wall ? "0.5,-0.16666667,0.5;0,-0.3125,-0.4375" : "0.5,0.5,0.5",
-            renderState.angle, support, level == null ? "UNKNOWN" : level.getBlockState(support));
-        var texture = renderState.block.tapestryTexture();
-        int textureSize = -1;
-        boolean present = false;
-        try {
-            var resource = Minecraft.getInstance().getResourceManager().getResource(texture);
-            if (resource.isPresent()) {
-                present = true;
-                try (var input = resource.get().open()) { textureSize = input.available(); }
-            }
-        } catch (Exception ignored) {
-            // Diagnostic only: resource lookup must never affect rendering.
-        }
-        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_TEXTURE_BIND] variant={} textureResource={} renderType={} vertexConsumerSource={} modelTextureWidth={} modelTextureHeight={} flagUvSummary={} textureResourcePresent={} textureResourceByteSize={}",
-            state.getBlock(), texture, "entitySolid(" + texture + ")", "SubmitNodeCollector.submitModelPart", 64, 64,
-            "flag=(0,0,20x35),(0,36,4x5),(10,36,4x5),(20,36,4x5);pole=(44,0,2x42);bar=(0,42,20x2)", present, textureSize);
     }
 }

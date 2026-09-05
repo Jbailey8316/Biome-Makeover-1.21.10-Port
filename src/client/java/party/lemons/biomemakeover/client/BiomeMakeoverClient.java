@@ -114,9 +114,6 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         BlockEntityRenderers.register(BMBlockEntities.LIGHTNING_BUG_BOTTLE,LightningBugBottleRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.ALTAR,AltarRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.TAPESTRY,MansionTapestryRenderer::new);
-        if (Boolean.getBoolean("bm.mansion.trace")) {
-            BiomeMakeover.LOGGER.info("[BM_TAPESTRY_RENDER_REGISTER] blockEntityType={} rendererClass={}", BMBlockEntities.TAPESTRY, MansionTapestryRenderer.class.getName());
-        }
         MenuScreens.register(BMMenus.ALTAR,AltarScreen::new);
         AltarBlockEntity.setClientSoundStarter(altar -> Minecraft.getInstance().getSoundManager().play(
             new AltarCursingSound(altar, altar.getLevel() == null ? net.minecraft.util.RandomSource.create() : altar.getLevel().random)));

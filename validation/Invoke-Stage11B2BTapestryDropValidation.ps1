@@ -32,8 +32,7 @@ foreach ($color in $colors) {
 }
 
 $blockSource = Get-Content $tapestryBlock -Raw
-if ($blockSource -notmatch 'BM_TAPESTRY_DROP' -or $blockSource -notmatch 'playerDestroy' -or $blockSource -notmatch 'Block\.getDrops') { throw 'Trace-gated tapestry drop observation is missing' }
-if ($blockSource -notmatch 'bm\.mansion\.trace' -or $blockSource -notmatch 'DROP_TRACE_COUNT' -or $blockSource -notmatch '16') { throw 'Tapestry drop trace is not capped and trace-gated' }
+if ($blockSource -match 'BM_TAPESTRY_DROP|playerDestroy|DROP_TRACE_COUNT') { throw 'Temporary tapestry drop forensic logging remains in production source' }
 
 if (-not [string]::IsNullOrWhiteSpace($Jar)) {
     if (-not (Test-Path -LiteralPath $Jar)) { throw "JAR missing: $Jar" }
@@ -49,8 +48,8 @@ if (-not [string]::IsNullOrWhiteSpace($Jar)) {
         $class = $zip.GetEntry('party/lemons/biomemakeover/worldgen/mansion/MansionTapestryBlock.class')
         if ($null -eq $class) { throw 'Compiled JAR missing MansionTapestryBlock' }
         $stream = $class.Open(); $memory = New-Object IO.MemoryStream; $stream.CopyTo($memory); $stream.Dispose()
-        if ([Text.Encoding]::ASCII.GetString($memory.ToArray()) -notmatch 'BM_TAPESTRY_DROP') { throw 'Compiled JAR missing BM_TAPESTRY_DROP' }
+        if ([Text.Encoding]::ASCII.GetString($memory.ToArray()) -match 'BM_TAPESTRY_DROP') { throw 'Compiled JAR contains retired BM_TAPESTRY_DROP' }
         $memory.Dispose()
     } finally { $zip.Dispose() }
 }
-Write-Output 'STAGE 11B.2B R.6 TAPESTRY DROP VALIDATION PASSED (17 shared standing/wall drop contracts, released loot tables, capped trace)'
+Write-Output 'STAGE 11B.2B R.6 TAPESTRY DROP VALIDATION PASSED (17 shared standing/wall drop contracts, released loot tables, forensic logging retired)'

@@ -50,13 +50,8 @@ if ($source -notmatch 'submitModelPart' -or $source -notmatch 'entitySolid\(stat
 if ($source -notmatch 'LayerDefinition\.create\(mesh, 64, 64\)' -or $source -notmatch 'texOffs\(0, 0\)') { throw 'Released 64x64 tapestry UV contract missing' }
 if ($source -notmatch 'facing\.getOpposite\(\)' -or $source -notmatch 'setBlock\(position') { throw 'Released marker-facing/in-place placement contract missing' }
 if ($source -notmatch 'mirror\(placeSettings\.getMirror\(\)\)\.rotate\(placeSettings\.getRotation\(\)\)' -or $source -notmatch 'transformedFacing') { throw 'Rotated marker direction transform contract missing' }
-if ($source -notmatch 'generateTapestry\(facing, serializedFacing' -or $source -notmatch 'setValue\(MansionWallTapestryBlock\.FACING, facing\.getOpposite\(\)\)') { throw 'Production transformed-facing dataflow is not wired to the wall state write' }
-if ($source -notmatch 'BM_TAPESTRY_PLACED_STATE' -or $source -notmatch 'actualWorldFacing') { throw 'Post-write world-state assertion missing' }
-if ($source -notmatch 'TAPESTRY_POSITIONS' -or $source -notmatch 'BM_TAPESTRY_FINAL_STATE' -or $source -notmatch 'BM_TAPESTRY_FINAL_SUMMARY') { throw 'Final tapestry support audit missing' }
-if ($source -notmatch 'BM_TAPESTRY_SPATIAL' -or $source -notmatch 'transformDirection' -or $source -notmatch 'flagCenterLocal') { throw 'Matrix-based tapestry spatial trace missing' }
-if ($source -notmatch 'blockOrigin' -or $source -notmatch 'worldCenter\.sub\(blockOrigin\)') { throw 'Spatial diagnostic is not block-relative' }
-if ($source -notmatch 'BM_TAPESTRY_MARKER_DIRECTION' -or $source -notmatch 'candidateSupportAtFacingOpposite' -or $source -notmatch 'pieceRotation') { throw 'Marker direction forensic trace missing' }
-if ($source -notmatch '/ 16.0F') { throw 'Spatial diagnostic does not convert model pixels to block units' }
+if ($source -notmatch 'generateTapestry\(facing' -or $source -notmatch 'setValue\(MansionWallTapestryBlock\.FACING,\s*facing\.getOpposite\(\)\)') { throw 'Production transformed-facing dataflow is not wired to the wall state write' }
+if ($source -match 'BM_TAPESTRY_') { throw 'Temporary tapestry forensic logging remains in production source' }
 foreach ($direction in @('NORTH','SOUTH','EAST','WEST')) { if ($source -notmatch 'HORIZONTAL_FACING' -or $source -notmatch 'toYRot') { throw "Wall transform contract missing for $direction" } }
 if ($source -notmatch 'ROTATION_16' -or $source -notmatch '22\.5F') { throw 'Standing rotation transform contract missing' }
 if ($feature -and (Get-Content $feature -Raw) -notmatch 'case "tapestry"') { throw 'Mansion tapestry marker dispatch missing' }
@@ -127,27 +122,13 @@ if (-not [string]::IsNullOrWhiteSpace($Jar)) {
         while (($read = $rendererStream.Read($buffer, 0, $buffer.Length)) -gt 0) { for ($i = 0; $i -lt $read; $i++) { $rendererBytes.Add($buffer[$i]) } }
         $rendererStream.Dispose()
         $rendererText = [Text.Encoding]::ASCII.GetString($rendererBytes.ToArray())
-        foreach ($marker in @('BM_TAPESTRY_RENDER','BM_TAPESTRY_TEXTURE_BIND')) {
-            if ($rendererText -notmatch $marker) { throw "Compiled JAR missing diagnostic marker: $marker" }
-        }
-        $clientEntry = $zip.GetEntry('party/lemons/biomemakeover/client/BiomeMakeoverClient.class')
-        $clientStream = $clientEntry.Open()
-        $clientBytes = New-Object System.Collections.Generic.List[byte]
-        while (($read = $clientStream.Read($buffer, 0, $buffer.Length)) -gt 0) { for ($i = 0; $i -lt $read; $i++) { $clientBytes.Add($buffer[$i]) } }
-        $clientStream.Dispose()
-        if ([Text.Encoding]::ASCII.GetString($clientBytes.ToArray()) -notmatch 'BM_TAPESTRY_RENDER_REGISTER') { throw 'Compiled JAR missing diagnostic marker: BM_TAPESTRY_RENDER_REGISTER' }
         $mansionEntry = $zip.GetEntry('party/lemons/biomemakeover/worldgen/mansion/MansionFeature.class')
         $mansionStream = $mansionEntry.Open()
         $mansionBytes = New-Object System.Collections.Generic.List[byte]
         while (($read = $mansionStream.Read($buffer, 0, $buffer.Length)) -gt 0) { for ($i = 0; $i -lt $read; $i++) { $mansionBytes.Add($buffer[$i]) } }
         $mansionStream.Dispose()
         $mansionText = [Text.Encoding]::ASCII.GetString($mansionBytes.ToArray())
-        foreach ($marker in @('BM_TAPESTRY_FINAL_STATE','BM_TAPESTRY_FINAL_SUMMARY')) {
-            if ($mansionText -notmatch $marker) { throw "Compiled JAR missing diagnostic marker: $marker" }
-        }
-        foreach ($marker in @('BM_TAPESTRY_SPATIAL')) {
-            if ($rendererText -notmatch $marker) { throw "Compiled JAR missing diagnostic marker: $marker" }
-        }
+        foreach ($classText in @($rendererText, $mansionText)) { if ($classText -match 'BM_TAPESTRY_') { throw 'Compiled JAR contains retired tapestry forensic markers' } }
         if ($names -notcontains 'party/lemons/biomemakeover/block/entity/TapestryBlockEntity.class') { throw 'Compiled JAR missing TapestryBlockEntity' }
     } finally { $zip.Dispose() }
 }
