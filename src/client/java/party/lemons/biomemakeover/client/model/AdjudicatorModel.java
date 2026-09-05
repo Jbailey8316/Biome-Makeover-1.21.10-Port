@@ -7,11 +7,27 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.util.Mth;
 import party.lemons.biomemakeover.client.render.AdjudicatorRenderState;
 
 /** Released Adjudicator base mesh; combat poses remain deferred. */
 public final class AdjudicatorModel extends EntityModel<AdjudicatorRenderState> {
-    public AdjudicatorModel(ModelPart root) { super(root); }
+    private final ModelPart body;
+    private final ModelPart head;
+    private final ModelPart armLeft;
+    private final ModelPart armRight;
+    private final ModelPart legLeft;
+    private final ModelPart legRight;
+
+    public AdjudicatorModel(ModelPart root) {
+        super(root);
+        body = root.getChild("body");
+        head = root.getChild("head");
+        armLeft = body.getChild("arm_left");
+        armRight = body.getChild("arm_right");
+        legLeft = body.getChild("leg_left");
+        legRight = body.getChild("leg_right");
+    }
 
     public static LayerDefinition createBodyLayer() {
         MeshDefinition mesh = new MeshDefinition();
@@ -36,5 +52,22 @@ public final class AdjudicatorModel extends EntityModel<AdjudicatorRenderState> 
         head.addOrReplaceChild("nose", CubeListBuilder.create().texOffs(0, 0)
             .addBox(-1, -.5F, -2, 2, 5, 2), PartPose.offset(0, -2.5F, -4));
         return LayerDefinition.create(mesh, 64, 64);
+    }
+
+    /** Released neutral/head-look/walk setup; combat poses are intentionally deferred. */
+    @Override
+    public void setupAnim(AdjudicatorRenderState state) {
+        super.setupAnim(state);
+        body.yRot = 0.0F;
+        head.xRot = state.xRot * Mth.DEG_TO_RAD;
+        head.yRot = state.yRot * Mth.DEG_TO_RAD;
+        armLeft.xRot = Mth.cos(state.walkAnimationPos * 0.6662F) * state.walkAnimationSpeed;
+        armRight.xRot = Mth.cos(state.walkAnimationPos * 0.6662F + Mth.PI) * state.walkAnimationSpeed;
+        armLeft.yRot = armRight.yRot = 0.0F;
+        armLeft.zRot = armRight.zRot = 0.0F;
+        legLeft.xRot = Mth.cos(state.walkAnimationPos * 0.6662F) * 1.25F * state.walkAnimationSpeed;
+        legRight.xRot = Mth.cos(state.walkAnimationPos * 0.6662F + Mth.PI) * 1.25F * state.walkAnimationSpeed;
+        legLeft.yRot = legRight.yRot = 0.0F;
+        legLeft.zRot = legRight.zRot = 0.0F;
     }
 }
