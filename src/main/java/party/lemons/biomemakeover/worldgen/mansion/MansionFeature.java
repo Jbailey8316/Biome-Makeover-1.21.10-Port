@@ -730,7 +730,17 @@ public final class MansionFeature extends Structure {
             long order = TRACE_ORDER.incrementAndGet();
             if (level.getLevel() instanceof ServerLevel serverLevel) registerCropTargets(serverLevel);
             Map<BlockPos, BlockState> authoredStates = dungeonAuthoredStates();
+            boolean tracePlacement = Boolean.getBoolean("bm.mansion.trace");
+            long placementStart = tracePlacement ? System.nanoTime() : 0L;
+            String placementMansionId = level.getLevel() instanceof ServerLevel serverLevel
+                ? serverLevel.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature : "UNKNOWN";
+            if (tracePlacement) BiomeMakeover.LOGGER.info("[BM_MANSION_PLACEMENT_BEGIN] mansionId={} pieceId={} ordinal={} template={} chunk={} thread={} timestampNanos={}",
+                placementMansionId, mansionPieceOrdinal, mansionPieceOrdinal, diagnosticTemplate, chunkPos, Thread.currentThread().getName(), placementStart);
             super.postProcess(level, structureManager, generator, random, bounds, chunkPos, pivot);
+            if (tracePlacement) BiomeMakeover.LOGGER.info("[BM_MANSION_PLACEMENT_END] mansionId={} pieceId={} ordinal={} template={} chunk={} thread={} durationMs={} placedPlacementCount={} expectedPlacementCount={}",
+                placementMansionId, mansionPieceOrdinal, mansionPieceOrdinal, diagnosticTemplate, chunkPos, Thread.currentThread().getName(),
+                (System.nanoTime() - placementStart) / 1_000_000.0D, placementMansionId.equals("UNKNOWN") ? -1 : PLACED_PLACEMENTS.getOrDefault(placementMansionId, Set.of()).size(),
+                placementMansionId.equals("UNKNOWN") ? -1 : EXPECTED_PLACEMENTS.getOrDefault(placementMansionId, Set.of()).size());
             for (var info : template.filterBlocks(templatePosition, placeSettings, BMBlocks.DIRECTIONAL_DATA)) {
                 if (info.nbt() != null && info.state().hasProperty(DirectionalBlock.FACING)) {
                     String metadata = info.nbt().getStringOr("metadata", "");
