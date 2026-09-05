@@ -59,6 +59,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     private static final int STATE_WAITING = 0;
     private static final int STATE_TELEPORT = 1;
     private static final int STATE_FIGHTING = 2;
+    private static final int STATE_SUMMONING = 3;
     public static final int TELEPORT_PHASE_TICKS = 30;
     public static final int ATTACK_PHASE_TICKS = 200;
     public static final int FANG_BARRAGE_PHASE_TICKS = 100;
@@ -124,8 +125,8 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     public void tick() {
         if (!level().isClientSide() && firstTick) initializeArena();
         if (!level().isClientSide()) {
-            tickController();
             updateBossBarPlayers();
+            tickController();
         }
         super.tick();
     }
@@ -158,6 +159,11 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         restorePhaseExecutionIfNeeded();
         if (phase == ControllerPhase.IDLE && level().getGameTime() % 4L == 0L) heal(1.0F);
         if (getTarget() != null && !isTargetInArena(getTarget())) setTarget(null);
+        if ((phase == ControllerPhase.FANG_ATTACK || phase == ControllerPhase.FANG_BARRAGE)
+            && getTarget() != null) {
+            getNavigation().stop();
+            getLookControl().setLookAt(getTarget(), 30.0F, 30.0F);
+        }
         if (active && phase == ControllerPhase.IDLE) {
             beginTeleport(selectNextPhaseForStage(random));
         } else if (active && phase == ControllerPhase.TELEPORT) {
@@ -217,15 +223,19 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             addPhaseGoals(new MeleeAttackGoal(this, 1.0F, true));
             if (playEntrySound) playSound(BMSounds.ADJUDICATOR_GRUNT, 1.0F, 1.0F);
         } else if (selected == ControllerPhase.FANG_ATTACK) {
-            setControllerState(STATE_FIGHTING);
+            setControllerState(STATE_SUMMONING);
             if (playEntrySound) playSound(net.minecraft.sounds.SoundEvents.EVOKER_PREPARE_ATTACK, 1.0F, 1.0F);
             fangTrace("PHASE_ENTER FANGS timer=0 state=" + getControllerState()
                 + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
+            coordinationTrace("PHASE_ENTER", selected);
         } else if (selected == ControllerPhase.FANG_BARRAGE) {
-            setControllerState(STATE_FIGHTING);
+            setControllerState(STATE_SUMMONING);
             fangTrace("PHASE_ENTER FANG_BARRAGE timer=0 state=" + getControllerState()
                 + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
+            coordinationTrace("PHASE_ENTER", selected);
         }
+        if (selected == ControllerPhase.BOW_ATTACK || selected == ControllerPhase.MELEE_ATTACK)
+            coordinationTrace("PHASE_ENTER", selected);
     }
 
     private void restorePhaseExecutionIfNeeded() {
@@ -313,6 +323,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     private void castFangs() {
         LivingEntity target = getTarget();
         if (!isTargetInArena(target)) return;
+        coordinationTrace("FANG_CAST", ControllerPhase.FANG_ATTACK);
         double minY = Math.min(target.getY(), getY());
         double maxY = Math.max(target.getY(), getY()) + 1.0D;
         float angle = (float) Math.atan2(target.getZ() - getZ(), target.getX() - getX());
@@ -341,6 +352,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     }
 
     private void castFangBarrage() {
+        coordinationTrace("BARRAGE_WAVE", ControllerPhase.FANG_BARRAGE);
         playSound(net.minecraft.sounds.SoundEvents.EVOKER_PREPARE_SUMMON, 1.0F, 1.0F);
         fangTrace("BARRAGE_WAVE wave=" + phaseTime / 50 + " fangCount=40 boss=" + blockPosition()
             + " timer=" + phaseTime);
@@ -376,6 +388,29 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         if (Boolean.getBoolean("bm.mansion.trace"))
             party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
                 "[BM_ADJUDICATOR_FANG_PROOF] entity={} {}", getUUID(), detail);
+    }
+
+    private void coordinationTrace(String event, ControllerPhase currentPhase) {
+        if (!Boolean.getBoolean("bm.mansion.trace")) return;
+        LivingEntity target = getTarget();
+        String targetPosition = target == null ? "none" : target.position().toString();
+        double desiredYaw = target == null ? Double.NaN
+            : Math.toDegrees(Math.atan2(target.getZ() - getZ(), target.getX() - getX())) - 90.0D;
+        double yawError = target == null ? Double.NaN : wrapDegrees(desiredYaw - getYRot());
+        String goals = phaseGoals.stream().map(goal -> goal.getClass().getSimpleName()).toList().toString();
+        party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
+            "[BM_ADJUDICATOR_COMBAT_COORDINATION_PROOF] event={} phase={} bossPosition={} targetPosition={} "
+                + "bodyYaw={} headYaw={} desiredTargetYaw={} yawErrorDegrees={} navigationIsDone={} activeGoalNames={} "
+                + "STATE={} CHARGING={} INVULNERABLE={}", event, currentPhase.id(), position(), targetPosition,
+            getYRot(), getYHeadRot(), desiredYaw, yawError, getNavigation().isDone(), goals,
+            getControllerState(), isChargingCrossbow(), isControllerInvulnerable());
+    }
+
+    private static double wrapDegrees(double degrees) {
+        degrees %= 360.0D;
+        if (degrees >= 180.0D) degrees -= 360.0D;
+        if (degrees < -180.0D) degrees += 360.0D;
+        return degrees;
     }
 
     private void updateBossBarPlayers() {

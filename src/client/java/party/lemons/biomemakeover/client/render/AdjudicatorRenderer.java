@@ -25,6 +25,10 @@ public final class AdjudicatorRenderer extends MobRenderer<AdjudicatorEntity, Ad
     @Override public AdjudicatorRenderState createRenderState() { return new AdjudicatorRenderState(); }
     @Override public void extractRenderState(AdjudicatorEntity entity, AdjudicatorRenderState state, float tickDelta) {
         super.extractRenderState(entity, state, tickDelta);
+        state.controllerState = entity.getControllerState();
+        state.holdingBow = entity.getMainHandItem().is(net.minecraft.world.item.Items.BOW);
+        state.holdingAxe = entity.getMainHandItem().is(net.minecraft.world.item.Items.IRON_AXE);
+        state.attackAnimation = entity.getAttackAnim(tickDelta);
     }
     @Override public ResourceLocation getTextureLocation(AdjudicatorRenderState state) { return TEXTURE; }
 }

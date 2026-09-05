@@ -1,6 +1,7 @@
 package party.lemons.biomemakeover.client.model;
 
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.AnimationUtils;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -69,5 +70,21 @@ public final class AdjudicatorModel extends EntityModel<AdjudicatorRenderState> 
         legRight.xRot = Mth.cos(state.walkAnimationPos * 0.6662F + Mth.PI) * 1.25F * state.walkAnimationSpeed;
         legLeft.yRot = legRight.yRot = 0.0F;
         legLeft.zRot = legRight.zRot = 0.0F;
+
+        if (state.controllerState == 1 || state.controllerState == 3) {
+            armRight.xRot = Mth.cos(state.walkAnimationSpeed * 0.6662F) * 0.25F;
+            armLeft.xRot = Mth.cos(state.walkAnimationSpeed * 0.6662F) * 0.25F;
+            armRight.zRot = Mth.PI * 0.75F;
+            armLeft.zRot = -Mth.PI * 0.75F;
+        } else if (state.holdingBow) {
+            armRight.yRot = -0.1F + head.yRot;
+            armRight.xRot = -Mth.HALF_PI + head.xRot;
+            armLeft.xRot = -0.9424779F + head.xRot;
+            armLeft.yRot = head.yRot - 0.4F;
+            armLeft.zRot = Mth.HALF_PI;
+        } else if (state.holdingAxe) {
+            AnimationUtils.swingWeaponDown(armRight, armLeft,
+                net.minecraft.world.entity.HumanoidArm.RIGHT, state.attackAnimation, state.walkAnimationSpeed);
+        }
     }
 }

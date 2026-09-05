@@ -18,3 +18,12 @@ The temporary implementation gate now permits teleport, bow, melee, ordinary
 fangs, and fang barrage. Ravager, summon, Mimic, Stone Golem, and rewards
 remain execution-gated. Mansion templates, structure NBT, and frozen arena
 systems are unchanged.
+
+The coordination repair carries released controller state into the client
+render state. `TELEPORT` and `SUMMONING` use the released Illager-style
+casting arm pose; bow uses the aimed weapon pose; melee uses the native
+weapon-swing animation. Fang phases stop navigation and direct look control
+toward the validated arena target, while first-tick enrollment adds players
+to the boss bar before combat transition. The bounded
+`BM_ADJUDICATOR_FANG_PROOF` and `BM_ADJUDICATOR_COMBAT_COORDINATION_PROOF`
+traces are temporary and gated by `bm.mansion.trace`.
