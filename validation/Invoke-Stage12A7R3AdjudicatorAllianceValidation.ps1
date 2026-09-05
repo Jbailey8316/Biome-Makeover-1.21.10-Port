@@ -7,8 +7,11 @@ foreach ($path in @($alliance,$adj,$mixin)) { if (!(Test-Path $path)) { throw "M
 $a = Get-Content $alliance -Raw
 $e = Get-Content $adj -Raw
 $m = Get-Content $mixin -Raw
-foreach ($needle in @('bm_adjudicator_encounter:', 'getTags()', 'Projectile', 'EvokerFangs', 'getOwner()', 'FRIENDLY_DAMAGE_BLOCKED', 'FRIENDLY_TARGET_REJECTED', 'EVOKER_VEX_INHERIT')) {
+foreach ($needle in @('bm_adjudicator_encounter:', 'getTags()', 'Projectile', 'EvokerFangs', 'getOwner()')) {
     if ($a -notlike "*$needle*") { throw "Alliance helper missing $needle" }
+}
+foreach ($temporary in @('BM_ADJUDICATOR_ALLIANCE_PROOF','BM_ADJUDICATOR_ALLIANCE_VEX_HOOK_PROOF')) {
+    if ($a -like "*$temporary*" -or $v -like "*$temporary*") { throw "Temporary alliance marker remains: $temporary" }
 }
 $evokerMixin = Join-Path $root 'src/main/java/party/lemons/biomemakeover/mixin/AdjudicatorAllianceEvokerMixin.java'
 $v = Get-Content $evokerMixin -Raw

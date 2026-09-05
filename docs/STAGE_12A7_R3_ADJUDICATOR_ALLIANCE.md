@@ -17,4 +17,5 @@ unaffected.
 
 Summon counts, timing, the four-monster eligibility threshold, phase cadence,
 and R2 selection behavior are unchanged. Mimic, Stone Golem, and rewards
-remain deferred.
+remain deferred. The alliance enhancement is runtime accepted and frozen;
+temporary R3/R3A diagnostics are removed from production.

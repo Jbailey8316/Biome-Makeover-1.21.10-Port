@@ -14,7 +14,6 @@ public abstract class AdjudicatorAllianceMobMixin {
     private void biomemakeover$rejectFriendlyTarget(LivingEntity target, CallbackInfo ci) {
         Mob mob = (Mob) (Object) this;
         if (target != null && AdjudicatorAlliance.allied(mob, target)) {
-            AdjudicatorAlliance.friendlyTargetRejected(mob, target);
             mob.setTarget(null);
         }
     }

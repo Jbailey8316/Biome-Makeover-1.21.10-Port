@@ -6,16 +6,15 @@ foreach ($required in @(
     'candidate.selectable() && (!isSummonPhase(candidate) || summonPhaseEligible())',
     'List<ControllerPhase> actualPool = selectablePhases().stream()',
     '.filter(AdjudicatorEntity::isImplementedPhase).toList()',
-    'actualSelectablePhases=', 'actualSelectablePhaseCount=', 'selectedPhase=',
-    'BM_ADJUDICATOR_CADENCE_PROOF', 'BM_ADJUDICATOR_SUMMON_ELIGIBILITY_PROOF',
-    'restrictedSummonsPresentInActualPool=', 'size() < 4'
+    'actualPool = selectablePhases().stream()', '.filter(AdjudicatorEntity::isImplementedPhase).toList()',
+    'size() < 4'
 )) {
     if ($source -notlike "*$required*") { throw "Missing Stage 12A.7-R2 eligibility contract: $required" }
 }
 foreach ($phase in @('spawn_evoker','spawn_vindicator','spawn_vex','spawn_mix')) {
     if ($source -notlike "*isSummonPhase(candidate)*") { throw 'Restricted summon family is not filtered at pool construction' }
 }
-if ($source -like '*BM_STAGE12A7_PHASE_TEST_GATE*' -or $source -like '*BM_STAGE12A7_PHASE_TEST_SUBSET*') {
-    throw 'Temporary forced phase test gate remains'
+foreach ($temporary in @('BM_ADJUDICATOR_CADENCE_PROOF','BM_ADJUDICATOR_SUMMON_ELIGIBILITY_PROOF','BM_STAGE12A7_PHASE_TEST_GATE','BM_STAGE12A7_PHASE_TEST_SUBSET')) {
+    if ($source -like "*$temporary*") { throw "Temporary Stage 12A.7 marker remains: $temporary" }
 }
 Write-Output 'STAGE 12A.7-R2 ADJUDICATOR ELIGIBILITY VALIDATION PASSED (actual pool enforces released Monster limit)'

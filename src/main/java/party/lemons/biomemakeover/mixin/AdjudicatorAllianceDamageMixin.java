@@ -18,7 +18,6 @@ public abstract class AdjudicatorAllianceDamageMixin {
         Entity attacker = AdjudicatorAlliance.resolveAttacker(source);
         Entity victim = (Entity) (Object) this;
         if (AdjudicatorAlliance.allied(attacker, victim)) {
-            AdjudicatorAlliance.friendlyDamageBlocked(attacker, victim, source);
             cir.setReturnValue(false);
         }
     }

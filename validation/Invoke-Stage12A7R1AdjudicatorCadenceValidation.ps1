@@ -11,15 +11,14 @@ foreach ($required in @(
     'EntitySelector.LIVING_ENTITY_STILL_ALIVE',
     'size() < 4',
     'ControllerPhase.RAVAGER',
-    'BM_ADJUDICATOR_CADENCE_PROOF',
-    'PHASE_EXIT=',
-    'selectablePhaseCount=',
-    'summonPhasesEligible='
+    'selectNextPhaseForStage(RandomSource random)',
+    'selectablePhases()',
+    'actualPool'
 )) {
     if ($source -notlike "*$required*") { throw "Missing Stage 12A.7-R1 cadence contract: $required" }
 }
-if ($source -like '*BM_STAGE12A7_PHASE_TEST_GATE*' -or $source -like '*BM_STAGE12A7_PHASE_TEST_SUBSET*') {
-    throw 'Temporary Stage 12A.7 test selector remains'
+foreach ($temporary in @('BM_ADJUDICATOR_CADENCE_PROOF','BM_ADJUDICATOR_SUMMON_ELIGIBILITY_PROOF','BM_STAGE12A7_PHASE_TEST_GATE','BM_STAGE12A7_PHASE_TEST_SUBSET')) {
+    if ($source -like "*$temporary*") { throw "Temporary Stage 12A.7 marker remains: $temporary" }
 }
 foreach ($deferred in @('AdjudicatorMimicEntity', 'StoneGolemEntity', 'EnchantedTotem', 'adjudicator_tapestry')) {
     if ($source -like "*$deferred*") { throw "Deferred system leaked into Stage 12A.7-R1: $deferred" }

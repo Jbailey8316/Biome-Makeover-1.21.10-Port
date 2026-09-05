@@ -206,9 +206,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     }
 
     private void beginTeleport(ControllerPhase destinationPhase) {
-        if (phase != ControllerPhase.IDLE) {
-            cadenceTrace("PHASE_EXIT=" + phase.id() + " tick=" + level().getGameTime());
-        }
         exitPhase();
         nextPhase = destinationPhase;
         teleportPos = chooseArenaPosition();
@@ -257,7 +254,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             summonInterrupted = false;
             getNavigation().stop();
             if (playEntrySound) playSound(net.minecraft.sounds.SoundEvents.EVOKER_PREPARE_SUMMON, 1.0F, 1.0F);
-            summonTrace("PHASE_ENTER " + selected.id() + " count=" + summonCount(selected));
         } else if (selected == ControllerPhase.RAVAGER) {
             setControllerState(STATE_FIGHTING);
             setControllerInvulnerable(true);
@@ -270,7 +266,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
                 ravager.setTarget(getTarget());
                 serverLevel.addFreshEntity(ravager);
                 startRiding(ravager, true, true);
-                summonTrace("RAVAGER_SPAWN mountSuccess=" + isPassenger());
             }
             ItemStack crossbow = new ItemStack(Items.CROSSBOW);
             crossbow.enchant(level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
@@ -467,15 +462,8 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             mob.setTarget(getTarget());
         }
         if (level() instanceof ServerLevel serverLevel) serverLevel.addFreshEntityWithPassengers(entity);
-        summonTrace("SUMMON_EXECUTE type=" + entity.getType() + " phase=" + phase.id()
-            + " index=" + summonIndex + " target=" + (getTarget() == null ? "none" : getTarget().getUUID()));
         level().playSound(null, spawnPos, net.minecraft.sounds.SoundEvents.EVOKER_CAST_SPELL,
             net.minecraft.sounds.SoundSource.HOSTILE, 10.0F, 1.0F);
-    }
-
-    private void summonTrace(String detail) {
-        if (Boolean.getBoolean("bm.mansion.trace"))
-            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_ADJUDICATOR_SUMMON_PROOF] entity={} {}", getUUID(), detail);
     }
 
     private void updateBossBarPlayers() {
@@ -531,15 +519,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             .filter(AdjudicatorEntity::isImplementedPhase).toList();
         ControllerPhase selected = actualPool.isEmpty() ? ControllerPhase.IDLE
             : actualPool.get(random.nextInt(actualPool.size()));
-        String pool = actualPool.stream().map(ControllerPhase::id).toList().toString();
-        cadenceTrace("arenaMonsterCount=" + arenaMonsterCount() + " summonPhasesEligible=" + summonPhaseEligible()
-            + " actualSelectablePhases=" + pool + " actualSelectablePhaseCount=" + actualPool.size()
-            + " selectedPhase=" + selected.id()
-            + " tick=" + level().getGameTime());
-        if (!summonPhaseEligible())
-            summonEligibilityTrace("arenaMonsterCount=" + arenaMonsterCount()
-            + " restrictedSummonsPresentInActualPool=" + actualPool.stream().anyMatch(AdjudicatorEntity::isSummonPhase)
-                + " selectedPhase=" + selected.id());
         return selected;
     }
 
@@ -559,17 +538,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     private int arenaMonsterCount() {
         return roomBounds == null ? 0 : level().getEntitiesOfClass(Monster.class, roomBounds,
             EntitySelector.LIVING_ENTITY_STILL_ALIVE).size();
-    }
-
-    private void cadenceTrace(String detail) {
-        if (Boolean.getBoolean("bm.mansion.trace"))
-            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_ADJUDICATOR_CADENCE_PROOF] entity={} {}", getUUID(), detail);
-    }
-
-    private void summonEligibilityTrace(String detail) {
-        if (Boolean.getBoolean("bm.mansion.trace"))
-            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
-                "[BM_ADJUDICATOR_SUMMON_ELIGIBILITY_PROOF] entity={} {}", getUUID(), detail);
     }
 
     @Override

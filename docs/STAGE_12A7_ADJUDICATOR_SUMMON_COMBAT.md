@@ -17,9 +17,8 @@ fewer-than-four living `Monster` eligibility rule remain authoritative.
 The implementation-availability gate now enables ten released phases: teleport, bow,
 melee, fangs, fang barrage, Ravager, and the four summon phases. Mimic and
 Stone Golem remain explicitly execution-gated. Rewards and all Mythas trial,
-key, cache, and vault systems remain deferred. The temporary
-`BM_ADJUDICATOR_SUMMON_PROOF` trace is gated by `bm.mansion.trace` and is
-intended for Prism acceptance cleanup.
+key, cache, and vault systems remain deferred. Stage 12A.7 is runtime
+accepted and frozen.
 
 Released cadence has no global or phase-specific cooldown and does not exclude
 the phase just used. A timed phase transitions immediately to the existing
