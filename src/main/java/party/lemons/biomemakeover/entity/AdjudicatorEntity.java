@@ -115,6 +115,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         super(type, level);
         xpReward = 50;
         setPersistenceRequired();
+        AdjudicatorAlliance.ensure(this);
         bossBar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.PROGRESS);
         bossBar.setVisible(false);
     }
@@ -263,6 +264,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             if (!(level() instanceof ServerLevel serverLevel)) return;
             Ravager ravager = EntityType.RAVAGER.create(serverLevel, EntitySpawnReason.EVENT);
             if (ravager != null) {
+                AdjudicatorAlliance.assign(ravager, this);
                 ravager.snapTo(getX(), getY(), getZ(), getYRot(), getXRot());
                 ravager.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPosition()), EntitySpawnReason.EVENT, null);
                 ravager.setTarget(getTarget());
@@ -458,6 +460,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         BlockPos spawnPos = chooseArenaPosition();
         Entity entity = summonType(phase).create(level(), EntitySpawnReason.EVENT);
         if (entity == null) return;
+        AdjudicatorAlliance.assign(entity, this);
         entity.snapTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, 0.0F, 0.0F);
         if (entity instanceof Mob mob && level() instanceof ServerLevel serverLevel) {
             mob.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(spawnPos), EntitySpawnReason.EVENT, null);
