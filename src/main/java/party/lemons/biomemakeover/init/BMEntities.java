@@ -31,6 +31,7 @@ import party.lemons.biomemakeover.entity.RootlingEntity;
 import party.lemons.biomemakeover.entity.MothEntity;
 import party.lemons.biomemakeover.entity.MushroomTraderEntity;
 import party.lemons.biomemakeover.entity.GhostEntity;
+import party.lemons.biomemakeover.entity.AdjudicatorEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
@@ -90,6 +91,9 @@ public final class BMEntities {
     public static final EntityType<GhostEntity> GHOST = registerEntity("ghost",
         EntityType.Builder.<GhostEntity>of(GhostEntity::new, MobCategory.MONSTER).sized(.6F,1.95F).canSpawnFarFromPlayer().clientTrackingRange(12));
     public static final Item GHOST_SPAWN_EGG = registerSpawnEgg("ghost_spawn_egg", GHOST);
+    public static final EntityType<AdjudicatorEntity> ADJUDICATOR = registerEntity("adjudicator",
+        EntityType.Builder.<AdjudicatorEntity>of(AdjudicatorEntity::new, MobCategory.MONSTER)
+            .sized(.6F, 1.95F).fireImmune().noSummon().clientTrackingRange(12));
 
     private BMEntities() {
     }
@@ -123,6 +127,7 @@ public final class BMEntities {
         FabricDefaultAttributeRegistry.register(MOTH, MothEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(MUSHROOM_TRADER, MushroomTraderEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(GHOST, GhostEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ADJUDICATOR, AdjudicatorEntity.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,

@@ -18,6 +18,7 @@ public final class BMModelLayers {
     public static final ModelLayerLocation MOTH = new ModelLayerLocation(BiomeMakeover.id("moth"), "main");
     public static final ModelLayerLocation GHOST = new ModelLayerLocation(BiomeMakeover.id("ghost"), "main");
     public static final ModelLayerLocation TAPESTRY = new ModelLayerLocation(BiomeMakeover.id("tapestry"), "main");
+    public static final ModelLayerLocation ADJUDICATOR = new ModelLayerLocation(BiomeMakeover.id("adjudicator"), "main");
 
     private BMModelLayers() {}
 
@@ -35,5 +36,6 @@ public final class BMModelLayers {
         EntityModelLayerRegistry.registerModelLayer(MOTH, MothModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(GHOST, GhostModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(TAPESTRY, TapestryModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(ADJUDICATOR, AdjudicatorModel::createBodyLayer);
     }
 }
