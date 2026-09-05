@@ -266,3 +266,20 @@ The final summary separates wall and standing counts. The spatial trace
 subtracts the transformed matrix origin before reporting block-relative cloth,
 pole, and bar coordinates. No template or production renderer transform was
 changed.
+# R.6 — Survival drop parity
+
+The final released 1.20.1 source registers each wall tapestry with
+`dropsLike(standingTapestry)`. Each standing/wall pair therefore shares one
+inventory item, and both forms use the standing block's block loot table. The
+released resource set contains 17 `data/biomemakeover/loot_tables/blocks/*_tapestry.json`
+tables, each yielding its matching tapestry item under the normal
+`survives_explosion` condition; there are no separate wall tables. Support
+loss follows the wall block's ordinary block removal/drop path.
+
+The 1.21.10 port already had the shared `StandingAndWallBlockItem` and the 17
+standing tables, but registered wall blocks as no-item blocks without
+`dropsLike`. Consequently a survival break of a wall form resolved no wall
+loot table and dropped nothing. R.6 passes the corresponding standing block to
+the wall properties' `dropsLike` call. No wall loot tables, recipes, or new
+drop behavior are added. A trace-gated, capped `BM_TAPESTRY_DROP` observation
+records the actual block loot resolution when a tapestry is broken.

@@ -203,39 +203,39 @@ public final class BMBlocks {
         BlockBehaviour.Properties.of().strength(-1.0F).noLootTable());
     public static final Map<String, Item> TAPESTRY_ITEMS = new LinkedHashMap<>();
     public static final Block WHITE_TAPESTRY = mansionStandingTapestry("white");
-    public static final Block WHITE_WALL_TAPESTRY = mansionWallTapestry("white");
+    public static final Block WHITE_WALL_TAPESTRY = mansionWallTapestry("white", WHITE_TAPESTRY);
     public static final Block ORANGE_TAPESTRY = mansionStandingTapestry("orange");
-    public static final Block ORANGE_WALL_TAPESTRY = mansionWallTapestry("orange");
+    public static final Block ORANGE_WALL_TAPESTRY = mansionWallTapestry("orange", ORANGE_TAPESTRY);
     public static final Block MAGENTA_TAPESTRY = mansionStandingTapestry("magenta");
-    public static final Block MAGENTA_WALL_TAPESTRY = mansionWallTapestry("magenta");
+    public static final Block MAGENTA_WALL_TAPESTRY = mansionWallTapestry("magenta", MAGENTA_TAPESTRY);
     public static final Block LIGHT_BLUE_TAPESTRY = mansionStandingTapestry("light_blue");
-    public static final Block LIGHT_BLUE_WALL_TAPESTRY = mansionWallTapestry("light_blue");
+    public static final Block LIGHT_BLUE_WALL_TAPESTRY = mansionWallTapestry("light_blue", LIGHT_BLUE_TAPESTRY);
     public static final Block YELLOW_TAPESTRY = mansionStandingTapestry("yellow");
-    public static final Block YELLOW_WALL_TAPESTRY = mansionWallTapestry("yellow");
+    public static final Block YELLOW_WALL_TAPESTRY = mansionWallTapestry("yellow", YELLOW_TAPESTRY);
     public static final Block LIME_TAPESTRY = mansionStandingTapestry("lime");
-    public static final Block LIME_WALL_TAPESTRY = mansionWallTapestry("lime");
+    public static final Block LIME_WALL_TAPESTRY = mansionWallTapestry("lime", LIME_TAPESTRY);
     public static final Block PINK_TAPESTRY = mansionStandingTapestry("pink");
-    public static final Block PINK_WALL_TAPESTRY = mansionWallTapestry("pink");
+    public static final Block PINK_WALL_TAPESTRY = mansionWallTapestry("pink", PINK_TAPESTRY);
     public static final Block GRAY_TAPESTRY = mansionStandingTapestry("gray");
-    public static final Block GRAY_WALL_TAPESTRY = mansionWallTapestry("gray");
+    public static final Block GRAY_WALL_TAPESTRY = mansionWallTapestry("gray", GRAY_TAPESTRY);
     public static final Block LIGHT_GRAY_TAPESTRY = mansionStandingTapestry("light_gray");
-    public static final Block LIGHT_GRAY_WALL_TAPESTRY = mansionWallTapestry("light_gray");
+    public static final Block LIGHT_GRAY_WALL_TAPESTRY = mansionWallTapestry("light_gray", LIGHT_GRAY_TAPESTRY);
     public static final Block CYAN_TAPESTRY = mansionStandingTapestry("cyan");
-    public static final Block CYAN_WALL_TAPESTRY = mansionWallTapestry("cyan");
+    public static final Block CYAN_WALL_TAPESTRY = mansionWallTapestry("cyan", CYAN_TAPESTRY);
     public static final Block PURPLE_TAPESTRY = mansionStandingTapestry("purple");
-    public static final Block PURPLE_WALL_TAPESTRY = mansionWallTapestry("purple");
+    public static final Block PURPLE_WALL_TAPESTRY = mansionWallTapestry("purple", PURPLE_TAPESTRY);
     public static final Block BLUE_TAPESTRY = mansionStandingTapestry("blue");
-    public static final Block BLUE_WALL_TAPESTRY = mansionWallTapestry("blue");
+    public static final Block BLUE_WALL_TAPESTRY = mansionWallTapestry("blue", BLUE_TAPESTRY);
     public static final Block BROWN_TAPESTRY = mansionStandingTapestry("brown");
-    public static final Block BROWN_WALL_TAPESTRY = mansionWallTapestry("brown");
+    public static final Block BROWN_WALL_TAPESTRY = mansionWallTapestry("brown", BROWN_TAPESTRY);
     public static final Block GREEN_TAPESTRY = mansionStandingTapestry("green");
-    public static final Block GREEN_WALL_TAPESTRY = mansionWallTapestry("green");
+    public static final Block GREEN_WALL_TAPESTRY = mansionWallTapestry("green", GREEN_TAPESTRY);
     public static final Block RED_TAPESTRY = mansionStandingTapestry("red");
-    public static final Block RED_WALL_TAPESTRY = mansionWallTapestry("red");
+    public static final Block RED_WALL_TAPESTRY = mansionWallTapestry("red", RED_TAPESTRY);
     public static final Block BLACK_TAPESTRY = mansionStandingTapestry("black");
-    public static final Block BLACK_WALL_TAPESTRY = mansionWallTapestry("black");
+    public static final Block BLACK_WALL_TAPESTRY = mansionWallTapestry("black", BLACK_TAPESTRY);
     public static final Block ADJUDICATOR_TAPESTRY = mansionStandingTapestry("adjudicator");
-    public static final Block ADJUDICATOR_WALL_TAPESTRY = mansionWallTapestry("adjudicator");
+    public static final Block ADJUDICATOR_WALL_TAPESTRY = mansionWallTapestry("adjudicator", ADJUDICATOR_TAPESTRY);
     static {
         tapestryItem("white", WHITE_TAPESTRY, WHITE_WALL_TAPESTRY, Rarity.UNCOMMON);
         tapestryItem("orange", ORANGE_TAPESTRY, ORANGE_WALL_TAPESTRY, Rarity.UNCOMMON);
@@ -376,8 +376,11 @@ public final class BMBlocks {
         return registerNoItem(color + "_tapestry", p -> new party.lemons.biomemakeover.worldgen.mansion.MansionStandingTapestryBlock(p, tapestryTexture(color)), tapestryProperties());
     }
 
-    private static Block mansionWallTapestry(String color) {
-        return registerNoItem(color + "_wall_tapestry", p -> new MansionWallTapestryBlock(p, tapestryTexture(color)), tapestryProperties());
+    private static Block mansionWallTapestry(String color, Block standingTapestry) {
+        ResourceKey<net.minecraft.world.level.storage.loot.LootTable> standingLoot = ResourceKey.create(
+            Registries.LOOT_TABLE, BiomeMakeover.id("blocks/" + color + "_tapestry"));
+        return registerNoItem(color + "_wall_tapestry", p -> new MansionWallTapestryBlock(p, tapestryTexture(color)),
+            tapestryProperties().overrideLootTable(Optional.of(standingLoot)));
     }
 
     private static void tapestryItem(String color, Block standing, Block wall, Rarity rarity) {
