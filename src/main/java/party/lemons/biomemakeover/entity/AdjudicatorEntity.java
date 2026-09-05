@@ -179,8 +179,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         setControllerState(STATE_TELEPORT);
         setControllerInvulnerable(false);
         playSound(BMSounds.ADJUDICATOR_SPELL_3, 1.0F, 1.0F);
-        trace("PHASE_ENTER", "phase=teleport timer=0 state=" + getControllerState()
-            + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
     }
 
     private BlockPos chooseArenaPosition() {
@@ -197,9 +195,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         phase = selected;
         phaseTime = 0;
         configurePhaseExecution(selected, true);
-        trace("PHASE_ENTER", "phase=" + selected.id() + " timer=0 target=" + getTarget()
-            + " state=" + getControllerState() + " charging=" + isChargingCrossbow()
-            + " invulnerable=" + isControllerInvulnerable());
     }
 
     private void configurePhaseExecution(ControllerPhase selected, boolean playEntrySound) {
@@ -211,7 +206,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             if (playEntrySound) playSound(BMSounds.ADJUDICATOR_GRUNT, 1.0F, 1.0F);
         } else if (selected == ControllerPhase.MELEE_ATTACK) {
             setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_AXE));
-            addPhaseGoals(new TracingMeleeAttackGoal(this, 1.0F, true));
+            addPhaseGoals(new MeleeAttackGoal(this, 1.0F, true));
             if (playEntrySound) playSound(BMSounds.ADJUDICATOR_GRUNT, 1.0F, 1.0F);
         }
     }
@@ -248,8 +243,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     }
 
     private void exitPhase() {
-        if (phase != ControllerPhase.IDLE)
-            trace("PHASE_EXIT", "phase=" + phase.id() + " timer=" + phaseTime);
         phaseGoals.forEach(goalSelector::removeGoal);
         phaseTargetGoals.forEach(targetSelector::removeGoal);
         phaseGoals.clear();
@@ -273,7 +266,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         setPos(pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D);
         clearTeleportArea();
         setControllerState(STATE_FIGHTING);
-        trace("PHASE_EXECUTE", "phase=teleport destination=" + pos + " timer=" + phaseTime);
     }
 
     private void emitTeleportParticles() {
@@ -367,27 +359,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         playSound(net.minecraft.sounds.SoundEvents.SKELETON_SHOOT, 1.0F,
             1.0F / (getRandom().nextFloat() * 0.4F + 0.8F));
         level().addFreshEntity(arrow);
-        trace("BOW_SHOT", "target=" + target.getUUID() + " timer=" + phaseTime + " state=" + getControllerState()
-            + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
-    }
-
-    private void trace(String event, String detail) {
-        if (Boolean.getBoolean("bm.mansion.trace"))
-            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
-                "[BM_ADJUDICATOR_COMBAT_PROOF] event={} entity={} {}", event, getUUID(), detail);
-    }
-
-    private final class TracingMeleeAttackGoal extends MeleeAttackGoal {
-        private TracingMeleeAttackGoal(AdjudicatorEntity mob, double speedModifier, boolean followEvenIfNotSeen) {
-            super(mob, speedModifier, followEvenIfNotSeen);
-        }
-
-        @Override
-        protected void checkAndPerformAttack(LivingEntity target) {
-            super.checkAndPerformAttack(target);
-            trace("MELEE_ATTACK", "target=" + target.getUUID() + " timer=" + phaseTime + " state=" + getControllerState()
-                + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
-        }
     }
 
     public boolean isTargetInArena(LivingEntity target) {

@@ -29,5 +29,10 @@ Bow and melee use the released goal parameters, equipment, timing, and
 projectile/melee paths. Mid-phase controller state, pending teleport targets,
 and arena data remain serializable across reload.
 
+Stage 12A.5 teleport, bow, and melee execution was runtime accepted. The
+temporary combat proof logging was removed during the R1 cleanup; the staged
+implementation gate remains active until the remaining released phases are
+ported. No Mythas combat tuning was added.
+
 Stage 12A.4-R2 cleanup removed the temporary controller proof logging. The
 production controller has no trace-only state or callbacks.
