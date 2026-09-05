@@ -138,9 +138,9 @@ public final class MansionFeature extends Structure {
     private static final Set<String> CROP_EXPECTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private static final class LayoutMetadata {
-        final String key, signature; final BlockPos origin; final Set<String> ordinals, placements; final int unionSize, bossPieces;
-        LayoutMetadata(String key, String signature, BlockPos origin, Set<String> ordinals, Set<String> placements, int unionSize, int bossPieces) {
-            this.key = key; this.signature = signature; this.origin = origin; this.ordinals = Set.copyOf(ordinals); this.placements = Set.copyOf(placements); this.unionSize = unionSize; this.bossPieces = bossPieces;
+        final String key, signature; final BlockPos origin; final Set<String> ordinals, placements; final int unionSize, bossPieces; final List<BoundingBox> boxes;
+        LayoutMetadata(String key, String signature, BlockPos origin, Set<String> ordinals, Set<String> placements, int unionSize, int bossPieces, List<BoundingBox> boxes) {
+            this.key = key; this.signature = signature; this.origin = origin; this.ordinals = Set.copyOf(ordinals); this.placements = Set.copyOf(placements); this.unionSize = unionSize; this.bossPieces = bossPieces; this.boxes = List.copyOf(boxes);
         }
     }
     private static final Set<String> COVERAGE_MISMATCH_LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
@@ -382,7 +382,8 @@ public final class MansionFeature extends Structure {
                 for (int chunkZ = box.minZ() >> 4; chunkZ <= box.maxZ() >> 4; chunkZ++)
                     placements.add(piece.mansionPieceOrdinal + ":" + chunkX + ":" + chunkZ);
         }
-        LayoutMetadata metadata = new LayoutMetadata(key, signature, origin, ids, placements, completeUnion.size(), bossPieces);
+        LayoutMetadata metadata = new LayoutMetadata(key, signature, origin, ids, placements, completeUnion.size(), bossPieces,
+            pieces.stream().map(Piece::getBoundingBox).toList());
         for (Piece piece : pieces) piece.layoutMetadata = metadata;
         // Candidate construction is pure: runtime maps are populated lazily by
         // the first actual Piece.postProcess callback.
@@ -744,7 +745,7 @@ public final class MansionFeature extends Structure {
             this.persistedBossPieces = tag.getInt("MansionBossPieces").orElse(-1);
             this.layoutMetadata = persistedOrdinals.isEmpty() || persistedPlacements.isEmpty() || persistedUnionSize < 0
                 ? null : new LayoutMetadata(serverKey(mansionOrigin, layoutSignature), layoutSignature, mansionOrigin,
-                    persistedOrdinals, persistedPlacements, persistedUnionSize, Math.max(0, persistedBossPieces));
+                    persistedOrdinals, persistedPlacements, persistedUnionSize, Math.max(0, persistedBossPieces), List.of());
         }
 
         private static Set<String> splitMetadataSet(String value) {
@@ -801,6 +802,9 @@ public final class MansionFeature extends Structure {
         public void postProcess(WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator,
                                 RandomSource random, BoundingBox bounds, ChunkPos chunkPos, BlockPos pivot) {
             long order = TRACE_ORDER.incrementAndGet();
+            if (layoutMetadata != null) MansionTreeProtection.register(level,
+                level.getLevel().dimension().location() + ":" + mansionOrigin + ":" + layoutSignature,
+                layoutMetadata.boxes);
             if (level.getLevel() instanceof ServerLevel serverLevel) registerCropTargets(serverLevel);
             Map<BlockPos, BlockState> authoredStates = dungeonAuthoredStates();
             super.postProcess(level, structureManager, generator, random, bounds, chunkPos, pivot);
