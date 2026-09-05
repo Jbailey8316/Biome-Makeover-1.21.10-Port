@@ -26,7 +26,7 @@ foreach ($required in @(
     'FirstTick', 'BossActive', 'PhaseTime', 'FinishFightTime',
     'SummonIndex', 'ArenaPositionCount', 'Teleport', 'State',
     'Charging', 'Invulnerable',
-    'BM_STAGE12A5_IMPLEMENTED_PHASE_GATE = true'
+    'IMPLEMENTED_PHASE_EXECUTION_GATE = true'
 )) {
     if ($source -notlike "*$required*") { throw "Missing controller contract: $required" }
 }

@@ -11,7 +11,7 @@ foreach ($required in @(
     'setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_AXE))',
     'setPos(pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D)',
     'teleportPos = chooseArenaPosition()',
-    'BM_STAGE12A5_IMPLEMENTED_PHASE_GATE = true'
+    'IMPLEMENTED_PHASE_EXECUTION_GATE = true'
 )) {
     if ($source -notlike "*$required*") { throw "Missing Stage 12A.5 contract: $required" }
 }

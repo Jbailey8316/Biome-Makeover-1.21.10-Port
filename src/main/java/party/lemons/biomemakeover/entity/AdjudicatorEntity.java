@@ -59,8 +59,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /** Released Adjudicator entity substrate; encounter phases are restored in a later stage. */
 public final class AdjudicatorEntity extends Monster implements RangedAttackMob {
-    /** Temporary Stage 12A.5 coverage gate; later stages open the remaining phases. */
-    private static final boolean BM_STAGE12A5_IMPLEMENTED_PHASE_GATE = true;
+    /** Staged availability gate; Mimic and Stone Golem remain deferred. */
+    private static final boolean IMPLEMENTED_PHASE_EXECUTION_GATE = true;
     private static final int STATE_WAITING = 0;
     private static final int STATE_TELEPORT = 1;
     private static final int STATE_FIGHTING = 2;
@@ -205,6 +205,9 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     }
 
     private void beginTeleport(ControllerPhase destinationPhase) {
+        if (phase != ControllerPhase.IDLE) {
+            cadenceTrace("PHASE_EXIT=" + phase.id() + " tick=" + level().getGameTime());
+        }
         exitPhase();
         nextPhase = destinationPhase;
         teleportPos = chooseArenaPosition();
@@ -520,12 +523,26 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     }
 
     private ControllerPhase selectNextPhaseForStage(RandomSource random) {
-        if (!BM_STAGE12A5_IMPLEMENTED_PHASE_GATE) return selectNextPhase(random);
+        if (!IMPLEMENTED_PHASE_EXECUTION_GATE) return selectNextPhase(random);
         ControllerPhase[] implemented = {ControllerPhase.BOW_ATTACK, ControllerPhase.MELEE_ATTACK,
             ControllerPhase.FANG_ATTACK, ControllerPhase.FANG_BARRAGE, ControllerPhase.RAVAGER,
             ControllerPhase.SPAWN_EVOKER, ControllerPhase.SPAWN_VINDICATOR, ControllerPhase.SPAWN_VEX,
             ControllerPhase.SPAWN_MIX};
-        return implemented[random.nextInt(implemented.length)];
+        ControllerPhase selected = implemented[random.nextInt(implemented.length)];
+        cadenceTrace("arenaMonsterCount=" + arenaMonsterCount() + " selectablePhaseCount=" + implemented.length
+            + " summonPhasesEligible=" + summonPhaseEligible() + " ravagerEligible=true nextPhase=" + selected.id()
+            + " tick=" + level().getGameTime());
+        return selected;
+    }
+
+    private int arenaMonsterCount() {
+        return roomBounds == null ? 0 : level().getEntitiesOfClass(Monster.class, roomBounds,
+            EntitySelector.LIVING_ENTITY_STILL_ALIVE).size();
+    }
+
+    private void cadenceTrace(String detail) {
+        if (Boolean.getBoolean("bm.mansion.trace"))
+            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_ADJUDICATOR_CADENCE_PROOF] entity={} {}", getUUID(), detail);
     }
 
     @Override

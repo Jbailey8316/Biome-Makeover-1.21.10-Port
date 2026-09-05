@@ -8,7 +8,7 @@ foreach ($required in @(
     'STATE_SUMMONING = 3',
     'getNavigation().stop()',
     'getLookControl().setLookAt',
-    'private static final boolean BM_STAGE12A5_IMPLEMENTED_PHASE_GATE = true',
+    'private static final boolean IMPLEMENTED_PHASE_EXECUTION_GATE = true',
     'ControllerPhase.BOW_ATTACK, ControllerPhase.MELEE_ATTACK',
     'ControllerPhase.FANG_ATTACK, ControllerPhase.FANG_BARRAGE'
 )) {
