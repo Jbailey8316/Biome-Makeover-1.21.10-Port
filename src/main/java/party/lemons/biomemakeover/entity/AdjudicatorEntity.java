@@ -15,13 +15,33 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.RangedBowAttackGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import party.lemons.biomemakeover.init.BMSounds;
 
 import java.util.ArrayList;
@@ -31,9 +51,12 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** Released Adjudicator entity substrate; encounter phases are restored in a later stage. */
-public final class AdjudicatorEntity extends Monster {
-    /** Combat execution is intentionally deferred to the later phase stages. */
-    private static final boolean COMBAT_PHASES_ENABLED = false;
+public final class AdjudicatorEntity extends Monster implements RangedAttackMob {
+    /** Temporary Stage 12A.5 coverage gate; later stages open the remaining phases. */
+    private static final boolean BM_STAGE12A5_IMPLEMENTED_PHASE_GATE = true;
+    private static final int STATE_WAITING = 0;
+    private static final int STATE_TELEPORT = 1;
+    private static final int STATE_FIGHTING = 2;
     public static final int TELEPORT_PHASE_TICKS = 30;
     public static final int ATTACK_PHASE_TICKS = 200;
     public static final int FANG_BARRAGE_PHASE_TICKS = 100;
@@ -76,6 +99,9 @@ public final class AdjudicatorEntity extends Monster {
     private BlockPos teleportPos;
     private AABB roomBounds;
     private List<BlockPos> arenaPositions;
+    private ControllerPhase nextPhase = ControllerPhase.IDLE;
+    private final List<Goal> phaseGoals = new ArrayList<>();
+    private final List<Goal> phaseTargetGoals = new ArrayList<>();
     public AdjudicatorEntity(EntityType<? extends AdjudicatorEntity> type, Level level) {
         super(type, level);
         xpReward = 50;
@@ -96,7 +122,6 @@ public final class AdjudicatorEntity extends Monster {
     public void tick() {
         if (!level().isClientSide() && firstTick) initializeArena();
         if (!level().isClientSide()) {
-            phaseTime++;
             tickController();
             updateBossBarPlayers();
         }
@@ -128,14 +153,152 @@ public final class AdjudicatorEntity extends Monster {
     }
 
     private void tickController() {
+        restorePhaseExecutionIfNeeded();
         if (phase == ControllerPhase.IDLE && level().getGameTime() % 4L == 0L) heal(1.0F);
-        // Explicit development gate: released eligibility remains represented, but no
-        // unimplemented phase is entered and no placeholder attack is executed.
-        if (COMBAT_PHASES_ENABLED && phase == ControllerPhase.IDLE && active) {
-            phase = selectNextPhase(random);
-            phaseTime = 0;
+        if (getTarget() != null && !isTargetInArena(getTarget())) setTarget(null);
+        if (active && phase == ControllerPhase.IDLE) {
+            beginTeleport(selectNextPhaseForStage(random));
+        } else if (active && phase == ControllerPhase.TELEPORT) {
+            emitTeleportParticles();
+            if (++phaseTime >= TELEPORT_PHASE_TICKS) {
+                teleportToArenaPosition(teleportPos);
+                enterPhase(nextPhase);
+            }
+        } else if (active && (phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MELEE_ATTACK)) {
+            if (++phaseTime >= ATTACK_PHASE_TICKS) beginTeleport(selectNextPhaseForStage(random));
         }
         bossBar.setProgress(getHealth() / getMaxHealth());
+    }
+
+    private void beginTeleport(ControllerPhase destinationPhase) {
+        exitPhase();
+        nextPhase = destinationPhase;
+        teleportPos = chooseArenaPosition();
+        phase = ControllerPhase.TELEPORT;
+        phaseTime = 0;
+        setControllerState(STATE_TELEPORT);
+        setControllerInvulnerable(false);
+        playSound(BMSounds.ADJUDICATOR_SPELL_3, 1.0F, 1.0F);
+        trace("PHASE_ENTER", "phase=teleport timer=0 state=" + getControllerState()
+            + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
+    }
+
+    private BlockPos chooseArenaPosition() {
+        if (arenaPositions == null || arenaPositions.isEmpty()) return blockPosition();
+        BlockPos selected = arenaPositions.get(random.nextInt(arenaPositions.size()));
+        int safety = 0;
+        while (selected.closerThan(getOnPos(), 1.0D) && safety++ < 100)
+            selected = arenaPositions.get(random.nextInt(arenaPositions.size()));
+        return selected;
+    }
+
+    private void enterPhase(ControllerPhase selected) {
+        exitPhase();
+        phase = selected;
+        phaseTime = 0;
+        configurePhaseExecution(selected, true);
+        trace("PHASE_ENTER", "phase=" + selected.id() + " timer=0 target=" + getTarget()
+            + " state=" + getControllerState() + " charging=" + isChargingCrossbow()
+            + " invulnerable=" + isControllerInvulnerable());
+    }
+
+    private void configurePhaseExecution(ControllerPhase selected, boolean playEntrySound) {
+        setControllerState(STATE_FIGHTING);
+        selectTargetInArena();
+        if (selected == ControllerPhase.BOW_ATTACK) {
+            setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BOW));
+            addPhaseGoals(new RangedBowAttackGoal<>(this, 0.75F, 12, 30));
+            if (playEntrySound) playSound(BMSounds.ADJUDICATOR_GRUNT, 1.0F, 1.0F);
+        } else if (selected == ControllerPhase.MELEE_ATTACK) {
+            setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_AXE));
+            addPhaseGoals(new TracingMeleeAttackGoal(this, 1.0F, true));
+            if (playEntrySound) playSound(BMSounds.ADJUDICATOR_GRUNT, 1.0F, 1.0F);
+        }
+    }
+
+    private void restorePhaseExecutionIfNeeded() {
+        if (phaseGoals.isEmpty() && (phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MELEE_ATTACK))
+            configurePhaseExecution(phase, false);
+    }
+
+    private void addPhaseGoals(Goal attackGoal) {
+        Goal floating = new FloatGoal(this);
+        Goal strolling = new RandomStrollGoal(this, 1.0D);
+        Goal looking = new LookAtPlayerGoal(this, Player.class, 20.0F);
+        Goal lookingAround = new RandomLookAroundGoal(this);
+        phaseGoals.add(floating);
+        phaseGoals.add(strolling);
+        phaseGoals.add(attackGoal);
+        phaseGoals.add(looking);
+        phaseGoals.add(lookingAround);
+        goalSelector.addGoal(0, floating);
+        goalSelector.addGoal(1, strolling);
+        goalSelector.addGoal(2, attackGoal);
+        goalSelector.addGoal(3, looking);
+        goalSelector.addGoal(4, lookingAround);
+        Goal hurtTarget = new HurtByTargetGoal(this);
+        Goal playerTarget = new NearestAttackableTargetGoal<>(this, Player.class, false);
+        Goal golemTarget = new NearestAttackableTargetGoal<>(this, AbstractGolem.class, false);
+        phaseTargetGoals.add(hurtTarget);
+        phaseTargetGoals.add(playerTarget);
+        phaseTargetGoals.add(golemTarget);
+        targetSelector.addGoal(1, hurtTarget);
+        targetSelector.addGoal(2, playerTarget);
+        targetSelector.addGoal(3, golemTarget);
+    }
+
+    private void exitPhase() {
+        if (phase != ControllerPhase.IDLE)
+            trace("PHASE_EXIT", "phase=" + phase.id() + " timer=" + phaseTime);
+        phaseGoals.forEach(goalSelector::removeGoal);
+        phaseTargetGoals.forEach(targetSelector::removeGoal);
+        phaseGoals.clear();
+        phaseTargetGoals.clear();
+        if (phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MELEE_ATTACK)
+            setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+    }
+
+    private void selectTargetInArena() {
+        if (roomBounds == null) return;
+        Player target = level().getEntitiesOfClass(Player.class, roomBounds, EntitySelector.NO_SPECTATORS).stream()
+            .min(java.util.Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+        setTarget(target);
+    }
+
+    private void teleportToArenaPosition(BlockPos pos) {
+        if (pos == null) pos = homePos;
+        if (pos == null) return;
+        if (level().getBlockState(pos.below()).isAir())
+            level().setBlock(pos.below(), Blocks.COBBLESTONE.defaultBlockState(), 3);
+        setPos(pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D);
+        clearTeleportArea();
+        setControllerState(STATE_FIGHTING);
+        trace("PHASE_EXECUTE", "phase=teleport destination=" + pos + " timer=" + phaseTime);
+    }
+
+    private void emitTeleportParticles() {
+        if (level() instanceof ServerLevel serverLevel)
+            serverLevel.sendParticles(ParticleTypes.PORTAL, getX(), getY() + 0.8D, getZ(),
+                10, 0.5D, 0.5D, 0.5D, 0.15D);
+    }
+
+    private void clearTeleportArea() {
+        if (!(level() instanceof ServerLevel serverLevel)
+            || !serverLevel.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) return;
+        AABB hitBox = getBoundingBox();
+        destroyTeleportArea(hitBox);
+        if (isInWall()) destroyTeleportArea(hitBox.inflate(1.0D));
+    }
+
+    private void destroyTeleportArea(AABB hitBox) {
+        BlockPos.betweenClosed(
+            BlockPos.containing(hitBox.minX, hitBox.minY, hitBox.minZ),
+            BlockPos.containing(hitBox.maxX, hitBox.maxY, hitBox.maxZ)).forEach(pos -> {
+                if (WitherBoss.canDestroy(level().getBlockState(pos))) {
+                    level().destroyBlock(pos, true, this);
+                    level().levelEvent(null, 1022, pos, 0);
+                }
+            });
     }
 
     private void updateBossBarPlayers() {
@@ -185,6 +348,48 @@ public final class AdjudicatorEntity extends Monster {
         return selectable.isEmpty() ? ControllerPhase.IDLE : selectable.get(random.nextInt(selectable.size()));
     }
 
+    private ControllerPhase selectNextPhaseForStage(RandomSource random) {
+        if (!BM_STAGE12A5_IMPLEMENTED_PHASE_GATE) return selectNextPhase(random);
+        ControllerPhase[] implemented = {ControllerPhase.BOW_ATTACK, ControllerPhase.MELEE_ATTACK};
+        return implemented[random.nextInt(implemented.length)];
+    }
+
+    @Override
+    public void performRangedAttack(LivingEntity target, float pullProgress) {
+        ItemStack arrows = Items.ARROW.getDefaultInstance();
+        AbstractArrow arrow = ProjectileUtil.getMobArrow(this, arrows, pullProgress, getMainHandItem());
+        double dx = target.getX() - getX();
+        double dy = target.getY(0.3333333333333333D) - arrow.getY();
+        double dz = target.getZ() - getZ();
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
+        arrow.shoot(dx, dy + horizontal * 0.2D, dz, 1.6F,
+            (float)(14 - level().getDifficulty().getId() * 4));
+        playSound(net.minecraft.sounds.SoundEvents.SKELETON_SHOOT, 1.0F,
+            1.0F / (getRandom().nextFloat() * 0.4F + 0.8F));
+        level().addFreshEntity(arrow);
+        trace("BOW_SHOT", "target=" + target.getUUID() + " timer=" + phaseTime + " state=" + getControllerState()
+            + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
+    }
+
+    private void trace(String event, String detail) {
+        if (Boolean.getBoolean("bm.mansion.trace"))
+            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
+                "[BM_ADJUDICATOR_COMBAT_PROOF] event={} entity={} {}", event, getUUID(), detail);
+    }
+
+    private final class TracingMeleeAttackGoal extends MeleeAttackGoal {
+        private TracingMeleeAttackGoal(AdjudicatorEntity mob, double speedModifier, boolean followEvenIfNotSeen) {
+            super(mob, speedModifier, followEvenIfNotSeen);
+        }
+
+        @Override
+        protected void checkAndPerformAttack(LivingEntity target) {
+            super.checkAndPerformAttack(target);
+            trace("MELEE_ATTACK", "target=" + target.getUUID() + " timer=" + phaseTime + " state=" + getControllerState()
+                + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
+        }
+    }
+
     public boolean isTargetInArena(LivingEntity target) {
         return target != null && target.isAlive() && roomBounds != null && roomBounds.contains(target.position());
     }
@@ -197,6 +402,7 @@ public final class AdjudicatorEntity extends Monster {
         output.putBoolean("FirstTick", firstTick);
         output.putBoolean("BossActive", active);
         output.putString("Phase", phase.id());
+        output.putString("NextPhase", nextPhase.id());
         output.putInt("PhaseTime", phaseTime);
         output.putInt("FinishFightTime", finishFightTime);
         output.putInt("SummonIndex", summonIndex);
@@ -222,6 +428,7 @@ public final class AdjudicatorEntity extends Monster {
         firstTick = input.getBooleanOr("FirstTick", true);
         active = input.getBooleanOr("BossActive", false);
         phase = ControllerPhase.byId(input.getStringOr("Phase", ControllerPhase.IDLE.id()));
+        nextPhase = ControllerPhase.byId(input.getStringOr("NextPhase", ControllerPhase.IDLE.id()));
         phaseTime = input.getIntOr("PhaseTime", 0);
         finishFightTime = input.getIntOr("FinishFightTime", 0);
         summonIndex = input.getIntOr("SummonIndex", 0);

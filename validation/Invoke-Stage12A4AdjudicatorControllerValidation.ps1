@@ -26,7 +26,7 @@ foreach ($required in @(
     'FirstTick', 'BossActive', 'PhaseTime', 'FinishFightTime',
     'SummonIndex', 'ArenaPositionCount', 'Teleport', 'State',
     'Charging', 'Invulnerable',
-    'COMBAT_PHASES_ENABLED = false'
+    'BM_STAGE12A5_IMPLEMENTED_PHASE_GATE = true'
 )) {
     if ($source -notlike "*$required*") { throw "Missing controller contract: $required" }
 }
@@ -37,7 +37,7 @@ $phaseIds = @('idle','teleport','bow_attack','melee_attack','fang_attack','fang_
 foreach ($id in $phaseIds) {
     if ($source -notlike "*$id*") { throw "Missing released phase definition: $id" }
 }
-foreach ($deferred in @('EvokerFangs', 'RangedBowAttackGoal', 'MeleeAttackGoal', 'AdjudicatorMimicEntity', 'StoneGolemEntity')) {
+foreach ($deferred in @('EvokerFangs', 'AdjudicatorMimicEntity', 'StoneGolemEntity')) {
     if ($source -like "*$deferred*") { throw "Deferred combat implementation leaked into Stage 12A.4: $deferred" }
 }
 Write-Output 'STAGE 12A.4 ADJUDICATOR CONTROLLER VALIDATION PASSED (synced state, arena lifecycle, persistence, eligibility, deferred-combat gate)'

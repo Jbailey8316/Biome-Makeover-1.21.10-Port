@@ -10,9 +10,9 @@ The arena is initialized from the boss position using the released smooth
 quartz arena markers and activates the encounter on its first server tick.
 Players inside the released arena bounds are added to the blue health boss bar
 and removed when they leave; the bar updates from entity health and follows
-the active encounter lifecycle. The explicit `COMBAT_PHASES_ENABLED = false`
-gate prevents transition into any unimplemented attack or summon phase while
-leaving arena membership and boss-bar behavior live for substrate testing.
+the active encounter lifecycle. Stage 12A.5 opens only the source-backed
+teleport, bow, and melee execution paths behind the temporary
+`BM_STAGE12A5_IMPLEMENTED_PHASE_GATE`; the remaining phases remain gated.
 
 R1 corrected the activation boundary after runtime testing: arena setup marks
 the encounter active on the first server tick, independently of the disabled
@@ -22,8 +22,12 @@ visibility without enabling any attack phase.
 The released phase definitions remain represented for later implementation,
 with uniform eligibility data preserved and summon eligibility restricted to
 fewer than four living arena Monsters. No placeholder attacks are installed.
-Teleport, bow, melee, fangs, fang barrage, Ravager, summon, Mimic, Stone
-Golem, rewards, and Mythas trial/key systems remain deferred.
+Fangs, fang barrage, Ravager, summon, Mimic, Stone Golem, rewards, and Mythas
+trial/key systems remain deferred. Teleport uses the released arena-position
+selection, timing, relocation, portal effects, and anti-trapping behavior.
+Bow and melee use the released goal parameters, equipment, timing, and
+projectile/melee paths. Mid-phase controller state, pending teleport targets,
+and arena data remain serializable across reload.
 
 Stage 12A.4-R2 cleanup removed the temporary controller proof logging. The
 production controller has no trace-only state or callbacks.
