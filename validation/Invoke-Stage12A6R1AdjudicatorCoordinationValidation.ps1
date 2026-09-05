@@ -9,8 +9,10 @@ foreach ($required in @(
     'getNavigation().stop()',
     'getLookControl().setLookAt',
     'private static final boolean IMPLEMENTED_PHASE_EXECUTION_GATE = true',
-    'ControllerPhase.BOW_ATTACK, ControllerPhase.MELEE_ATTACK',
-    'ControllerPhase.FANG_ATTACK, ControllerPhase.FANG_BARRAGE'
+    'ControllerPhase.BOW_ATTACK',
+    'ControllerPhase.MELEE_ATTACK',
+    'ControllerPhase.FANG_ATTACK',
+    'ControllerPhase.FANG_BARRAGE'
 )) {
     if ($source -notlike "*$required*") { throw "Missing accepted coordination contract: $required" }
 }

@@ -524,15 +524,33 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
 
     private ControllerPhase selectNextPhaseForStage(RandomSource random) {
         if (!IMPLEMENTED_PHASE_EXECUTION_GATE) return selectNextPhase(random);
-        ControllerPhase[] implemented = {ControllerPhase.BOW_ATTACK, ControllerPhase.MELEE_ATTACK,
-            ControllerPhase.FANG_ATTACK, ControllerPhase.FANG_BARRAGE, ControllerPhase.RAVAGER,
-            ControllerPhase.SPAWN_EVOKER, ControllerPhase.SPAWN_VINDICATOR, ControllerPhase.SPAWN_VEX,
-            ControllerPhase.SPAWN_MIX};
-        ControllerPhase selected = implemented[random.nextInt(implemented.length)];
-        cadenceTrace("arenaMonsterCount=" + arenaMonsterCount() + " selectablePhaseCount=" + implemented.length
-            + " summonPhasesEligible=" + summonPhaseEligible() + " ravagerEligible=true nextPhase=" + selected.id()
+        List<ControllerPhase> actualPool = selectablePhases().stream()
+            .filter(AdjudicatorEntity::isImplementedPhase).toList();
+        ControllerPhase selected = actualPool.isEmpty() ? ControllerPhase.IDLE
+            : actualPool.get(random.nextInt(actualPool.size()));
+        String pool = actualPool.stream().map(ControllerPhase::id).toList().toString();
+        cadenceTrace("arenaMonsterCount=" + arenaMonsterCount() + " summonPhasesEligible=" + summonPhaseEligible()
+            + " actualSelectablePhases=" + pool + " actualSelectablePhaseCount=" + actualPool.size()
+            + " selectedPhase=" + selected.id()
             + " tick=" + level().getGameTime());
+        if (!summonPhaseEligible())
+            summonEligibilityTrace("arenaMonsterCount=" + arenaMonsterCount()
+            + " restrictedSummonsPresentInActualPool=" + actualPool.stream().anyMatch(AdjudicatorEntity::isSummonPhase)
+                + " selectedPhase=" + selected.id());
         return selected;
+    }
+
+    private List<ControllerPhase> selectablePhases() {
+        List<ControllerPhase> selectable = new ArrayList<>();
+        for (ControllerPhase candidate : ControllerPhase.values()) {
+            if (candidate.selectable() && (!isSummonPhase(candidate) || summonPhaseEligible()))
+                selectable.add(candidate);
+        }
+        return selectable;
+    }
+
+    private static boolean isImplementedPhase(ControllerPhase phase) {
+        return phase != ControllerPhase.MIMIC && phase != ControllerPhase.STONE_GOLEM;
     }
 
     private int arenaMonsterCount() {
@@ -543,6 +561,12 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     private void cadenceTrace(String detail) {
         if (Boolean.getBoolean("bm.mansion.trace"))
             party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_ADJUDICATOR_CADENCE_PROOF] entity={} {}", getUUID(), detail);
+    }
+
+    private void summonEligibilityTrace(String detail) {
+        if (Boolean.getBoolean("bm.mansion.trace"))
+            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
+                "[BM_ADJUDICATOR_SUMMON_ELIGIBILITY_PROOF] entity={} {}", getUUID(), detail);
     }
 
     @Override
