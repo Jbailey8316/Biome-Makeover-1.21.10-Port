@@ -158,8 +158,9 @@ item is the vanilla `StandingAndWallBlockItem` with `Direction.DOWN`, so wall
 selection and standing fallback use the same placement decision as banners.
 
 Mansion directional-data still supplies the already piece-transformed marker
-direction exactly once; the handler applies the released wall `opposite()`
-semantics and does not rotate the final tapestry state again. The 56 marker
+direction from native `StructureTemplate.filterBlocks` exactly once; the
+handler applies the released wall `opposite()` semantics and does not rotate
+the final tapestry state again. The 56 marker
 occurrences and all 168 NBT templates remain unchanged. `BM_TAPESTRY_PLACEMENT_TRACE`
 is a temporary, trace-gated, 16-entry runtime diagnostic for Prism verification.
 

@@ -6,7 +6,7 @@ $audit = Join-Path $Root 'validation/java/Stage11B2BMarkerSupportAudit.java'
 $doc = Join-Path $Root 'docs/STAGE_11B2B_TAPESTRY_PARITY_AUDIT.md'
 foreach ($path in @($feature,$audit,$doc)) { if (!(Test-Path -LiteralPath $path)) { throw "Missing R.4 audit file: $path" } }
 $text = Get-Content -LiteralPath $feature -Raw
-foreach ($needle in @('placeSettings.getMirror()','placeSettings.getRotation()','transformedFacing','facing.getOpposite()')) {
+foreach ($needle in @('filterBlocks(','placeSettings.getRotation()','transformedFacing','facing.getOpposite()')) {
     if ($text.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing marker direction contract: $needle" }
 }
 if ($text -match 'BM_TAPESTRY_(?!PLACEMENT_TRACE)') { throw 'Superseded tapestry forensic logging remains in production source' }

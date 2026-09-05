@@ -49,7 +49,8 @@ if ($source -notmatch 'flag' -or $source -notmatch 'pole' -or $source -notmatch 
 if ($source -notmatch 'submitModelPart' -or $source -notmatch 'entitySolid\(state\.block\.tapestryTexture\(\)\)') { throw 'Selected tapestry texture is not bound through direct model-part rendering' }
 if ($source -notmatch 'LayerDefinition\.create\(mesh, 64, 64\)' -or $source -notmatch 'texOffs\(0, 0\)') { throw 'Released 64x64 tapestry UV contract missing' }
 if ($source -notmatch 'facing\.getOpposite\(\)' -or $source -notmatch 'setBlock\(position') { throw 'Released marker-facing/in-place placement contract missing' }
-if ($source -notmatch 'mirror\(placeSettings\.getMirror\(\)\)\.rotate\(placeSettings\.getRotation\(\)\)' -or $source -notmatch 'transformedFacing') { throw 'Rotated marker direction transform contract missing' }
+if ($source -notmatch 'filterBlocks\(' -or $source -notmatch 'Direction transformedFacing = info\.state\(\)\.getValue\(DirectionalBlock\.FACING\)') { throw 'Native transformed marker state is not consumed directly' }
+if ($source -match 'transformedFacing\s*=\s*info\.state\(\)\.mirror') { throw 'Marker direction is transformed a second time after native filterBlocks transformation' }
 if ($source -notmatch 'generateTapestry\(facing' -or $source -notmatch 'setValue\(MansionWallTapestryBlock\.FACING,\s*facing\.getOpposite\(\)\)') { throw 'Production transformed-facing dataflow is not wired to the wall state write' }
 if ($source -match 'BM_TAPESTRY_(?!PLACEMENT_TRACE)') { throw 'Superseded tapestry forensic logging remains in production source' }
 if ($source -notmatch 'RotationSegment\.convertToSegment\(context\.getRotation\(\) \+ 180\.0F\)') { throw 'Standing tapestry does not use vanilla BannerBlock yaw-to-ROTATION_16 placement semantics' }
