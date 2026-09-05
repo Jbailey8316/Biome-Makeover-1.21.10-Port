@@ -360,6 +360,16 @@ remain and now validate production code, resources, loot, transforms, item
 definitions, special-renderer resolution, and advancement contracts directly.
 Mansion templates and all accepted parity systems remain unchanged.
 
+## R12 - geometry-derived Mansion orientation
+
+Runtime support proof established that the prior `directional_data` facing
+could disagree with the generated authored wall. Mansion wall tapestry
+orientation now uses the raw template marker and its single authored adjacent
+support cell. Both positions are transformed through native
+`StructureTemplate.transform` with the piece mirror, rotation, and pivot; the
+world support direction then determines the wall state via its opposite. The
+player-placement and renderer paths are unchanged.
+
 ## R11 â€” runtime support proof
 
 R11 adds a trace-gated, server-thread-only post-reconciliation support audit.

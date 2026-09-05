@@ -9,6 +9,9 @@ $text = Get-Content -LiteralPath $feature -Raw
 foreach ($needle in @('filterBlocks(','placeSettings.getMirror()','placeSettings.getRotation()','transformedFacing','facing.getOpposite()')) {
     if ($text.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing marker direction contract: $needle" }
 }
+foreach ($needle in @('rawTapestryMarkers','StructureTemplate.transform','getRotationPivot','transformedTapestryGeometry','TapestryGeometry','markerWorld','supportWorld','horizontalDirection','supportDirection')) {
+    if ($text.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing geometry-derived tapestry support contract: $needle" }
+}
 if ($text -match 'BM_TAPESTRY_(?!(TRANSFORM_PROOF|RUNTIME_SUPPORT_PROOF))') { throw 'Superseded tapestry forensic logging remains in production source' }
 $auditText = Get-Content -LiteralPath $audit -Raw
 foreach ($needle in @('totalWallMarkers','markerFacingPointsTowardBacking','markerFacingOppositePointsTowardBacking','noAdjacentBacking','ambiguous')) {

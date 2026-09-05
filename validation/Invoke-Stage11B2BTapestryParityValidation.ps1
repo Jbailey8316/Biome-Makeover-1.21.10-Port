@@ -58,6 +58,9 @@ if ($source -notmatch 'BM_TAPESTRY_RUNTIME_SUPPORT_PROOF' -or $source -notmatch 
 if ($source -notmatch 'RotationSegment\.convertToSegment\(context\.getRotation\(\) \+ 180\.0F\)') { throw 'Standing tapestry does not use vanilla BannerBlock yaw-to-ROTATION_16 placement semantics' }
 if ($source -notmatch 'new StandingAndWallBlockItem\(standing, wall, .*Direction\.DOWN') { throw 'Tapestry item does not use vanilla StandingAndWallBlockItem attachment semantics' }
 if ($source -notmatch 'BM_TAPESTRY_TRANSFORM_PROOF') { throw 'R9 transform proof marker is missing' }
+foreach ($needle in @('rawTapestryMarkers','StructureTemplate.transform','getRotationPivot','transformedTapestryGeometry','TapestryGeometry','markerWorld','supportWorld','horizontalDirection','supportDirection')) {
+    if ($source.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Geometry-derived Mansion tapestry orientation is missing: $needle" }
+}
 foreach ($direction in @('NORTH','SOUTH','EAST','WEST')) { if ($source -notmatch 'HORIZONTAL_FACING' -or $source -notmatch 'toYRot') { throw "Wall transform contract missing for $direction" } }
 if ($source -notmatch 'ROTATION_16' -or $source -notmatch '22\.5F') { throw 'Standing rotation transform contract missing' }
 if ($feature -and (Get-Content $feature -Raw) -notmatch 'case "tapestry"') { throw 'Mansion tapestry marker dispatch missing' }

@@ -91,8 +91,11 @@ public final class MansionFeature extends Structure {
     private static final Set<String> CROP_EXPECTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Map<String, Map<BlockPos, TapestryProof>> TAPESTRY_PROOFS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> TAPESTRY_SUPPORT_AUDITED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final Map<String, List<RawTapestryMarker>> RAW_TAPESTRY_MARKERS = new java.util.concurrent.ConcurrentHashMap<>();
 
     private record TapestryProof(String template, int pieceId, BlockPos position, String variant) {}
+    private record RawTapestryMarker(BlockPos marker, BlockPos support) {}
+    private record TapestryGeometry(BlockPos marker, BlockPos support, BlockPos markerWorld, BlockPos supportWorld, Direction supportDirection) {}
 
     private static final class LayoutMetadata {
         final String key, signature; final BlockPos origin; final Set<String> ordinals, placements; final int unionSize, bossPieces; final List<BoundingBox> boxes;
@@ -683,8 +686,12 @@ public final class MansionFeature extends Structure {
                     Direction filterBlocksFacing = info.state().getValue(DirectionalBlock.FACING);
                     Direction transformedFacing = info.state().mirror(placeSettings.getMirror())
                         .getValue(DirectionalBlock.FACING);
+                    TapestryGeometry tapestryGeometry = "tapestry".equals(metadata)
+                        ? transformedTapestryGeometry(info.pos()) : null;
+                    Direction semanticFacing = tapestryGeometry == null ? transformedFacing
+                        : tapestryGeometry.supportDirection();
                     handleDirectionalMetadata(metadata, filterBlocksFacing,
-                        transformedFacing, info.pos(), level, random);
+                        semanticFacing, info.pos(), level, random);
                     if (TRACE && "tapestry".equals(metadata) && TAPESTRY_PLACEMENT_TRACE_COUNT.incrementAndGet() <= 16) {
                         BlockState placed = level.getBlockState(info.pos());
                         String form = placed.getBlock() instanceof MansionWallTapestryBlock ? "wall"
@@ -696,9 +703,14 @@ public final class MansionFeature extends Structure {
                         BlockPos support = placed.getBlock() instanceof MansionWallTapestryBlock
                             ? info.pos().relative(placed.getValue(MansionWallTapestryBlock.FACING).getOpposite())
                             : info.pos().below();
-                        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_TRANSFORM_PROOF] template={} pieceId={} pieceAnchor={} pieceRotation={} pieceMirror={} filterBlocksWorldPos={} filterBlocksFacing={} semanticMarkerFacing={} markerConventionSupportDirection=opposite finalBlockPos={} finalFacing={} finalSupportPos={} rendererFacing={} rendererYaw={} rendererWallTranslation={}",
-                            diagnosticTemplate, mansionPieceOrdinal, templatePosition, placeSettings.getRotation(), placeSettings.getMirror(), info.pos(),
-                            filterBlocksFacing.getSerializedName(), transformedFacing.getSerializedName(), info.pos(), finalState, support,
+                        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_TRANSFORM_PROOF] template={} pieceId={} pieceAnchor={} pieceRotation={} pieceMirror={} rawMarkerLocal={} rawSupportLocal={} transformedMarkerWorld={} transformedSupportWorld={} geometrySupportDirection={} finalBlockPos={} finalFacing={} finalSupportPos={} rendererFacing={} rendererYaw={} rendererWallTranslation={}",
+                            diagnosticTemplate, mansionPieceOrdinal, templatePosition, placeSettings.getRotation(), placeSettings.getMirror(),
+                            tapestryGeometry == null ? "missing" : tapestryGeometry.marker(),
+                            tapestryGeometry == null ? "missing" : tapestryGeometry.support(),
+                            tapestryGeometry == null ? "missing" : tapestryGeometry.markerWorld(),
+                            tapestryGeometry == null ? "missing" : tapestryGeometry.supportWorld(),
+                            tapestryGeometry == null ? "missing" : tapestryGeometry.supportDirection().getSerializedName(),
+                            info.pos(), finalState, support,
                             form.equals("wall") ? finalState : "none", form.equals("wall") ? "-" + finalState : "none",
                             form.equals("wall") ? "0.5,-0.16666667,0.5;0,-0.3125,-0.4375" : "none");
                     }
@@ -892,6 +904,63 @@ public final class MansionFeature extends Structure {
                     .put(position.immutable(), new TapestryProof(diagnosticTemplate, mansionPieceOrdinal, position.immutable(),
                         BuiltInRegistries.BLOCK.getKey(tapestry).toString()));
             }
+        }
+
+        private TapestryGeometry transformedTapestryGeometry(BlockPos transformedMarker) {
+            List<RawTapestryMarker> markers = RAW_TAPESTRY_MARKERS.computeIfAbsent(diagnosticTemplate,
+                ignored -> rawTapestryMarkers());
+            BlockPos pivot = placeSettings.getRotationPivot();
+            for (RawTapestryMarker marker : markers) {
+                BlockPos markerWorld = templatePosition.offset(StructureTemplate.transform(marker.marker(),
+                    placeSettings.getMirror(), placeSettings.getRotation(), pivot));
+                if (!markerWorld.equals(transformedMarker)) continue;
+                BlockPos supportWorld = templatePosition.offset(StructureTemplate.transform(marker.support(),
+                    placeSettings.getMirror(), placeSettings.getRotation(), pivot));
+                Direction supportDirection = horizontalDirection(transformedMarker, supportWorld);
+                if (supportDirection == null) {
+                    throw new IllegalStateException("Mansion tapestry support is not one horizontal block from marker: "
+                        + diagnosticTemplate + " marker=" + marker.marker() + " support=" + marker.support());
+                }
+                return new TapestryGeometry(marker.marker(), marker.support(), markerWorld, supportWorld, supportDirection);
+            }
+            throw new IllegalStateException("Mansion tapestry marker has no authored geometry: "
+                + diagnosticTemplate + " position=" + transformedMarker);
+        }
+
+        private List<RawTapestryMarker> rawTapestryMarkers() {
+            StructurePlaceSettings rawSettings = new StructurePlaceSettings();
+            Map<BlockPos, BlockState> cells = new HashMap<>();
+            for (Block block : BuiltInRegistries.BLOCK)
+                for (var info : template.filterBlocks(BlockPos.ZERO, rawSettings, block))
+                    cells.put(info.pos(), info.state());
+            List<RawTapestryMarker> result = new java.util.ArrayList<>();
+            for (var info : template.filterBlocks(BlockPos.ZERO, rawSettings, BMBlocks.DIRECTIONAL_DATA)) {
+                if (info.nbt() == null || !"tapestry".equals(info.nbt().getStringOr("metadata", ""))) continue;
+                BlockPos support = null;
+                for (Direction direction : new Direction[] {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST}) {
+                    BlockPos candidate = info.pos().relative(direction);
+                    BlockState state = cells.get(candidate);
+                    if (state != null && !state.isAir() && !state.is(Blocks.STRUCTURE_VOID)
+                        && state.getBlock() != BMBlocks.DIRECTIONAL_DATA) {
+                        if (support != null) throw new IllegalStateException("Ambiguous Mansion tapestry support: "
+                            + diagnosticTemplate + " marker=" + info.pos());
+                        support = candidate;
+                    }
+                }
+                if (support == null) throw new IllegalStateException("Missing Mansion tapestry support: "
+                    + diagnosticTemplate + " marker=" + info.pos());
+                result.add(new RawTapestryMarker(info.pos(), support));
+            }
+            return List.copyOf(result);
+        }
+
+        private static Direction horizontalDirection(BlockPos from, BlockPos to) {
+            int x = to.getX() - from.getX(), y = to.getY() - from.getY(), z = to.getZ() - from.getZ();
+            if (y != 0 || Math.abs(x) + Math.abs(z) != 1) return null;
+            if (x == 1) return Direction.EAST;
+            if (x == -1) return Direction.WEST;
+            if (z == 1) return Direction.SOUTH;
+            return Direction.NORTH;
         }
 
         private void handleLoot(String metadata, BlockPos marker, BlockPos containerPos, WorldGenLevel world, RandomSource random) {
