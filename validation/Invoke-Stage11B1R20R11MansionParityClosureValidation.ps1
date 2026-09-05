@@ -21,7 +21,7 @@ if (-not $SkipJar) {
  if ($jar) {
   $zip = [System.IO.Compression.ZipFile]::OpenRead($jar.FullName)
   try { $all = (($zip.Entries | ForEach-Object { $r=New-Object IO.StreamReader($_.Open()); try {$r.ReadToEnd()} finally {$r.Dispose()} }) -join "`n") } finally {$zip.Dispose()}
- Check 'marker semantics compiled' ($all.Contains('boss->AIR;arena_pos->SMOOTH_QUARTZ') -and $all.Contains('BM_ADJUDICATOR_SPAWN_PROOF'))
+ Check 'marker semantics compiled' ($all.Contains('boss->AIR;arena_pos->SMOOTH_QUARTZ') -and -not $all.Contains('BM_ADJUDICATOR_SPAWN_PROOF'))
  }
 }
 if ($failed) { exit 1 }; Write-Host 'R20R.11 Mansion parity closure validation PASS'

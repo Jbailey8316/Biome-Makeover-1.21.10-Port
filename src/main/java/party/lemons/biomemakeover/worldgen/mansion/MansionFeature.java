@@ -61,7 +61,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Set;
 import java.util.Map;
@@ -79,7 +78,6 @@ public final class MansionFeature extends Structure {
     private static final boolean VANILLA_LIQUID_PARITY = true;
     private static final String RELEASED_MARKER_SEMANTICS = "boss->AIR;arena_pos->SMOOTH_QUARTZ";
     private static final CopyOnWriteArrayList<DelayedFluidTrace> DELAYED_FLUID_TRACES = new CopyOnWriteArrayList<>();
-    private static final AtomicBoolean ADJUDICATOR_SPAWN_TRACE = new AtomicBoolean();
     private static final ThreadLocal<BlockPos> LAYOUT_ORIGIN = new ThreadLocal<>();
     private static final ThreadLocal<List<Piece>> LAYOUT_PIECES = new ThreadLocal<>();
     private static final ThreadLocal<Integer> NEXT_PIECE_ORDINAL = new ThreadLocal<>();
@@ -631,13 +629,6 @@ public final class MansionFeature extends Structure {
                         boss.snapTo(position, 0.0F, 0.0F);
                         boss.finalizeSpawn(level, level.getCurrentDifficultyAt(position), EntitySpawnReason.STRUCTURE, null);
                         level.addFreshEntityWithPassengers(boss);
-                        if (Boolean.getBoolean("bm.mansion.trace") && ADJUDICATOR_SPAWN_TRACE.compareAndSet(false, true)) {
-                            BiomeMakeover.LOGGER.info("[BM_ADJUDICATOR_SPAWN_PROOF] markerPos={} entityUUID={} spawnX={} spawnY={} spawnZ={} spawnReason={} health={} maxHealth={} movementSpeed={} attackDamage={} fireImmune={} persistent={} dimensions={}x{}",
-                                position, boss.getUUID(), boss.getX(), boss.getY(), boss.getZ(), EntitySpawnReason.STRUCTURE,
-                                boss.getHealth(), boss.getMaxHealth(), boss.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED),
-                                boss.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE), boss.fireImmune(),
-                                boss.isPersistenceRequired(), boss.getBbWidth(), boss.getBbHeight());
-                        }
                         level.setBlock(position, Blocks.AIR.defaultBlockState(), 2);
                     }
                 }
