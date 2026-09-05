@@ -49,8 +49,12 @@ if ($source -notmatch 'flag' -or $source -notmatch 'pole' -or $source -notmatch 
 if ($source -notmatch 'submitModelPart' -or $source -notmatch 'entitySolid\(state\.block\.tapestryTexture\(\)\)') { throw 'Selected tapestry texture is not bound through direct model-part rendering' }
 if ($source -notmatch 'LayerDefinition\.create\(mesh, 64, 64\)' -or $source -notmatch 'texOffs\(0, 0\)') { throw 'Released 64x64 tapestry UV contract missing' }
 if ($source -notmatch 'facing\.getOpposite\(\)' -or $source -notmatch 'setBlock\(position') { throw 'Released marker-facing/in-place placement contract missing' }
+if ($source -notmatch 'mirror\(placeSettings\.getMirror\(\)\)\.rotate\(placeSettings\.getRotation\(\)\)' -or $source -notmatch 'transformedFacing') { throw 'Rotated marker direction transform contract missing' }
 if ($source -notmatch 'TAPESTRY_POSITIONS' -or $source -notmatch 'BM_TAPESTRY_FINAL_STATE' -or $source -notmatch 'BM_TAPESTRY_FINAL_SUMMARY') { throw 'Final tapestry support audit missing' }
 if ($source -notmatch 'BM_TAPESTRY_SPATIAL' -or $source -notmatch 'transformDirection' -or $source -notmatch 'flagCenterLocal') { throw 'Matrix-based tapestry spatial trace missing' }
+if ($source -notmatch 'blockOrigin' -or $source -notmatch 'worldCenter\.sub\(blockOrigin\)') { throw 'Spatial diagnostic is not block-relative' }
+if ($source -notmatch 'BM_TAPESTRY_MARKER_DIRECTION' -or $source -notmatch 'candidateSupportAtFacingOpposite' -or $source -notmatch 'pieceRotation') { throw 'Marker direction forensic trace missing' }
+if ($source -notmatch '/ 16.0F') { throw 'Spatial diagnostic does not convert model pixels to block units' }
 foreach ($direction in @('NORTH','SOUTH','EAST','WEST')) { if ($source -notmatch 'HORIZONTAL_FACING' -or $source -notmatch 'toYRot') { throw "Wall transform contract missing for $direction" } }
 if ($source -notmatch 'ROTATION_16' -or $source -notmatch '22\.5F') { throw 'Standing rotation transform contract missing' }
 if ($feature -and (Get-Content $feature -Raw) -notmatch 'case "tapestry"') { throw 'Mansion tapestry marker dispatch missing' }

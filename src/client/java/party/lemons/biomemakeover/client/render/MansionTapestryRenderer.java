@@ -98,14 +98,18 @@ public final class MansionTapestryRenderer implements BlockEntityRenderer<Tapest
             if (SPATIAL_KEYS.size() >= 16 || !SPATIAL_KEYS.add(key)) return;
         }
         Matrix4f matrix = new Matrix4f(pose.last().pose());
-        Vector3f localCenter = new Vector3f(0.0F, -14.5F, -1.5F);
+        Vector3f localCenter = new Vector3f(0.0F, -14.5F / 16.0F, -1.5F / 16.0F);
         Vector3f localNormal = new Vector3f(0.0F, 0.0F, -1.0F);
-        Vector3f localPole = new Vector3f(0.0F, -9.0F, 0.0F);
-        Vector3f localBar = new Vector3f(0.0F, -31.0F, 0.0F);
+        Vector3f localPole = new Vector3f(0.0F, -9.0F / 16.0F, 0.0F);
+        Vector3f localBar = new Vector3f(0.0F, -31.0F / 16.0F, 0.0F);
         Vector3f worldCenter = matrix.transformPosition(new Vector3f(localCenter));
         Vector3f worldNormal = matrix.transformDirection(new Vector3f(localNormal)).normalize();
         Vector3f worldPole = matrix.transformPosition(new Vector3f(localPole));
         Vector3f worldBar = matrix.transformPosition(new Vector3f(localBar));
+        Vector3f blockOrigin = matrix.transformPosition(new Vector3f(0.0F, 0.0F, 0.0F));
+        worldCenter.sub(blockOrigin);
+        worldPole.sub(blockOrigin);
+        worldBar.sub(blockOrigin);
         Vector3f expected = new Vector3f(state.facing.getStepX(), state.facing.getStepY(), state.facing.getStepZ());
         float dot = worldNormal.dot(expected);
         BiomeMakeover.LOGGER.info("[BM_TAPESTRY_SPATIAL] variant={} blockPos={} facing={} supportPos={} localFlagNormal={} worldFlagNormal={} expectedOutwardNormal={} normalDotExpected={} flagCenterLocal={} flagCenterWorldRelativeToBlock={} distanceFromSupportFace={} poleCenterWorldRelativeToBlock={} barCenterWorldRelativeToBlock={}",

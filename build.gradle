@@ -49,6 +49,7 @@ def stage10bAuditClasses = layout.buildDirectory.dir('classes/java/stage10bAudit
 def stage10c4TemplateValidatorClasses = layout.buildDirectory.dir('classes/java/stage10c4TemplateValidator')
 def stage10c4ProcessorValidatorClasses = layout.buildDirectory.dir('classes/java/stage10c4ProcessorValidator')
 def stage11a2TemplateValidatorClasses = layout.buildDirectory.dir('classes/java/stage11a2TemplateValidator')
+def stage11b2bMarkerAuditClasses = layout.buildDirectory.dir('classes/java/stage11b2bMarkerAudit')
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
     outputs.dir(stage3GeneratedResources)
@@ -376,6 +377,20 @@ tasks.register('validateStage11A2TemplateRuntime', JavaExec) {
     classpath = files(stage11a2TemplateValidatorClasses) + sourceSets.main.output + sourceSets.main.compileClasspath
     mainClass = 'Stage11A2MansionTemplateRuntimeValidator'
     args file('build/resources/main').absolutePath
+}
+
+tasks.register('compileStage11B2BMarkerSupportAudit', JavaCompile) {
+    source file('validation/java/Stage11B2BMarkerSupportAudit.java')
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = stage11b2bMarkerAuditClasses
+    options.release = 21
+}
+
+tasks.register('auditStage11B2BMarkerSupport', JavaExec) {
+    dependsOn tasks.named('compileStage11B2BMarkerSupportAudit')
+    classpath = files(stage11b2bMarkerAuditClasses) + sourceSets.main.compileClasspath
+    mainClass = 'Stage11B2BMarkerSupportAudit'
+    args file('reference/Biome-Makeover-1.20/common/src/main/resources/data/biomemakeover/structures/mansion')
 }
 
 tasks.named('check') {

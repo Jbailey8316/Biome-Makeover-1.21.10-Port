@@ -215,3 +215,44 @@ the newer codec, leaving an empty location predicate that granted on login.
 R.2 changes only that field to `"structures": ["biomemakeover:mansion"]`.
 The parent remains hidden=false, toast/chat enabled, and the all-tapestries
 advancement retains its 17 released item predicates and Mansion parent.
+
+## R.4 marker/support forensic result
+
+The released NBT audit covers all 56 `metadata=tapestry` occurrences. In every
+wall case, the serialized Directional Data `FACING` points toward the adjacent
+architectural backing cell: 56 point toward backing, 0 point opposite, 0 have
+no adjacent backing, and 0 are ambiguous. The released callback receives that
+direction from the transformed Directional Data block state; the released
+handler clears the marker in place, then creates the wall tapestry at the same
+position with `FACING = direction.opposite()`. The current port has the same
+callback source, in-place position, opposite operation, and update flag `3`.
+
+The R.4 runtime result of 20 unsupported tapestries therefore cannot be
+explained by a simple marker-direction inversion from the serialized contract.
+`BM_TAPESTRY_MARKER_DIRECTION` records the callback state and all six adjacent
+world blocks (capped at 24) so Prism can distinguish a transformed-state or
+placement-order discrepancy from a later support-state change.
+
+The R.3 spatial diagnostic had a unit error: model-part pixel coordinates were
+passed to matrix transforms as blocks. R.4 converts the flag, pole, and bar
+reference points from pixels to block units before applying the actual render
+matrix. Production renderer transforms are unchanged.
+
+## R.5 rotated-piece direction repair
+
+R.4 runtime evidence proved that the callback paired transformed marker
+positions with raw serialized `FACING`. R.5 transforms the marker state once
+using the native state operation order `mirror(pieceMirror).rotate(pieceRotation)`
+and reads the resulting `FACING`; it does not transform the world position or
+the final tapestry state again. `FACING = transformedMarkerFacing.opposite()`
+remains the released wall-tapestry rule.
+
+Mansion pieces currently use `Mirror.NONE`; the implementation retains the
+native mirror step for future mirrored pieces. The direction contract is
+NONE unchanged, clockwise quarter-turn, 180-degree reversal, and
+counter-clockwise quarter-turn according to the native `Rotation` operation.
+
+The final summary separates wall and standing counts. The spatial trace
+subtracts the transformed matrix origin before reporting block-relative cloth,
+pole, and bar coordinates. No template or production renderer transform was
+changed.
