@@ -283,3 +283,19 @@ loot table and dropped nothing. R.6 passes the corresponding standing block to
 the wall properties' `dropsLike` call. No wall loot tables, recipes, or new
 drop behavior are added. A trace-gated, capped `BM_TAPESTRY_DROP` observation
 records the actual block loot resolution when a tapestry is broken.
+
+## R.6.1 — Item model and inventory representation
+
+The released 1.20.1 item contract uses one item model per tapestry item,
+`models/item/<variant>_tapestry.json`, inheriting `template_tapestry`; the
+variant model retains the released `builtin/entity` presentation and the
+shared block-entity renderer supplies the artwork texture. The 1.21.10 item
+system additionally requires an item definition under
+`assets/biomemakeover/items/<item>.json`.
+
+The port had retained all 17 released models and textures but had omitted this
+modern item-definition layer. As a result, dropped and held items selected the
+missing-model fallback even though placed blocks rendered correctly. R.6.1
+adds the 17 definitions, each mapping its registered item to the matching
+`biomemakeover:item/<variant>_tapestry` model. No new item, wall item, texture,
+block renderer, or gameplay behavior is introduced.
