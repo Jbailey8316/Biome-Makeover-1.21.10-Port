@@ -89,6 +89,8 @@ public final class MansionFeature extends Structure {
     private static final Map<String, LateFinalization> LATE_FINALIZATIONS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Map<BlockPos, BlockState>> CROP_TARGETS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> CROP_EXPECTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final Map<String, Set<BlockPos>> TAPESTRY_POSITIONS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Set<String> TAPESTRY_FINAL_AUDITED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private static final class LayoutMetadata {
         final String key, signature; final BlockPos origin; final Set<String> ordinals, placements; final int unionSize, bossPieces;
@@ -132,6 +134,7 @@ public final class MansionFeature extends Structure {
                     LateFinalization late = createLateFinalization(level, entry.mansionOrigin, entry.layoutSignature, cropReady);
                     late.readyTick = level.getGameTime();
                     LATE_FINALIZATIONS.putIfAbsent(mansionId, late);
+                    if (tracing && TAPESTRY_FINAL_AUDITED.add(mansionId)) emitFinalTapestryAudit(level, mansionId);
                     int bossCleared = reconcileBossRoomFinalAir(level, entry.mansionOrigin, entry.layoutSignature);
                     if (tracing) BiomeMakeover.LOGGER.info("[BM_BOSS_ROOM_FINAL_RECONCILE] mansionId={} explicitAirCleared={}", entry.mansionId(), bossCleared);
                 }
@@ -338,6 +341,44 @@ public final class MansionFeature extends Structure {
         int missing = late.crops.size() - present;
         BiomeMakeover.LOGGER.info("[BM_CROP_FINALIZATION_RESULT] mansionId={} phase={} expected={} restored={} presentAfter={} missingAfter={} supportMissing={}",
             late.id, phase, late.crops.size(), restored, present, missing, supportMissing);
+    }
+
+    private static void emitFinalTapestryAudit(ServerLevel level, String mansionId) {
+        Set<BlockPos> positions = TAPESTRY_POSITIONS.getOrDefault(mansionId, Set.of());
+        int supported = 0, unsupported = 0, survivalPass = 0, survivalFail = 0, facingMismatch = 0;
+        int detail = 0;
+        for (BlockPos pos : positions) {
+            BlockState state = level.getBlockState(pos);
+            BlockPos support;
+            String facing;
+            String expected;
+            if (state.getBlock() instanceof MansionWallTapestryBlock wall) {
+                Direction direction = state.getValue(MansionWallTapestryBlock.FACING);
+                support = pos.relative(direction.getOpposite());
+                facing = direction.toString();
+                net.minecraft.core.Vec3i expectedVector = new net.minecraft.core.Vec3i(direction.getStepX(), direction.getStepY(), direction.getStepZ());
+                expected = expectedVector.toString();
+                if (!pos.subtract(support).equals(expectedVector)) facingMismatch++;
+            } else if (state.getBlock() instanceof MansionStandingTapestryBlock) {
+                support = pos.below();
+                facing = "STANDING";
+                expected = new net.minecraft.core.Vec3i(0, 1, 0).toString();
+            } else {
+                continue;
+            }
+            BlockState supportState = level.getBlockState(support);
+            boolean survives = state.canSurvive(level, pos);
+            boolean supportSolid = supportState.isSolid();
+            if (supportSolid) supported++; else unsupported++;
+            if (survives) survivalPass++; else survivalFail++;
+            if ((!supportSolid || !survives) && detail++ < 16) {
+                BiomeMakeover.LOGGER.info("[BM_TAPESTRY_FINAL_STATE] mansionId={} variant={} blockPos={} facing={} supportPos={} supportBlock={} canSurvive={} blockMinusSupportVector={} expectedFacingVector={}",
+                    mansionId, BuiltInRegistries.BLOCK.getKey(state.getBlock()), pos, facing, support, supportState.getBlock(), survives,
+                    pos.subtract(support), expected);
+            }
+        }
+        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_FINAL_SUMMARY] mansionId={} tapestryCount={} supportedCount={} unsupportedCount={} survivalPassCount={} survivalFailCount={} facingSupportMismatchCount={}",
+            mansionId, positions.size(), supported, unsupported, survivalPass, survivalFail, facingMismatch);
     }
 
     private static Map<BlockPos, BlockState> cropTargets(ServerLevel level, BlockPos origin, String signature) {
@@ -820,6 +861,10 @@ public final class MansionFeature extends Structure {
                 tapestry = BMBlocks.MANSION_WALL_TAPESTRIES.get(random.nextInt(BMBlocks.MANSION_WALL_TAPESTRIES.size()));
                 level.setBlock(position, tapestry.defaultBlockState()
                     .setValue(MansionWallTapestryBlock.FACING, facing.getOpposite()), 3);
+            }
+            if (level.getLevel() instanceof ServerLevel serverLevel && layoutMetadata != null) {
+                String id = mansionId(serverLevel, mansionOrigin, layoutSignature);
+                TAPESTRY_POSITIONS.computeIfAbsent(id, ignored -> java.util.concurrent.ConcurrentHashMap.newKeySet()).add(position.immutable());
             }
         }
 

@@ -48,6 +48,9 @@ if ($source -notmatch 'TAPESTRY_KEY' -or $source -notmatch 'MansionTapestryRende
 if ($source -notmatch 'flag' -or $source -notmatch 'pole' -or $source -notmatch 'bar' -or $source -notmatch 'createBodyLayer') { throw 'Released custom tapestry geometry missing' }
 if ($source -notmatch 'submitModelPart' -or $source -notmatch 'entitySolid\(state\.block\.tapestryTexture\(\)\)') { throw 'Selected tapestry texture is not bound through direct model-part rendering' }
 if ($source -notmatch 'LayerDefinition\.create\(mesh, 64, 64\)' -or $source -notmatch 'texOffs\(0, 0\)') { throw 'Released 64x64 tapestry UV contract missing' }
+if ($source -notmatch 'facing\.getOpposite\(\)' -or $source -notmatch 'setBlock\(position') { throw 'Released marker-facing/in-place placement contract missing' }
+if ($source -notmatch 'TAPESTRY_POSITIONS' -or $source -notmatch 'BM_TAPESTRY_FINAL_STATE' -or $source -notmatch 'BM_TAPESTRY_FINAL_SUMMARY') { throw 'Final tapestry support audit missing' }
+if ($source -notmatch 'BM_TAPESTRY_SPATIAL' -or $source -notmatch 'transformDirection' -or $source -notmatch 'flagCenterLocal') { throw 'Matrix-based tapestry spatial trace missing' }
 foreach ($direction in @('NORTH','SOUTH','EAST','WEST')) { if ($source -notmatch 'HORIZONTAL_FACING' -or $source -notmatch 'toYRot') { throw "Wall transform contract missing for $direction" } }
 if ($source -notmatch 'ROTATION_16' -or $source -notmatch '22\.5F') { throw 'Standing rotation transform contract missing' }
 if ($feature -and (Get-Content $feature -Raw) -notmatch 'case "tapestry"') { throw 'Mansion tapestry marker dispatch missing' }
@@ -127,6 +130,18 @@ if (-not [string]::IsNullOrWhiteSpace($Jar)) {
         while (($read = $clientStream.Read($buffer, 0, $buffer.Length)) -gt 0) { for ($i = 0; $i -lt $read; $i++) { $clientBytes.Add($buffer[$i]) } }
         $clientStream.Dispose()
         if ([Text.Encoding]::ASCII.GetString($clientBytes.ToArray()) -notmatch 'BM_TAPESTRY_RENDER_REGISTER') { throw 'Compiled JAR missing diagnostic marker: BM_TAPESTRY_RENDER_REGISTER' }
+        $mansionEntry = $zip.GetEntry('party/lemons/biomemakeover/worldgen/mansion/MansionFeature.class')
+        $mansionStream = $mansionEntry.Open()
+        $mansionBytes = New-Object System.Collections.Generic.List[byte]
+        while (($read = $mansionStream.Read($buffer, 0, $buffer.Length)) -gt 0) { for ($i = 0; $i -lt $read; $i++) { $mansionBytes.Add($buffer[$i]) } }
+        $mansionStream.Dispose()
+        $mansionText = [Text.Encoding]::ASCII.GetString($mansionBytes.ToArray())
+        foreach ($marker in @('BM_TAPESTRY_FINAL_STATE','BM_TAPESTRY_FINAL_SUMMARY')) {
+            if ($mansionText -notmatch $marker) { throw "Compiled JAR missing diagnostic marker: $marker" }
+        }
+        foreach ($marker in @('BM_TAPESTRY_SPATIAL')) {
+            if ($rendererText -notmatch $marker) { throw "Compiled JAR missing diagnostic marker: $marker" }
+        }
         if ($names -notcontains 'party/lemons/biomemakeover/block/entity/TapestryBlockEntity.class') { throw 'Compiled JAR missing TapestryBlockEntity' }
     } finally { $zip.Dispose() }
 }

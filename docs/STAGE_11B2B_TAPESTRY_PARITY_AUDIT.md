@@ -170,6 +170,27 @@ all-tapestries advancement retains its 17 released item predicates; the load
 failure was caused by the missing parent resource, not by changing tapestry
 IDs.
 
+## R.3 spatial audit
+
+The released marker path was compared directly with the port. The released
+and current semantics are the same: directional metadata is consumed at the
+marker position, the marker is replaced in place with AIR, wall tapestries use
+the marker direction’s opposite as their horizontal `FACING`, standing forms
+use a random `ROTATION_16`, and block placement uses update flags `3`. Piece
+rotation/mirror is already applied by the transformed directional block state
+before this handler receives the position and direction. No placement offset,
+second position transform, or second direction rotation was found, so R.3
+does not alter marker placement.
+
+R.3 adds two trace-gated observations. At Mansion readiness,
+`BM_TAPESTRY_FINAL_SUMMARY` audits the final block/support state and emits at
+most 16 failing `BM_TAPESTRY_FINAL_STATE` records. On the client,
+`BM_TAPESTRY_SPATIAL` applies the actual post-transform PoseStack matrix to the
+released local flag normal, cloth center, pole center, and bar center. This
+records the wall normal dot product and support-face distance without changing
+placement or rendering. Generation-time support observations are not treated
+as final-state failures.
+
 The temporary client diagnostic is gated by `-Dbm.mansion.trace=true`, emits
 at most 16 instance records, and reports the selected form, facing/rotation,
 texture, transform, and support block. It is diagnostic-only and does not

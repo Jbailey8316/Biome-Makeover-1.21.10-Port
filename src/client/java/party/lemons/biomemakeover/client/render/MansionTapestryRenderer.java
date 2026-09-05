@@ -12,8 +12,11 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import party.lemons.biomemakeover.client.model.BMModelLayers;
 import party.lemons.biomemakeover.client.model.TapestryModel;
 import party.lemons.biomemakeover.BiomeMakeover;
@@ -26,6 +29,7 @@ import party.lemons.biomemakeover.block.entity.TapestryBlockEntity;
 public final class MansionTapestryRenderer implements BlockEntityRenderer<TapestryBlockEntity, MansionTapestryRenderer.State> {
     private static final boolean TRACE = Boolean.getBoolean("bm.mansion.trace");
     private static final java.util.Set<String> TRACE_KEYS = new java.util.HashSet<>();
+    private static final java.util.Set<String> SPATIAL_KEYS = new java.util.HashSet<>();
     private final TapestryModel model;
 
     public MansionTapestryRenderer(BlockEntityRendererProvider.Context context) {
@@ -40,6 +44,9 @@ public final class MansionTapestryRenderer implements BlockEntityRenderer<Tapest
         BlockState blockState = entity.getBlockState();
         state.block = blockState.getBlock() instanceof MansionTapestryBlock tapestry ? tapestry : null;
         state.wall = blockState.getBlock() instanceof MansionWallTapestryBlock;
+        state.facing = state.wall ? blockState.getValue(MansionWallTapestryBlock.FACING) : null;
+        state.blockPosKey = entity.getBlockPos().toString();
+        state.supportPosKey = state.wall ? entity.getBlockPos().relative(state.facing.getOpposite()).toString() : "NONE";
         state.angle = state.wall ? -blockState.getValue(MansionWallTapestryBlock.FACING).toYRot()
             : -blockState.getValue(MansionStandingTapestryBlock.ROTATION) * 22.5F;
         state.modelState.poleVisible = !state.wall;
@@ -62,6 +69,7 @@ public final class MansionTapestryRenderer implements BlockEntityRenderer<Tapest
             pose.mulPose(Axis.YP.rotationDegrees(state.angle));
         }
         pose.scale(0.6666667F, -0.6666667F, -0.6666667F);
+        if (TRACE) traceSpatial(state, pose);
         model.setupAnim(state.modelState);
         int light = state.lightCoords;
         var renderType = RenderType.entitySolid(state.block.tapestryTexture());
@@ -77,7 +85,32 @@ public final class MansionTapestryRenderer implements BlockEntityRenderer<Tapest
         MansionTapestryBlock block;
         boolean wall;
         float angle;
+        Direction facing;
+        String blockPosKey;
+        String supportPosKey;
         final TapestryModel.State modelState = new TapestryModel.State();
+    }
+
+    private static void traceSpatial(State state, PoseStack pose) {
+        if (!state.wall || state.facing == null) return;
+        String key = state.blockPosKey;
+        synchronized (SPATIAL_KEYS) {
+            if (SPATIAL_KEYS.size() >= 16 || !SPATIAL_KEYS.add(key)) return;
+        }
+        Matrix4f matrix = new Matrix4f(pose.last().pose());
+        Vector3f localCenter = new Vector3f(0.0F, -14.5F, -1.5F);
+        Vector3f localNormal = new Vector3f(0.0F, 0.0F, -1.0F);
+        Vector3f localPole = new Vector3f(0.0F, -9.0F, 0.0F);
+        Vector3f localBar = new Vector3f(0.0F, -31.0F, 0.0F);
+        Vector3f worldCenter = matrix.transformPosition(new Vector3f(localCenter));
+        Vector3f worldNormal = matrix.transformDirection(new Vector3f(localNormal)).normalize();
+        Vector3f worldPole = matrix.transformPosition(new Vector3f(localPole));
+        Vector3f worldBar = matrix.transformPosition(new Vector3f(localBar));
+        Vector3f expected = new Vector3f(state.facing.getStepX(), state.facing.getStepY(), state.facing.getStepZ());
+        float dot = worldNormal.dot(expected);
+        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_SPATIAL] variant={} blockPos={} facing={} supportPos={} localFlagNormal={} worldFlagNormal={} expectedOutwardNormal={} normalDotExpected={} flagCenterLocal={} flagCenterWorldRelativeToBlock={} distanceFromSupportFace={} poleCenterWorldRelativeToBlock={} barCenterWorldRelativeToBlock={}",
+            state.block, state.blockPosKey, state.facing, state.supportPosKey, localNormal, worldNormal, expected, dot, localCenter, worldCenter,
+            worldCenter.dot(expected) + 0.5F, worldPole, worldBar);
     }
 
     private static void trace(TapestryBlockEntity entity, BlockState state, State renderState) {
