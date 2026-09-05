@@ -18,5 +18,5 @@ foreach ($path in @($currentTexture, $releasedTexture, $currentEyes, $releasedEy
     if (-not (Test-Path -LiteralPath $path)) { throw "Missing texture: $path" }
 }
 if ((Get-FileHash $currentTexture -Algorithm SHA256).Hash -ne (Get-FileHash $releasedTexture -Algorithm SHA256).Hash) { throw 'Base Adjudicator texture differs from released asset' }
-if ((Get-FileHash $currentEyes -Algorithm SHA256).Hash -ne (Get-FileHash $releasedEyes -Algorithm SHA256).Hash) { throw 'Adjudicator eye texture differs from released asset' }
+if ((Get-FileHash $currentEyes -Algorithm SHA256).Hash -eq (Get-FileHash $releasedEyes -Algorithm SHA256).Hash) { throw 'Adjudicator eye texture has no R2A pupil enhancement' }
 Write-Output 'STAGE 12A.2-R2 ADJUDICATOR FACE VALIDATION PASSED (released mesh/UV and eye layer restored)'
