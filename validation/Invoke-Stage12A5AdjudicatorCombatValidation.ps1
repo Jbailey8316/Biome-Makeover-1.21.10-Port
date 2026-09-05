@@ -15,7 +15,7 @@ foreach ($required in @(
 )) {
     if ($source -notlike "*$required*") { throw "Missing Stage 12A.5 contract: $required" }
 }
-foreach ($deferred in @('AdjudicatorMimicEntity', 'StoneGolemEntity', 'new Ravager')) {
+foreach ($deferred in @('AdjudicatorMimicEntity', 'StoneGolemEntity')) {
     if ($source -like "*$deferred*") { throw "Deferred phase leaked into Stage 12A.5: $deferred" }
 }
 if ($source -match 'COMBAT_PHASES_ENABLED') { throw 'Old all-combat gate remains' }

@@ -13,6 +13,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -26,6 +29,7 @@ import net.minecraft.world.entity.ai.goal.RangedBowAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.animal.AbstractGolem;
@@ -44,6 +48,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import party.lemons.biomemakeover.init.BMSounds;
 
 import java.util.ArrayList;
@@ -98,6 +103,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     private int phaseTime;
     private int finishFightTime;
     private int summonIndex;
+    private boolean summonInterrupted;
     private BlockPos homePos;
     private BlockPos teleportPos;
     private AABB roomBounds;
@@ -134,6 +140,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         active = true;
+        if (isSummonPhase(phase) && source.getEntity() instanceof Player) summonInterrupted = true;
         return super.hurtServer(level, source, amount);
     }
 
@@ -180,6 +187,19 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         } else if (active && phase == ControllerPhase.FANG_BARRAGE) {
             if (++phaseTime > 0 && phaseTime % 50 == 0) castFangBarrage();
             if (phaseTime >= FANG_BARRAGE_PHASE_TICKS) beginTeleport(selectNextPhaseForStage(random));
+        } else if (active && isSummonPhase(phase)) {
+            getNavigation().stop();
+            if (getTarget() != null) getLookControl().setLookAt(getTarget(), 30.0F, 30.0F);
+            int count = summonCount(phase);
+            if (++phaseTime % (SUMMON_PHASE_TICKS / count) == 0 && summonIndex < count) {
+                spawnSummonedEntity(phase);
+                summonIndex++;
+            }
+            if (summonIndex >= count || phaseTime >= SUMMON_PHASE_TICKS)
+                beginTeleport(selectNextPhaseForStage(random));
+        } else if (active && phase == ControllerPhase.RAVAGER) {
+            if (getVehicle() == null) beginTeleport(selectNextPhaseForStage(random));
+            else if (getTarget() != null) getLookControl().setLookAt(getTarget(), 30.0F, 30.0F);
         }
         bossBar.setProgress(getHealth() / getMaxHealth());
     }
@@ -227,6 +247,30 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             if (playEntrySound) playSound(net.minecraft.sounds.SoundEvents.EVOKER_PREPARE_ATTACK, 1.0F, 1.0F);
         } else if (selected == ControllerPhase.FANG_BARRAGE) {
             setControllerState(STATE_SUMMONING);
+        } else if (isSummonPhase(selected)) {
+            setControllerState(STATE_SUMMONING);
+            summonIndex = 0;
+            summonInterrupted = false;
+            getNavigation().stop();
+            if (playEntrySound) playSound(net.minecraft.sounds.SoundEvents.EVOKER_PREPARE_SUMMON, 1.0F, 1.0F);
+            summonTrace("PHASE_ENTER " + selected.id() + " count=" + summonCount(selected));
+        } else if (selected == ControllerPhase.RAVAGER) {
+            setControllerState(STATE_FIGHTING);
+            setControllerInvulnerable(true);
+            if (!(level() instanceof ServerLevel serverLevel)) return;
+            Ravager ravager = EntityType.RAVAGER.create(serverLevel, EntitySpawnReason.EVENT);
+            if (ravager != null) {
+                ravager.snapTo(getX(), getY(), getZ(), getYRot(), getXRot());
+                ravager.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(blockPosition()), EntitySpawnReason.EVENT, null);
+                ravager.setTarget(getTarget());
+                serverLevel.addFreshEntity(ravager);
+                startRiding(ravager, true, true);
+                summonTrace("RAVAGER_SPAWN mountSuccess=" + isPassenger());
+            }
+            ItemStack crossbow = new ItemStack(Items.CROSSBOW);
+            crossbow.enchant(level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
+                .getOrThrow(Enchantments.MULTISHOT), 3);
+            setItemInHand(InteractionHand.MAIN_HAND, crossbow);
         }
     }
 
@@ -266,8 +310,18 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         phaseTargetGoals.forEach(targetSelector::removeGoal);
         phaseGoals.clear();
         phaseTargetGoals.clear();
-        if (phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MELEE_ATTACK)
+        if (phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MELEE_ATTACK || phase == ControllerPhase.RAVAGER)
             setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        if (phase == ControllerPhase.RAVAGER) {
+            Entity vehicle = getVehicle();
+            if (isPassenger()) stopRiding();
+            if (vehicle instanceof Ravager ravager) ravager.discard();
+            setControllerInvulnerable(false);
+        }
+        if (isSummonPhase(phase) && !summonInterrupted) {
+            int count = summonCount(phase);
+            while (summonIndex < count) { spawnSummonedEntity(phase); summonIndex++; }
+        }
     }
 
     private void selectTargetInArena() {
@@ -368,6 +422,56 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         if (found) level().addFreshEntity(new EvokerFangs(level(), x, pos.getY() + height, z, yaw, warmup, this));
     }
 
+    private static boolean isSummonPhase(ControllerPhase phase) {
+        return phase == ControllerPhase.SPAWN_EVOKER || phase == ControllerPhase.SPAWN_VINDICATOR
+            || phase == ControllerPhase.SPAWN_VEX || phase == ControllerPhase.SPAWN_MIX;
+    }
+
+    private static int summonCount(ControllerPhase phase) {
+        return switch (phase) {
+            case SPAWN_EVOKER, SPAWN_VEX -> 2;
+            case SPAWN_VINDICATOR -> 6;
+            case SPAWN_MIX -> 3;
+            default -> 0;
+        };
+    }
+
+    private EntityType<? extends LivingEntity> summonType(ControllerPhase phase) {
+        return switch (phase) {
+            case SPAWN_EVOKER -> EntityType.EVOKER;
+            case SPAWN_VINDICATOR -> EntityType.VINDICATOR;
+            case SPAWN_VEX -> EntityType.VEX;
+            case SPAWN_MIX -> switch (random.nextInt(4)) {
+                case 0 -> EntityType.VEX;
+                case 1 -> EntityType.VINDICATOR;
+                case 2 -> EntityType.EVOKER;
+                default -> EntityType.PILLAGER;
+            };
+            default -> EntityType.EVOKER;
+        };
+    }
+
+    private void spawnSummonedEntity(ControllerPhase phase) {
+        BlockPos spawnPos = chooseArenaPosition();
+        Entity entity = summonType(phase).create(level(), EntitySpawnReason.EVENT);
+        if (entity == null) return;
+        entity.snapTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, 0.0F, 0.0F);
+        if (entity instanceof Mob mob && level() instanceof ServerLevel serverLevel) {
+            mob.finalizeSpawn(serverLevel, serverLevel.getCurrentDifficultyAt(spawnPos), EntitySpawnReason.EVENT, null);
+            mob.setTarget(getTarget());
+        }
+        if (level() instanceof ServerLevel serverLevel) serverLevel.addFreshEntityWithPassengers(entity);
+        summonTrace("SUMMON_EXECUTE type=" + entity.getType() + " phase=" + phase.id()
+            + " index=" + summonIndex + " target=" + (getTarget() == null ? "none" : getTarget().getUUID()));
+        level().playSound(null, spawnPos, net.minecraft.sounds.SoundEvents.EVOKER_CAST_SPELL,
+            net.minecraft.sounds.SoundSource.HOSTILE, 10.0F, 1.0F);
+    }
+
+    private void summonTrace(String detail) {
+        if (Boolean.getBoolean("bm.mansion.trace"))
+            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_ADJUDICATOR_SUMMON_PROOF] entity={} {}", getUUID(), detail);
+    }
+
     private void updateBossBarPlayers() {
         if (roomBounds == null) return;
         List<ServerPlayer> inside = level().getEntitiesOfClass(ServerPlayer.class, roomBounds, EntitySelector.NO_SPECTATORS);
@@ -418,7 +522,9 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     private ControllerPhase selectNextPhaseForStage(RandomSource random) {
         if (!BM_STAGE12A5_IMPLEMENTED_PHASE_GATE) return selectNextPhase(random);
         ControllerPhase[] implemented = {ControllerPhase.BOW_ATTACK, ControllerPhase.MELEE_ATTACK,
-            ControllerPhase.FANG_ATTACK, ControllerPhase.FANG_BARRAGE};
+            ControllerPhase.FANG_ATTACK, ControllerPhase.FANG_BARRAGE, ControllerPhase.RAVAGER,
+            ControllerPhase.SPAWN_EVOKER, ControllerPhase.SPAWN_VINDICATOR, ControllerPhase.SPAWN_VEX,
+            ControllerPhase.SPAWN_MIX};
         return implemented[random.nextInt(implemented.length)];
     }
 
