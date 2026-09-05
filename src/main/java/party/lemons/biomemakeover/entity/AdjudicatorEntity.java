@@ -1,6 +1,7 @@
 package party.lemons.biomemakeover.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -32,6 +33,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.entity.projectile.EvokerFangs;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.GameRules;
@@ -166,6 +168,12 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             }
         } else if (active && (phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MELEE_ATTACK)) {
             if (++phaseTime >= ATTACK_PHASE_TICKS) beginTeleport(selectNextPhaseForStage(random));
+        } else if (active && phase == ControllerPhase.FANG_ATTACK) {
+            if (++phaseTime >= 20 && (phaseTime - 20) % 40 == 0) castFangs();
+            if (phaseTime >= ATTACK_PHASE_TICKS) beginTeleport(selectNextPhaseForStage(random));
+        } else if (active && phase == ControllerPhase.FANG_BARRAGE) {
+            if (++phaseTime > 0 && phaseTime % 50 == 0) castFangBarrage();
+            if (phaseTime >= FANG_BARRAGE_PHASE_TICKS) beginTeleport(selectNextPhaseForStage(random));
         }
         bossBar.setProgress(getHealth() / getMaxHealth());
     }
@@ -208,6 +216,15 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_AXE));
             addPhaseGoals(new MeleeAttackGoal(this, 1.0F, true));
             if (playEntrySound) playSound(BMSounds.ADJUDICATOR_GRUNT, 1.0F, 1.0F);
+        } else if (selected == ControllerPhase.FANG_ATTACK) {
+            setControllerState(STATE_FIGHTING);
+            if (playEntrySound) playSound(net.minecraft.sounds.SoundEvents.EVOKER_PREPARE_ATTACK, 1.0F, 1.0F);
+            fangTrace("PHASE_ENTER FANGS timer=0 state=" + getControllerState()
+                + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
+        } else if (selected == ControllerPhase.FANG_BARRAGE) {
+            setControllerState(STATE_FIGHTING);
+            fangTrace("PHASE_ENTER FANG_BARRAGE timer=0 state=" + getControllerState()
+                + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
         }
     }
 
@@ -293,6 +310,74 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             });
     }
 
+    private void castFangs() {
+        LivingEntity target = getTarget();
+        if (!isTargetInArena(target)) return;
+        double minY = Math.min(target.getY(), getY());
+        double maxY = Math.max(target.getY(), getY()) + 1.0D;
+        float angle = (float) Math.atan2(target.getZ() - getZ(), target.getX() - getX());
+        if (distanceTo(target) < 24.0F) {
+            for (int i = 0; i < 5; i++) {
+                float yaw = (float) (angle + i * Math.PI * 0.4F);
+                conjureFang(getX() + Math.cos(yaw) * 1.5D, getZ() + Math.sin(yaw) * 1.5D,
+                    minY, maxY, yaw, 0);
+            }
+            for (int i = 0; i < 8; i++) {
+                float yaw = (float) (angle + i * Math.PI * 2.0F / 8.0F + 1.2566371F);
+                conjureFang(getX() + Math.cos(yaw) * 2.5D, getZ() + Math.sin(yaw) * 2.5D,
+                    minY, maxY, yaw, 3);
+            }
+            fangTrace("FANG_CAST pattern=close_radial count=13 target=" + target.blockPosition()
+                + " boss=" + blockPosition() + " timer=" + phaseTime);
+        } else {
+            for (int i = 0; i < 16; i++) {
+                double distance = 1.25D * (i + 1);
+                conjureFang(getX() + Math.cos(angle) * distance, getZ() + Math.sin(angle) * distance,
+                    minY, maxY, angle, i);
+            }
+            fangTrace("FANG_CAST pattern=target_line count=16 target=" + target.blockPosition()
+                + " boss=" + blockPosition() + " timer=" + phaseTime);
+        }
+    }
+
+    private void castFangBarrage() {
+        playSound(net.minecraft.sounds.SoundEvents.EVOKER_PREPARE_SUMMON, 1.0F, 1.0F);
+        fangTrace("BARRAGE_WAVE wave=" + phaseTime / 50 + " fangCount=40 boss=" + blockPosition()
+            + " timer=" + phaseTime);
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            for (int i = 0; i < 10; i++) {
+                conjureFang(getX() + direction.getStepX() * (i + 1),
+                    getZ() + direction.getStepZ() * (i + 1), 10.0D, getY(),
+                    random.nextFloat() * (float) Math.PI, i);
+            }
+        }
+    }
+
+    private void conjureFang(double x, double z, double maxY, double y, float yaw, int warmup) {
+        BlockPos pos = new BlockPos((int) x, (int) y, (int) z);
+        boolean found = false;
+        double height = 0.0D;
+        do {
+            BlockPos below = pos.below();
+            if (level().getBlockState(below).isFaceSturdy(level(), below, Direction.UP)) {
+                if (!level().isEmptyBlock(pos)) {
+                    var shape = level().getBlockState(pos).getCollisionShape(level(), pos);
+                    if (!shape.isEmpty()) height = shape.max(net.minecraft.core.Direction.Axis.Y);
+                }
+                found = true;
+                break;
+            }
+            pos = pos.below();
+        } while (pos.getY() >= net.minecraft.util.Mth.floor(maxY) - 1);
+        if (found) level().addFreshEntity(new EvokerFangs(level(), x, pos.getY() + height, z, yaw, warmup, this));
+    }
+
+    private void fangTrace(String detail) {
+        if (Boolean.getBoolean("bm.mansion.trace"))
+            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
+                "[BM_ADJUDICATOR_FANG_PROOF] entity={} {}", getUUID(), detail);
+    }
+
     private void updateBossBarPlayers() {
         if (roomBounds == null) return;
         List<ServerPlayer> inside = level().getEntitiesOfClass(ServerPlayer.class, roomBounds, EntitySelector.NO_SPECTATORS);
@@ -342,7 +427,8 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
 
     private ControllerPhase selectNextPhaseForStage(RandomSource random) {
         if (!BM_STAGE12A5_IMPLEMENTED_PHASE_GATE) return selectNextPhase(random);
-        ControllerPhase[] implemented = {ControllerPhase.BOW_ATTACK, ControllerPhase.MELEE_ATTACK};
+        ControllerPhase[] implemented = {ControllerPhase.BOW_ATTACK, ControllerPhase.MELEE_ATTACK,
+            ControllerPhase.FANG_ATTACK, ControllerPhase.FANG_BARRAGE};
         return implemented[random.nextInt(implemented.length)];
     }
 
