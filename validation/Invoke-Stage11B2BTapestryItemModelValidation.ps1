@@ -17,11 +17,11 @@ foreach ($color in $colors) {
     $texturePath = Join-Path $textureRoot "$id.png"
     foreach ($path in @($definitionPath,$modelPath,$texturePath)) { if (-not (Test-Path -LiteralPath $path)) { throw "Missing tapestry item resource: $path" } }
     $definition = Get-Content $definitionPath -Raw | ConvertFrom-Json
-    if ($definition.model.type -ne 'minecraft:model' -or $definition.model.model -ne "biomemakeover:item/$id") { throw "Invalid modern item definition: $id" }
+    if ($definition.model.type -ne 'minecraft:special' -or $definition.model.base -ne 'biomemakeover:item/template_tapestry' -or $definition.model.model.type -ne 'biomemakeover:tapestry' -or $definition.model.model.variant -ne $color) { throw "Invalid special item definition: $id" }
     $model = Get-Content $modelPath -Raw | ConvertFrom-Json
     if ($model.parent -ne 'biomemakeover:item/template_tapestry') { throw "Item model does not use released tapestry model: $id" }
     $template = Get-Content (Join-Path $modelRoot 'template_tapestry.json') -Raw | ConvertFrom-Json
-    if ($template.parent -ne 'builtin/entity') { throw 'Released tapestry item model template changed unexpectedly' }
+    if ($template.parent) { throw 'Tapestry special-item base must not route through a normal-model parent' }
     if ((Get-Item $texturePath).Length -le 0) { throw "Empty tapestry texture: $id" }
 }
 $blockSource = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/worldgen/mansion/MansionTapestryBlock.java') -Raw
@@ -41,7 +41,7 @@ if (-not [string]::IsNullOrWhiteSpace($Jar)) {
             $reader = [IO.StreamReader]::new($definitionEntry.Open())
             $compiled = $reader.ReadToEnd() | ConvertFrom-Json
             $reader.Dispose()
-            if ($compiled.model.model -ne "biomemakeover:item/$id") { throw "Compiled definition unresolved: $id" }
+            if ($compiled.model.type -ne 'minecraft:special' -or $compiled.model.model.type -ne 'biomemakeover:tapestry' -or $compiled.model.model.variant -ne $color) { throw "Compiled special definition unresolved: $id" }
         }
     } finally { $zip.Dispose() }
 }

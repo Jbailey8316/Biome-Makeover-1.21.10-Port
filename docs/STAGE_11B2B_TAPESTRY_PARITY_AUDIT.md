@@ -288,7 +288,6 @@ records the actual block loot resolution when a tapestry is broken.
 
 The released 1.20.1 item contract uses one item model per tapestry item,
 `models/item/<variant>_tapestry.json`, inheriting `template_tapestry`; the
-variant model retains the released `builtin/entity` presentation and the
 shared block-entity renderer supplies the artwork texture. The 1.21.10 item
 system additionally requires an item definition under
 `assets/biomemakeover/items/<item>.json`.
@@ -296,6 +295,19 @@ system additionally requires an item definition under
 The port had retained all 17 released models and textures but had omitted this
 modern item-definition layer. As a result, dropped and held items selected the
 missing-model fallback even though placed blocks rendered correctly. R.6.1
-adds the 17 definitions, each mapping its registered item to the matching
-`biomemakeover:item/<variant>_tapestry` model. No new item, wall item, texture,
-block renderer, or gameplay behavior is introduced.
+adds the 17 definitions. R.6.2 replaces the invalid ordinary-model route with
+the native `minecraft:special` route documented below. No new item, wall item,
+texture, block renderer, or gameplay behavior is introduced.
+
+## R.6.2 — Modern special item rendering
+
+The 1.21.10 client treats an item definition's `minecraft:model` route as a
+normal baked model. The old tapestry base reached `minecraft:builtin/entity`,
+which is not a resolvable ordinary block model in this client and produced the
+missing-model warning. R.6.2 uses `minecraft:special` with a shared
+`biomemakeover:tapestry` codec and variant field. A client registration mixin
+adds that codec to Minecraft's special-model mapper, and one renderer reuses
+the existing `TapestryModel`, 64x64 artwork, and released item display base for
+all 17 items. The special base has no normal-model parent, removing the
+unresolved dependency without changing placed rendering or item/drop
+registration.
