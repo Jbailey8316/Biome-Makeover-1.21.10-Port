@@ -29,6 +29,14 @@ public final class AdjudicatorAlliance {
         }
     }
 
+    public static void inheritFromOwner(Entity member, Entity owner) {
+        String id = encounterId(owner);
+        if (id != null && !hasEncounter(member, id)) {
+            member.addTag(TAG_PREFIX + id);
+            evokerVexInherited(owner, member);
+        }
+    }
+
     public static boolean allied(Entity first, Entity second) {
         if (first == null || second == null) return false;
         String firstId = encounterId(first);

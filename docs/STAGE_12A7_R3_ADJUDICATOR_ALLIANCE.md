@@ -9,9 +9,11 @@ Each Adjudicator and its direct Ravager/summons receive a persistent entity
 scoreboard tag containing that encounter's UUID. Entity tags survive entity
 save/reload without changing Mansion structure NBT. Same-tag entities are
 allied for vanilla targeting and same-encounter damage is denied, including
-projectile and EvokerFangs ownership resolution. Tagged Evokers propagate the
-same tag to nearby Vexes they create. Player damage, unrelated mobs, and
-different encounter IDs remain unaffected.
+projectile and EvokerFangs ownership resolution. The vanilla
+`Evoker$EvokerSummonSpellGoal.performSpellCasting` insertion call is redirected
+after `Vex.setOwner`, so tagged Evokers copy the tag to exactly the Vex being
+inserted. Player damage, unrelated mobs, and different encounter IDs remain
+unaffected.
 
 Summon counts, timing, the four-monster eligibility threshold, phase cadence,
 and R2 selection behavior are unchanged. Mimic, Stone Golem, and rewards

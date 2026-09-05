@@ -10,6 +10,12 @@ $m = Get-Content $mixin -Raw
 foreach ($needle in @('bm_adjudicator_encounter:', 'getTags()', 'Projectile', 'EvokerFangs', 'getOwner()', 'FRIENDLY_DAMAGE_BLOCKED', 'FRIENDLY_TARGET_REJECTED', 'EVOKER_VEX_INHERIT')) {
     if ($a -notlike "*$needle*") { throw "Alliance helper missing $needle" }
 }
+$evokerMixin = Join-Path $root 'src/main/java/party/lemons/biomemakeover/mixin/AdjudicatorAllianceEvokerMixin.java'
+$v = Get-Content $evokerMixin -Raw
+foreach ($needle in @('Evoker$EvokerSummonSpellGoal', 'performSpellCasting', 'addFreshEntityWithPassengers', 'vex.getOwner()', 'inheritFromOwner')) {
+    if ($v -notlike "*$needle*") { throw "Evoker Vex hook missing $needle" }
+}
+if ($v -like '*method_5773*' -or $v -like '*method = "tick"*') { throw 'Stale invalid Evoker tick target remains' }
 foreach ($needle in @('AdjudicatorAlliance.ensure(this)', 'AdjudicatorAlliance.assign(ravager, this)', 'AdjudicatorAlliance.assign(entity, this)', 'SUMMON_PHASE_TICKS = 120', 'summonPhaseEligible')) {
     if ($e -notlike "*$needle*") { throw "Production integration missing $needle" }
 }
