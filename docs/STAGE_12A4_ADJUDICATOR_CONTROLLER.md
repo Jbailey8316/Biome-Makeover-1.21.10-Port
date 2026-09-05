@@ -14,8 +14,16 @@ the active encounter lifecycle. The explicit `COMBAT_PHASES_ENABLED = false`
 gate prevents transition into any unimplemented attack or summon phase while
 leaving arena membership and boss-bar behavior live for substrate testing.
 
+R1 corrected the activation boundary after runtime testing: arena setup marks
+the encounter active on the first server tick, independently of the disabled
+combat-execution gate. This preserves released boss-bar enrollment and
+visibility without enabling any attack phase.
+
 The released phase definitions remain represented for later implementation,
 with uniform eligibility data preserved and summon eligibility restricted to
 fewer than four living arena Monsters. No placeholder attacks are installed.
 Teleport, bow, melee, fangs, fang barrage, Ravager, summon, Mimic, Stone
 Golem, rewards, and Mythas trial/key systems remain deferred.
+
+Stage 12A.4-R2 cleanup removed the temporary controller proof logging. The
+production controller has no trace-only state or callbacks.

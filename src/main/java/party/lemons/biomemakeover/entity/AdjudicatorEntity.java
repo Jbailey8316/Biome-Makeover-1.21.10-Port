@@ -125,7 +125,6 @@ public final class AdjudicatorEntity extends Monster {
             }
         });
         firstTick = false;
-        trace("arena_initialized", "home=" + homePos + " bounds=" + roomBounds + " positions=" + arenaPositions.size());
     }
 
     private void tickController() {
@@ -135,7 +134,6 @@ public final class AdjudicatorEntity extends Monster {
         if (COMBAT_PHASES_ENABLED && phase == ControllerPhase.IDLE && active) {
             phase = selectNextPhase(random);
             phaseTime = 0;
-            trace("phase_transition", "phase=" + phase.id());
         }
         bossBar.setProgress(getHealth() / getMaxHealth());
     }
@@ -147,19 +145,12 @@ public final class AdjudicatorEntity extends Monster {
         for (ServerPlayer player : inside) {
             current.add(player.getUUID());
             if (!bossBar.getPlayers().contains(player)) {
-                int before = bossBar.getPlayers().size();
                 bossBar.addPlayer(player);
-                trace("player_entered", "player=" + player.getUUID() + " arenaInitialized=" + (roomBounds != null)
-                    + " arenaBounds=" + roomBounds + " bossPosition=" + blockPosition() + " playerPosition=" + player.blockPosition()
-                    + " playerInsideArena=true encounterActive=" + active + " combatGate=" + COMBAT_PHASES_ENABLED
-                    + " bossEventVisible=" + active + " bossEventPlayersBefore=" + before
-                    + " addPlayerAttempted=true bossEventPlayersAfter=" + bossBar.getPlayers().size());
             }
         }
         for (ServerPlayer player : List.copyOf(bossBar.getPlayers())) {
             if (!current.contains(player.getUUID())) {
                 bossBar.removePlayer(player);
-                trace("player_left", "player=" + player.getUUID());
             }
         }
         bossBar.setVisible(active);
@@ -223,7 +214,6 @@ public final class AdjudicatorEntity extends Monster {
             output.putInt("ArenaPositionCount", arenaPositions.size());
             for (int i = 0; i < arenaPositions.size(); i++) writePosition(output, "ArenaPosition" + i, arenaPositions.get(i));
         }
-        trace("controller_save", "phase=" + phase.id() + " phaseTime=" + phaseTime);
     }
 
     @Override
@@ -248,7 +238,6 @@ public final class AdjudicatorEntity extends Monster {
         int count = input.getIntOr("ArenaPositionCount", 0);
         arenaPositions = new ArrayList<>();
         for (int i = 0; i < count; i++) { BlockPos pos = readPosition(input, "ArenaPosition" + i); if (pos != null) arenaPositions.add(pos); }
-        trace("controller_load", "phase=" + phase.id() + " phaseTime=" + phaseTime);
     }
 
     private static void writePosition(ValueOutput output, String prefix, BlockPos pos) {
@@ -258,11 +247,6 @@ public final class AdjudicatorEntity extends Monster {
     private static BlockPos readPosition(ValueInput input, String prefix) {
         if (!input.getInt(prefix + "X").isPresent()) return null;
         return new BlockPos(input.getIntOr(prefix + "X", 0), input.getIntOr(prefix + "Y", 0), input.getIntOr(prefix + "Z", 0));
-    }
-
-    private void trace(String event, String detail) {
-        if (Boolean.getBoolean("bm.mansion.trace"))
-            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_ADJUDICATOR_CONTROLLER_PROOF] event={} entity={} {}", event, getUUID(), detail);
     }
 
     public static AttributeSupplier.Builder createAttributes() {

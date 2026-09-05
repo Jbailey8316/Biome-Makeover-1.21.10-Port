@@ -30,6 +30,7 @@ foreach ($required in @(
 )) {
     if ($source -notlike "*$required*") { throw "Missing controller contract: $required" }
 }
+if ($source -like '*BM_ADJUDICATOR_CONTROLLER_PROOF*') { throw 'Temporary controller proof marker remains' }
 
 $phaseIds = @('idle','teleport','bow_attack','melee_attack','fang_attack','fang_barrage','ravager',
     'spawn_evoker','spawn_vindicator','spawn_vex','spawn_mix','mimic','stone_golem')
