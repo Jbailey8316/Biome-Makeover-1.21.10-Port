@@ -206,14 +206,14 @@ public final class MansionFeature extends Structure {
                 CollisionSnapshot collision = collidingBlocks(level, entity);
                 BiomeMakeover.LOGGER.info("[BM_MANSION_RAVAGER_FIRST_COLLISION] serverTick={} ticksSinceSpawn={} entityUuid={} previousPos={} currentPos={} distanceFromSpawn={} bbox={} collidingBlocks={} health={} isInWall={}",
                     level.getGameTime(), age, trace.uuid, trace.spawnX + "," + trace.spawnY + "," + trace.spawnZ,
-                    entity.position(), distance(trace, entity), entity.getBoundingBox(), collision.blocks, health(entity), entity.isInWall());
+                    entity.position(), distance(trace, entity), entity.getBoundingBox(), collision.blocks, health(entity), collision.count > 0);
             }
             float health = health(entity);
             if (!trace.damageSeen && health < trace.lastHealth) {
                 trace.damageSeen = true;
                 CollisionSnapshot collision = collidingBlocks(level, entity);
                 BiomeMakeover.LOGGER.info("[BM_MANSION_RAVAGER_FIRST_DAMAGE] ticksSinceSpawn={} previousHealth={} currentHealth={} position={} distanceFromSpawn={} isInWall={} collidingBlockCount={} collidingBlocks={}",
-                    age, trace.lastHealth, health, entity.position(), distance(trace, entity), entity.isInWall(), collision.count, collision.blocks);
+                    age, trace.lastHealth, health, entity.position(), distance(trace, entity), collision.count > 0, collision.count, collision.blocks);
             }
             trace.lastHealth = health;
             if (age > 100L) trace.completed = true;
@@ -225,7 +225,7 @@ public final class MansionFeature extends Structure {
         CollisionSnapshot collision = collidingBlocks(trace.level, entity);
         BiomeMakeover.LOGGER.info("[BM_MANSION_RAVAGER_CLEARANCE] delay={} entityUuid={} x={} y={} z={} deltaFromSpawnX={} deltaFromSpawnY={} deltaFromSpawnZ={} horizontalDistanceFromSpawn={} bbox={} health={} isAlive={} isInWall={} collidingBlockCount={} collidingBlocks={} nearbyBlocks={}",
             age == 0 ? "D0" : "D" + age, trace.uuid, entity.getX(), entity.getY(), entity.getZ(), entity.getX() - trace.spawnX,
-            entity.getY() - trace.spawnY, entity.getZ() - trace.spawnZ, distance(trace, entity), entity.getBoundingBox(), health(entity), entity.isAlive(), entity.isInWall(), collision.count, collision.blocks, nearbyBlocks(trace.level, entity));
+            entity.getY() - trace.spawnY, entity.getZ() - trace.spawnZ, distance(trace, entity), entity.getBoundingBox(), health(entity), entity.isAlive(), collision.count > 0, collision.count, collision.blocks, nearbyBlocks(trace.level, entity));
     }
 
     private static void compareRavagerReference(RavagerTrace trace, Entity entity, long age) {
@@ -1019,7 +1019,7 @@ public final class MansionFeature extends Structure {
                     BiomeMakeover.LOGGER.info("[BM_MANSION_RAVAGER_SPAWN] entityUuid={} markerWorldPos={} spawnX={} spawnY={} spawnZ={} yaw={} bboxMinX={} bboxMinY={} bboxMinZ={} bboxMaxX={} bboxMaxY={} bboxMaxZ={} width={} height={} health={} onGround={} isInWall={} collidingBlockCount={} collidingBlocks={} spawnTick={} dimension={}",
                         trace.uuid, position, entity.getX(), entity.getY(), entity.getZ(), entity.getYRot(), entity.getBoundingBox().minX,
                         entity.getBoundingBox().minY, entity.getBoundingBox().minZ, entity.getBoundingBox().maxX, entity.getBoundingBox().maxY,
-                        entity.getBoundingBox().maxZ, trace.width, trace.height, health(entity), entity.onGround(), entity.isInWall(), collision.count,
+                        entity.getBoundingBox().maxZ, trace.width, trace.height, health(entity), entity.onGround(), collision.count > 0, collision.count,
                         collision.blocks, trace.spawnTick, trace.dimension);
                 }
             }
