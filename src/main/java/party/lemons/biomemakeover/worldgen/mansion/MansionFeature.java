@@ -66,6 +66,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import party.lemons.biomemakeover.worldgen.mansion.room.MansionRoom;
 import party.lemons.biomemakeover.worldgen.mansion.RoomType;
@@ -88,6 +89,49 @@ public final class MansionFeature extends Structure {
     private static final Map<String, Set<String>> PLACED_PLACEMENTS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Integer> EXPECTED_UNION_SIZES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Integer> EXPECTED_BOSS_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<BlockPos, TargetTrace> MANSION_TARGET_TRACES = new ConcurrentHashMap<>();
+    private static final Set<String> ARMED_GARDEN_TARGETS = ConcurrentHashMap.newKeySet();
+    private static final int MAX_ARMED_GARDEN_TARGETS = 16;
+    private static final BlockPos[] GARDEN_TARGET_LOCALS = {
+        new BlockPos(6, 1, 4), new BlockPos(6, 2, 4), new BlockPos(6, 3, 4)
+    };
+    private static final BlockPos RAVAGER_MARKER_LOCAL = new BlockPos(5, 1, 5);
+
+    /**
+     * Arms the trace from the actual garden piece settings.  This is deliberately
+     * diagnostic-only: it records coordinates but never participates in placement.
+     */
+    private static void armGardenTargetTrace(ResourceLocation template, BlockPos anchor,
+                                              StructurePlaceSettings settings, BlockPos mansionOrigin,
+                                              int pieceOrdinal) {
+        if (!Boolean.getBoolean("bm.mansion.trace")
+            || !template.toString().equals("biomemakeover:mansion/garden/garden_7")) return;
+        String key = mansionOrigin + ":" + pieceOrdinal + ":" + anchor + ":" + template;
+        if (ARMED_GARDEN_TARGETS.size() >= MAX_ARMED_GARDEN_TARGETS || !ARMED_GARDEN_TARGETS.add(key)) return;
+
+        TargetTrace[] targets = new TargetTrace[GARDEN_TARGET_LOCALS.length];
+        for (int i = 0; i < GARDEN_TARGET_LOCALS.length; i++) {
+            BlockPos local = GARDEN_TARGET_LOCALS[i];
+            BlockPos world = anchor.offset(StructureTemplate.calculateRelativePosition(settings, local));
+            TargetTrace target = new TargetTrace(world, local, template.toString(), anchor,
+                settings.getRotation(), settings.getMirror(), mansionOrigin, pieceOrdinal);
+            targets[i] = target;
+            MANSION_TARGET_TRACES.put(world, target);
+        }
+        BlockPos markerWorld = anchor.offset(StructureTemplate.calculateRelativePosition(settings, RAVAGER_MARKER_LOCAL));
+        BiomeMakeover.LOGGER.info("[BM_MANSION_TARGET_TRACE_ARMED] mansionId={} template={} pieceId={} anchor={} rotation={} mirror={} markerLocal={} markerWorld={} targetLocal1={} targetWorld1={} targetLocal2={} targetWorld2={} targetLocal3={} targetWorld3={} thread={}",
+            mansionOrigin, template, pieceOrdinal, anchor, settings.getRotation(), settings.getMirror(),
+            RAVAGER_MARKER_LOCAL, markerWorld,
+            targets[0].local(), targets[0].world(), targets[1].local(), targets[1].world(),
+            targets[2].local(), targets[2].world(), Thread.currentThread().getName());
+    }
+
+    public static TargetTrace targetTraceFor(BlockPos worldPos) {
+        return MANSION_TARGET_TRACES.get(worldPos);
+    }
+
+    public record TargetTrace(BlockPos world, BlockPos local, String template, BlockPos anchor,
+                              Rotation rotation, Mirror mirror, BlockPos mansionOrigin, int pieceOrdinal) { }
     private static final Set<String> RUNTIME_REGISTERED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Map<String, LateFinalization> LATE_FINALIZATIONS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Map<BlockPos, BlockState>> CROP_TARGETS = new java.util.concurrent.ConcurrentHashMap<>();
@@ -672,6 +716,7 @@ public final class MansionFeature extends Structure {
             this.mansionPieceOrdinal = NEXT_PIECE_ORDINAL.get() == null ? -1 : NEXT_PIECE_ORDINAL.get();
             if (NEXT_PIECE_ORDINAL.get() != null) NEXT_PIECE_ORDINAL.set(NEXT_PIECE_ORDINAL.get() + 1);
             if (LAYOUT_PIECES.get() != null) LAYOUT_PIECES.get().add(this);
+            armGardenTargetTrace(template, templatePosition, placeSettings, mansionOrigin, mansionPieceOrdinal);
     }
 
     public Piece(MansionDetails details, StructureTemplateManager manager, String template, BlockPos position,

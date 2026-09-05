@@ -8,32 +8,34 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import party.lemons.biomemakeover.BiomeMakeover;
+import party.lemons.biomemakeover.worldgen.mansion.MansionFeature;
 
-/** Trace-only provenance hook for the three known Mansion collision cells. */
+/** Trace-only provenance hook for dynamically transformed garden collision cells. */
 @Mixin(WorldGenRegion.class)
 public abstract class WorldGenRegionMixin {
-    private static boolean target(BlockPos pos) {
-        return (pos.getX() == 4694 && pos.getZ() == 316 && pos.getY() >= 65 && pos.getY() <= 67);
-    }
-
     @Inject(method = "setBlock", at = @At("HEAD"))
     private void biomemakeover$traceMansionTargets(BlockPos pos, BlockState state, int flags, int recursionLeft,
                                                     CallbackInfoReturnable<Boolean> cir) {
-        if (!Boolean.getBoolean("bm.mansion.trace") || !target(pos)) return;
+        if (!Boolean.getBoolean("bm.mansion.trace")) return;
+        MansionFeature.TargetTrace target = MansionFeature.targetTraceFor(pos);
+        if (target == null) return;
         StackTraceElement caller = null;
-        String classification = "unknown";
+        String classification = "other";
         for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
             String name = element.getClassName();
             if (name.contains("WorldGenRegionMixin") || name.equals(Thread.class.getName())) continue;
             if (caller == null) caller = element;
             if (name.contains("StructureTemplate")) { classification = "StructureTemplate"; caller = element; break; }
+            if (name.contains("MansionFeature")) { classification = "Mansion piece"; caller = element; break; }
             if (name.contains("TreeFeature") || name.contains("TrunkPlacer") || name.contains("FoliagePlacer")) { classification = "tree feature"; caller = element; break; }
-            if (name.contains("VegetationFeature") || name.contains("PlacedFeature")) { classification = "vegetation feature"; caller = element; break; }
-            if (name.contains("MansionFeature")) { classification = "MansionFeature"; caller = element; break; }
+            if (name.contains("VegetationFeature") || name.contains("PlacedFeature")) { classification = "vegetation/placed feature"; caller = element; }
+            if (name.contains("Processor")) classification = "processor";
+            if (name.contains("Reconcile") || name.contains("reconcile")) classification = "reconciliation";
         }
         WorldGenRegion self = (WorldGenRegion) (Object) this;
-        BiomeMakeover.LOGGER.info("[BM_MANSION_TARGET_BLOCK_WRITE] worldPos={} oldState={} newState={} thread={} chunk={} generationStep={} stackCaller={} stackClassification={} flags={} recursionLeft={}",
-            pos, self.getBlockState(pos), state, Thread.currentThread().getName(), self.getCenter(),
+        BiomeMakeover.LOGGER.info("[BM_MANSION_TARGET_BLOCK_WRITE] worldPos={} localTarget={} mansionId={} pieceId={} template={} anchor={} rotation={} mirror={} oldState={} newState={} thread={} chunk={} generationStep={} stackCaller={} stackClassification={} flags={} recursionLeft={}",
+            pos, target.local(), target.mansionOrigin(), target.pieceOrdinal(), target.template(), target.anchor(), target.rotation(), target.mirror(),
+            self.getBlockState(pos), state, Thread.currentThread().getName(), new net.minecraft.world.level.ChunkPos(pos),
             "unavailable-from-setBlock-hook", caller == null ? "unknown" : caller.getClassName() + "." + caller.getMethodName() + ":" + caller.getLineNumber(),
             classification, flags, recursionLeft);
     }
