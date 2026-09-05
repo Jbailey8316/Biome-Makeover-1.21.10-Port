@@ -50,6 +50,12 @@ public final class AdjudicatorMimicEntity extends Monster implements RangedAttac
     }
 
     @Override public void performRangedAttack(LivingEntity target, float pullProgress) {
+        boolean weaponValid = getMainHandItem().is(Items.BOW);
+        if (Boolean.getBoolean("bm.mansion.trace"))
+            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
+                "[BM_ADJUDICATOR_MIMIC_WEAPON_PROOF] entity={} phase=MIMIC goal=RANGED mainHand={} weaponValid={} attackAllowed={}",
+                getUUID(), getMainHandItem(), weaponValid, weaponValid);
+        if (!weaponValid) return;
         ItemStack arrowStack = getProjectile(getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW)));
         AbstractArrow arrow = ProjectileUtil.getMobArrow(this, arrowStack, pullProgress, getMainHandItem());
         double dx = target.getX() - getX();
