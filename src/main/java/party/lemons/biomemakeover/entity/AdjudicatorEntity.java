@@ -110,6 +110,9 @@ public final class AdjudicatorEntity extends Monster {
     }
 
     private void initializeArena() {
+        // The released encounter becomes active as soon as its first server tick
+        // establishes the arena. The execution gate below only disables attacks.
+        active = true;
         homePos = blockPosition();
         roomBounds = new AABB(homePos.below(4)).inflate(13, 0, 13).expandTowards(0, 13, 0);
         arenaPositions = new ArrayList<>();
@@ -144,8 +147,13 @@ public final class AdjudicatorEntity extends Monster {
         for (ServerPlayer player : inside) {
             current.add(player.getUUID());
             if (!bossBar.getPlayers().contains(player)) {
+                int before = bossBar.getPlayers().size();
                 bossBar.addPlayer(player);
-                trace("player_entered", "player=" + player.getUUID());
+                trace("player_entered", "player=" + player.getUUID() + " arenaInitialized=" + (roomBounds != null)
+                    + " arenaBounds=" + roomBounds + " bossPosition=" + blockPosition() + " playerPosition=" + player.blockPosition()
+                    + " playerInsideArena=true encounterActive=" + active + " combatGate=" + COMBAT_PHASES_ENABLED
+                    + " bossEventVisible=" + active + " bossEventPlayersBefore=" + before
+                    + " addPlayerAttempted=true bossEventPlayersAfter=" + bossBar.getPlayers().size());
             }
         }
         for (ServerPlayer player : List.copyOf(bossBar.getPlayers())) {
@@ -154,7 +162,7 @@ public final class AdjudicatorEntity extends Monster {
                 trace("player_left", "player=" + player.getUUID());
             }
         }
-        bossBar.setVisible(active && phase != ControllerPhase.IDLE);
+        bossBar.setVisible(active);
     }
 
     public ControllerPhase getControllerPhase() { return phase; }

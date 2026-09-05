@@ -7,11 +7,12 @@ initialization, player-scoped boss-bar membership, summon eligibility count,
 and controller save/load state.
 
 The arena is initialized from the boss position using the released smooth
-quartz arena markers. Players inside the released arena bounds are added to
-the blue health boss bar and removed when they leave; the bar updates from
-entity health and is hidden while the controller is idle. Damage activates
-the controller lifecycle, while the explicit `COMBAT_PHASES_ENABLED = false`
-gate prevents transition into any unimplemented attack or summon phase.
+quartz arena markers and activates the encounter on its first server tick.
+Players inside the released arena bounds are added to the blue health boss bar
+and removed when they leave; the bar updates from entity health and follows
+the active encounter lifecycle. The explicit `COMBAT_PHASES_ENABLED = false`
+gate prevents transition into any unimplemented attack or summon phase while
+leaving arena membership and boss-bar behavior live for substrate testing.
 
 The released phase definitions remain represented for later implementation,
 with uniform eligibility data preserved and summon eligibility restricted to
