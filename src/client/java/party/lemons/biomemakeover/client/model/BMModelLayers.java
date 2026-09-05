@@ -19,6 +19,7 @@ public final class BMModelLayers {
     public static final ModelLayerLocation GHOST = new ModelLayerLocation(BiomeMakeover.id("ghost"), "main");
     public static final ModelLayerLocation TAPESTRY = new ModelLayerLocation(BiomeMakeover.id("tapestry"), "main");
     public static final ModelLayerLocation ADJUDICATOR = new ModelLayerLocation(BiomeMakeover.id("adjudicator"), "main");
+    public static final ModelLayerLocation STONE_GOLEM = new ModelLayerLocation(BiomeMakeover.id("stone_golem"), "main");
 
     private BMModelLayers() {}
 
@@ -37,5 +38,6 @@ public final class BMModelLayers {
         EntityModelLayerRegistry.registerModelLayer(GHOST, GhostModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(TAPESTRY, TapestryModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(ADJUDICATOR, AdjudicatorModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(STONE_GOLEM, StoneGolemModel::createBodyLayer);
     }
 }

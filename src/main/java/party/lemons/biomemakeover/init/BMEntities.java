@@ -33,6 +33,7 @@ import party.lemons.biomemakeover.entity.MushroomTraderEntity;
 import party.lemons.biomemakeover.entity.GhostEntity;
 import party.lemons.biomemakeover.entity.AdjudicatorEntity;
 import party.lemons.biomemakeover.entity.AdjudicatorMimicEntity;
+import party.lemons.biomemakeover.entity.StoneGolemEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
@@ -98,6 +99,10 @@ public final class BMEntities {
     public static final EntityType<AdjudicatorMimicEntity> ADJUDICATOR_MIMIC = registerEntity("adjudicator_mimic",
         EntityType.Builder.<AdjudicatorMimicEntity>of(AdjudicatorMimicEntity::new, MobCategory.MONSTER)
             .sized(.6F, 1.95F).fireImmune().noSummon().clientTrackingRange(12));
+    public static final EntityType<StoneGolemEntity> STONE_GOLEM = registerEntity("stone_golem",
+        EntityType.Builder.<StoneGolemEntity>of(StoneGolemEntity::new, MobCategory.MISC)
+            .sized(1.6F, 2.5F).clientTrackingRange(12));
+    public static final Item STONE_GOLEM_SPAWN_EGG = registerSpawnEgg("stone_golem_spawn_egg", STONE_GOLEM);
 
     private BMEntities() {
     }
@@ -133,6 +138,7 @@ public final class BMEntities {
         FabricDefaultAttributeRegistry.register(GHOST, GhostEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(ADJUDICATOR, AdjudicatorEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(ADJUDICATOR_MIMIC, AdjudicatorMimicEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(STONE_GOLEM, StoneGolemEntity.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,
@@ -153,6 +159,7 @@ public final class BMEntities {
             entries.accept(ROOTLING_SPAWN_EGG); entries.accept(MOTH_SPAWN_EGG);
             entries.accept(MUSHROOM_TRADER_SPAWN_EGG);
             entries.accept(GHOST_SPAWN_EGG);
+            entries.accept(STONE_GOLEM_SPAWN_EGG);
         });
         SpawnPlacements.register(ROOTLING, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
             (type, level, reason, pos, random) -> level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK)

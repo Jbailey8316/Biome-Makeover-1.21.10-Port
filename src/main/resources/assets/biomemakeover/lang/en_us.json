@@ -1,4 +1,6 @@
 {
+  "entity.biomemakeover.stone_golem": "Stone Golem",
+  "item.biomemakeover.stone_golem_spawn_egg": "Stone Golem Spawn Egg",
   "block.biomemakeover.mesmerite": "Mesmerite",
   "block.biomemakeover.altar": "Altar",
   "advancements.biomemakeover.altar.title": "Cursed",

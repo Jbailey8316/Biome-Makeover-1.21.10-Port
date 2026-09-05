@@ -47,6 +47,7 @@ import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
 import party.lemons.biomemakeover.util.loot.BetterLootTableReference;
 
 public final class BMItems {
+    public static final TagKey<Item> HEALS_STONE_GOLEM = TagKey.create(Registries.ITEM, BiomeMakeover.id("heals_stone_golem"));
     public static final TagKey<Item> CURSE_FUEL = TagKey.create(Registries.ITEM, BiomeMakeover.id("curse_fuel"));
     public static final TagKey<Item> WITCH_HATS = TagKey.create(Registries.ITEM, BiomeMakeover.id("witch_hats"));
     public static final ResourceKey<JukeboxSong> BUTTON_MUSHROOMS_SONG = ResourceKey.create(
