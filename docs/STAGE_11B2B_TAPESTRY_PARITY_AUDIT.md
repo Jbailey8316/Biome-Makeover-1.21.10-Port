@@ -144,6 +144,25 @@ and limited to 16 representative placements per Mansion. It is not a gameplay
 contract and must be removed or reduced to a negligible guard after runtime
 acceptance.
 
+## R.7 vanilla-banner placement architecture
+
+The 1.21.10 placement contract now follows the vanilla banner primitives while
+retaining the custom tapestry block entity and renderer. Standing tapestries
+use the same `ROTATION_16` yaw conversion as `BannerBlock`:
+`RotationSegment.convertToSegment(context.getRotation() + 180.0F)`, and use the
+native `Rotation.rotate(value, 16)` / `Mirror.mirror(value, 16)` transforms.
+Wall tapestries retain the `WallBannerBlock` contract: horizontal `FACING`,
+opposite of the selected attachment direction, support at
+`FACING.getOpposite()`, and native direction rotation/mirroring. The shared
+item is the vanilla `StandingAndWallBlockItem` with `Direction.DOWN`, so wall
+selection and standing fallback use the same placement decision as banners.
+
+Mansion directional-data still supplies the already piece-transformed marker
+direction exactly once; the handler applies the released wall `opposite()`
+semantics and does not rotate the final tapestry state again. The 56 marker
+occurrences and all 168 NBT templates remain unchanged. `BM_TAPESTRY_PLACEMENT_TRACE`
+is a temporary, trace-gated, 16-entry runtime diagnostic for Prism verification.
+
 ## R.1 renderer and advancement repair
 
 The Prism wall-tapestry failure was traced to model geometry, not texture

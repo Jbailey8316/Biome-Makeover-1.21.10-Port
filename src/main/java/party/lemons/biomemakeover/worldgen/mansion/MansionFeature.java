@@ -524,6 +524,7 @@ public final class MansionFeature extends Structure {
     public static final class Piece extends TemplateStructurePiece {
         private static final boolean TRACE = Boolean.getBoolean("bm.mansion.trace");
         private static final AtomicLong TRACE_ORDER = new AtomicLong();
+        private static final AtomicLong TAPESTRY_PLACEMENT_TRACE_COUNT = new AtomicLong();
         private final boolean ground;
         private final boolean wall;
         private final BlockPos mansionOrigin;
@@ -647,6 +648,21 @@ public final class MansionFeature extends Structure {
                         .getValue(DirectionalBlock.FACING);
                     handleDirectionalMetadata(metadata, serializedFacing,
                         "tapestry".equals(metadata) ? transformedFacing : serializedFacing, info.pos(), level, random);
+                    if (TRACE && "tapestry".equals(metadata) && TAPESTRY_PLACEMENT_TRACE_COUNT.incrementAndGet() <= 16) {
+                        BlockState placed = level.getBlockState(info.pos());
+                        String form = placed.getBlock() instanceof MansionWallTapestryBlock ? "wall"
+                            : placed.getBlock() instanceof MansionStandingTapestryBlock ? "standing" : "unknown";
+                        String finalState = placed.hasProperty(MansionWallTapestryBlock.FACING)
+                            ? placed.getValue(MansionWallTapestryBlock.FACING).getSerializedName()
+                            : placed.hasProperty(MansionStandingTapestryBlock.ROTATION)
+                                ? Integer.toString(placed.getValue(MansionStandingTapestryBlock.ROTATION)) : "none";
+                        BlockPos support = placed.getBlock() instanceof MansionWallTapestryBlock
+                            ? info.pos().relative(placed.getValue(MansionWallTapestryBlock.FACING).getOpposite())
+                            : info.pos().below();
+                        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_PLACEMENT_TRACE] variant={} form={} markerPos={} finalBlockPos={} sourceDirection={} pieceRotation={} pieceMirror={} finalFacingOrRotation={} supportPos={}",
+                            BuiltInRegistries.BLOCK.getKey(placed.getBlock()), form, info.pos(), info.pos(), transformedFacing.getSerializedName(),
+                            placeSettings.getRotation(), placeSettings.getMirror(), finalState, support);
+                    }
                 }
             }
             restoreSerializedCrops(level, bounds);

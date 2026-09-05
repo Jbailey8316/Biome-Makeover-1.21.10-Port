@@ -51,7 +51,10 @@ if ($source -notmatch 'LayerDefinition\.create\(mesh, 64, 64\)' -or $source -not
 if ($source -notmatch 'facing\.getOpposite\(\)' -or $source -notmatch 'setBlock\(position') { throw 'Released marker-facing/in-place placement contract missing' }
 if ($source -notmatch 'mirror\(placeSettings\.getMirror\(\)\)\.rotate\(placeSettings\.getRotation\(\)\)' -or $source -notmatch 'transformedFacing') { throw 'Rotated marker direction transform contract missing' }
 if ($source -notmatch 'generateTapestry\(facing' -or $source -notmatch 'setValue\(MansionWallTapestryBlock\.FACING,\s*facing\.getOpposite\(\)\)') { throw 'Production transformed-facing dataflow is not wired to the wall state write' }
-if ($source -match 'BM_TAPESTRY_') { throw 'Temporary tapestry forensic logging remains in production source' }
+if ($source -match 'BM_TAPESTRY_(?!PLACEMENT_TRACE)') { throw 'Superseded tapestry forensic logging remains in production source' }
+if ($source -notmatch 'RotationSegment\.convertToSegment\(context\.getRotation\(\) \+ 180\.0F\)') { throw 'Standing tapestry does not use vanilla BannerBlock yaw-to-ROTATION_16 placement semantics' }
+if ($source -notmatch 'new StandingAndWallBlockItem\(standing, wall, .*Direction\.DOWN') { throw 'Tapestry item does not use vanilla StandingAndWallBlockItem attachment semantics' }
+if ($source -notmatch 'BM_TAPESTRY_PLACEMENT_TRACE') { throw 'R7 placement trace marker is missing' }
 foreach ($direction in @('NORTH','SOUTH','EAST','WEST')) { if ($source -notmatch 'HORIZONTAL_FACING' -or $source -notmatch 'toYRot') { throw "Wall transform contract missing for $direction" } }
 if ($source -notmatch 'ROTATION_16' -or $source -notmatch '22\.5F') { throw 'Standing rotation transform contract missing' }
 if ($feature -and (Get-Content $feature -Raw) -notmatch 'case "tapestry"') { throw 'Mansion tapestry marker dispatch missing' }

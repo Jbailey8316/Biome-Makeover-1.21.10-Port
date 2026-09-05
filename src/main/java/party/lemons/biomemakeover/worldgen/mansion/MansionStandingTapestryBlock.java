@@ -15,9 +15,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.RotationSegment;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/** Released floor/ceiling-compatible tapestry form. */
+/** Released floor-supported tapestry form with vanilla banner rotation semantics. */
 public final class MansionStandingTapestryBlock extends MansionTapestryBlock {
     public static final IntegerProperty ROTATION = BlockStateProperties.ROTATION_16;
     private static final VoxelShape SHAPE = Block.box(4.0D, 0.0D, 4.0D, 12.0D, 16.0D, 12.0D);
@@ -29,6 +31,10 @@ public final class MansionStandingTapestryBlock extends MansionTapestryBlock {
 
     @Override protected MapCodec<? extends MansionTapestryBlock> codec() { return simpleCodec(p -> new MansionStandingTapestryBlock(p, tapestryTexture())); }
     @Override protected VoxelShape shape(BlockState state) { return SHAPE; }
+    /** Mirrors BannerBlock: player yaw is quantized into the native 16-step rotation. */
+    @Override public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(ROTATION, RotationSegment.convertToSegment(context.getRotation() + 180.0F));
+    }
     @Override public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         return level.getBlockState(pos.below()).isSolid();
     }
