@@ -16,3 +16,15 @@ Adjudicator controller.
 
 Stone Golem and all rewards remain deferred. Mansion templates and structure
 NBT are unchanged.
+
+Stage 12A.8 is complete, runtime accepted, and frozen. R0 restored the Mimic
+phase but initially left the real Adjudicator without the bow required by its
+released inherited BowAttackingPhase behavior; R1 repaired that state and the
+sound-event references. R1 runtime then exposed air-handed Mimics. R2 restored
+the released explicit `finalizeSpawn` call to
+`populateDefaultEquipmentSlots`, proving that Mimics hold and fire valid bows.
+
+The released Adjudicator/Mimic ranged guards remain as defensive 1.21.10
+invariants. The existing encounter alliance and Monster-count eligibility
+systems are retained. Temporary runtime diagnostics are removed from the
+production implementation.

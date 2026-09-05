@@ -11,12 +11,11 @@ foreach ($needle in @('class AdjudicatorMimicEntity', 'RangedAttackGoal', 'MAX_H
 foreach ($needle in @('3 + random.nextInt(4)', 'EntitySpawnReason.NATURAL', 'AdjudicatorAlliance.assign(mimic, this)', 'clearMimics()', 'mimicInterrupted', 'ControllerPhase.MIMIC')) {
     if ($boss -notlike "*$needle*") { throw "Mimic phase contract missing $needle" }
 }
-foreach ($needle in @('setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BOW))', 'new RangedBowAttackGoal<>(this, 0.75F, 12, 30)', 'weaponValid', 'BM_ADJUDICATOR_MIMIC_WEAPON_PROOF')) {
+foreach ($needle in @('setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BOW))', 'new RangedBowAttackGoal<>(this, 0.75F, 12, 30)', 'weaponValid')) {
     if ($boss -notlike "*$needle*") { throw "Mimic ranged-weapon invariant missing $needle" }
 }
 if ($entity -notlike '*boolean weaponValid*' -or $entity -notlike '*if (!weaponValid) return*') { throw 'Mimic ranged-weapon guard missing' }
 if ($entity -notlike '*populateDefaultEquipmentSlots(level.getRandom(), difficulty)*') { throw 'Mimic finalizeSpawn equipment population missing' }
-if ($boss -notlike '*MIMIC_READY entity=*') { throw 'Mimic ready diagnostic missing' }
 foreach ($needle in @('AdjudicatorMimicRenderer', 'BMModelLayers.ADJUDICATOR', 'adjudicator.png', 'adjudicator_eyes.png')) {
     if (($client + $renderer) -notlike "*$needle*") { throw "Mimic client contract missing $needle" }
 }

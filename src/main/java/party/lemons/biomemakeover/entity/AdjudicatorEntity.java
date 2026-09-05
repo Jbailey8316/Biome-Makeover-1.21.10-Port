@@ -244,7 +244,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         selectTargetInArena();
         if (selected == ControllerPhase.BOW_ATTACK) {
             setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BOW));
-            weaponTrace("phase=BOW mainHand=" + getMainHandItem() + " weaponValid=true attackAllowed=true");
             addPhaseGoals(new RangedBowAttackGoal<>(this, 0.75F, 12, 30));
             if (playEntrySound) playSound(BMSounds.ADJUDICATOR_GRUNT, 1.0F, 1.0F);
         } else if (selected == ControllerPhase.MELEE_ATTACK) {
@@ -266,7 +265,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             setControllerState(STATE_FIGHTING);
             mimicInterrupted = false;
             setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BOW));
-            weaponTrace("phase=MIMIC mainHand=" + getMainHandItem() + " weaponValid=true attackAllowed=true");
             addPhaseGoals(new RangedBowAttackGoal<>(this, 0.75F, 12, 30));
             spawnMimics();
             if (playEntrySound) playSound(BMSounds.ADJUDICATOR_MIMIC, 1.0F, 1.0F);
@@ -345,7 +343,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     private void spawnMimics() {
         List<BlockPos> used = new ArrayList<>();
         int count = 3 + random.nextInt(4);
-        mimicTrace("PHASE_ENTER boss=" + getUUID() + " count=" + count + " duration=" + ATTACK_PHASE_TICKS);
         for (int i = 0; i < count; i++) {
             BlockPos spawnPos;
             do { spawnPos = chooseArenaPosition(); } while (used.contains(spawnPos));
@@ -360,13 +357,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             mimic.snapTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, 0.0F, 0.0F);
               mimic.setTarget(getTarget());
               level().addFreshEntity(mimic);
-              weaponTrace("MIMIC_READY entity=" + mimic.getUUID() + " mainHand=" + mimic.getMainHandItem()
-                  + " weaponValid=" + mimic.getMainHandItem().is(Items.BOW)
-                  + " target=" + (getTarget() == null ? "none" : getTarget().getUUID())
-                  + " encounterId=" + AdjudicatorAlliance.encounterId(this));
-              mimicTrace("MIMIC_SPAWN uuid=" + mimic.getUUID() + " position=" + mimic.blockPosition()
-                  + " target=" + (getTarget() == null ? "none" : getTarget().getUUID())
-                  + " encounterId=" + AdjudicatorAlliance.encounterId(this));
               clearMimicArea(mimic);
         }
         level().broadcastEntityEvent(this, (byte) 46);
@@ -376,16 +366,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
           if (roomBounds == null) return;
           List<AdjudicatorMimicEntity> mimics = level().getEntitiesOfClass(AdjudicatorMimicEntity.class, roomBounds,
               mimic -> AdjudicatorAlliance.allied(this, mimic));
-          mimics.forEach(mimic -> {
-              mimicTrace("MIMIC_REMOVE uuid=" + mimic.getUUID() + " reason=phase_exit");
-              mimic.discard();
-          });
-          mimicTrace("PHASE_EXIT remainingMimics=0");
-    }
-
-    private void mimicTrace(String message) {
-        if (Boolean.getBoolean("bm.mansion.trace"))
-            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_ADJUDICATOR_MIMIC_PROOF] {}", message);
+          mimics.forEach(AdjudicatorMimicEntity::discard);
     }
 
     private void clearMimicArea(AdjudicatorMimicEntity mimic) {
@@ -620,8 +601,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     public void performRangedAttack(LivingEntity target, float pullProgress) {
         boolean bowPhase = phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MIMIC;
         boolean weaponValid = getMainHandItem().is(Items.BOW);
-        weaponTrace("phase=" + phase.id() + " goal=RANGED mainHand=" + getMainHandItem()
-            + " weaponValid=" + weaponValid + " attackAllowed=" + (bowPhase && weaponValid));
         if (!bowPhase || !weaponValid) return;
         ItemStack arrows = Items.ARROW.getDefaultInstance();
         AbstractArrow arrow = ProjectileUtil.getMobArrow(this, arrows, pullProgress, getMainHandItem());
@@ -636,10 +615,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         level().addFreshEntity(arrow);
     }
 
-    private void weaponTrace(String message) {
-        if (Boolean.getBoolean("bm.mansion.trace"))
-            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_ADJUDICATOR_MIMIC_WEAPON_PROOF] {}", message);
-    }
 
     public boolean isTargetInArena(LivingEntity target) {
         return target != null && target.isAlive() && roomBounds != null && roomBounds.contains(target.position());
