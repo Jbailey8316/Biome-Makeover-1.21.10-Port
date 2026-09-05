@@ -360,6 +360,10 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             mimic.snapTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, 0.0F, 0.0F);
               mimic.setTarget(getTarget());
               level().addFreshEntity(mimic);
+              weaponTrace("MIMIC_READY entity=" + mimic.getUUID() + " mainHand=" + mimic.getMainHandItem()
+                  + " weaponValid=" + mimic.getMainHandItem().is(Items.BOW)
+                  + " target=" + (getTarget() == null ? "none" : getTarget().getUUID())
+                  + " encounterId=" + AdjudicatorAlliance.encounterId(this));
               mimicTrace("MIMIC_SPAWN uuid=" + mimic.getUUID() + " position=" + mimic.blockPosition()
                   + " target=" + (getTarget() == null ? "none" : getTarget().getUUID())
                   + " encounterId=" + AdjudicatorAlliance.encounterId(this));

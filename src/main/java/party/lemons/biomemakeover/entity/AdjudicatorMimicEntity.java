@@ -9,6 +9,8 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -25,6 +27,8 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import org.jetbrains.annotations.Nullable;
 import party.lemons.biomemakeover.init.BMSounds;
 
 /** Released Adjudicator phase-only Mimic. */
@@ -49,11 +53,19 @@ public final class AdjudicatorMimicEntity extends Monster implements RangedAttac
         setDropChance(net.minecraft.world.entity.EquipmentSlot.OFFHAND, 0.0F);
     }
 
+    @Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty,
+                                        EntitySpawnReason reason, @Nullable SpawnGroupData data) {
+        // Released MimicEntity explicitly populated its bow before delegating to Mob.
+        populateDefaultEquipmentSlots(level.getRandom(), difficulty);
+        return super.finalizeSpawn(level, difficulty, reason, data);
+    }
+
     @Override public void performRangedAttack(LivingEntity target, float pullProgress) {
         boolean weaponValid = getMainHandItem().is(Items.BOW);
         if (Boolean.getBoolean("bm.mansion.trace"))
             party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
-                "[BM_ADJUDICATOR_MIMIC_WEAPON_PROOF] entity={} phase=MIMIC goal=RANGED mainHand={} weaponValid={} attackAllowed={}",
+                "[BM_ADJUDICATOR_MIMIC_WEAPON_PROOF] MIMIC_RANGED_ATTACK entity={} phase=MIMIC goal=RANGED mainHand={} weaponValid={} attackAllowed={}",
                 getUUID(), getMainHandItem(), weaponValid, weaponValid);
         if (!weaponValid) return;
         ItemStack arrowStack = getProjectile(getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW)));

@@ -15,6 +15,8 @@ foreach ($needle in @('setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(It
     if ($boss -notlike "*$needle*") { throw "Mimic ranged-weapon invariant missing $needle" }
 }
 if ($entity -notlike '*boolean weaponValid*' -or $entity -notlike '*if (!weaponValid) return*') { throw 'Mimic ranged-weapon guard missing' }
+if ($entity -notlike '*populateDefaultEquipmentSlots(level.getRandom(), difficulty)*') { throw 'Mimic finalizeSpawn equipment population missing' }
+if ($boss -notlike '*MIMIC_READY entity=*') { throw 'Mimic ready diagnostic missing' }
 foreach ($needle in @('AdjudicatorMimicRenderer', 'BMModelLayers.ADJUDICATOR', 'adjudicator.png', 'adjudicator_eyes.png')) {
     if (($client + $renderer) -notlike "*$needle*") { throw "Mimic client contract missing $needle" }
 }
