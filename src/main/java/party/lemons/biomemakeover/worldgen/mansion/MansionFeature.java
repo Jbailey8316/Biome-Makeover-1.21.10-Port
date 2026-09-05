@@ -105,6 +105,7 @@ public final class MansionFeature extends Structure {
     private static final Set<String> EXECUTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static volatile boolean delayedFluidTraceInstalled;
     private static final Map<UUID, RavagerTrace> RAVAGER_TRACES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.concurrent.atomic.AtomicInteger SPAWN_SAFE_ACCESS_EMISSIONS = new java.util.concurrent.atomic.AtomicInteger();
 
     private static final class RavagerTrace {
         final ServerLevel level; final UUID uuid; final BlockPos marker; final long spawnTick;
@@ -246,7 +247,7 @@ public final class MansionFeature extends Structure {
 
     private record CollisionSnapshot(int count, String blocks) {}
 
-    private static CollisionSnapshot collidingBlocks(ServerLevel level, Entity entity) {
+    private static CollisionSnapshot collidingBlocks(net.minecraft.world.level.BlockGetter level, Entity entity) {
         AABB box = entity.getBoundingBox(); Set<String> found = new java.util.LinkedHashSet<>();
         BlockPos min = BlockPos.containing(box.minX, box.minY, box.minZ), max = BlockPos.containing(box.maxX, box.maxY, box.maxZ);
         for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
@@ -730,17 +731,7 @@ public final class MansionFeature extends Structure {
             long order = TRACE_ORDER.incrementAndGet();
             if (level.getLevel() instanceof ServerLevel serverLevel) registerCropTargets(serverLevel);
             Map<BlockPos, BlockState> authoredStates = dungeonAuthoredStates();
-            boolean tracePlacement = Boolean.getBoolean("bm.mansion.trace");
-            long placementStart = tracePlacement ? System.nanoTime() : 0L;
-            String placementMansionId = level.getLevel() instanceof ServerLevel serverLevel
-                ? serverLevel.dimension().location() + ":" + mansionOrigin + ":" + layoutSignature : "UNKNOWN";
-            if (tracePlacement) BiomeMakeover.LOGGER.info("[BM_MANSION_PLACEMENT_BEGIN] mansionId={} pieceId={} ordinal={} template={} chunk={} thread={} timestampNanos={}",
-                placementMansionId, mansionPieceOrdinal, mansionPieceOrdinal, diagnosticTemplate, chunkPos, Thread.currentThread().getName(), placementStart);
             super.postProcess(level, structureManager, generator, random, bounds, chunkPos, pivot);
-            if (tracePlacement) BiomeMakeover.LOGGER.info("[BM_MANSION_PLACEMENT_END] mansionId={} pieceId={} ordinal={} template={} chunk={} thread={} durationMs={} placedPlacementCount={} expectedPlacementCount={}",
-                placementMansionId, mansionPieceOrdinal, mansionPieceOrdinal, diagnosticTemplate, chunkPos, Thread.currentThread().getName(),
-                (System.nanoTime() - placementStart) / 1_000_000.0D, placementMansionId.equals("UNKNOWN") ? -1 : PLACED_PLACEMENTS.getOrDefault(placementMansionId, Set.of()).size(),
-                placementMansionId.equals("UNKNOWN") ? -1 : EXPECTED_PLACEMENTS.getOrDefault(placementMansionId, Set.of()).size());
             for (var info : template.filterBlocks(templatePosition, placeSettings, BMBlocks.DIRECTIONAL_DATA)) {
                 if (info.nbt() != null && info.state().hasProperty(DirectionalBlock.FACING)) {
                     String metadata = info.nbt().getStringOr("metadata", "");
@@ -986,12 +977,18 @@ public final class MansionFeature extends Structure {
                 Map<BlockPos, BlockState> reference = new HashMap<>();
                 for (int x = -2; x <= 2; x++) for (int y = 0; y <= 3; y++) for (int z = -2; z <= 2; z++) {
                     BlockPos sample = position.offset(x, y, z);
-                    BlockState state = serverLevel.getBlockState(sample);
+                    // Worldgen callbacks must read through the supplied region.
+                    // ServerLevel lookup can synchronously acquire an unavailable
+                    // chunk and join its generation future.
+                    BlockState state = world.getBlockState(sample);
                     if (!state.isAir()) reference.put(sample.immutable(), state);
                 }
+                if (SPAWN_SAFE_ACCESS_EMISSIONS.getAndIncrement() < 32)
+                    BiomeMakeover.LOGGER.info("[BM_MANSION_SPAWN_SAFE_ACCESS] metadata/type={} markerPos={} currentChunk={} accessMethod=WorldGenLevel.getBlockState requestedExternalChunk=false thread={}",
+                        metadata, position, new ChunkPos(position), Thread.currentThread().getName());
                 RavagerTrace trace = new RavagerTrace(serverLevel, entity, position, reference);
                 if (RAVAGER_TRACES.putIfAbsent(trace.uuid, trace) == null) {
-                    CollisionSnapshot collision = collidingBlocks(serverLevel, entity);
+                    CollisionSnapshot collision = collidingBlocks(world, entity);
                     BiomeMakeover.LOGGER.info("[BM_MANSION_RAVAGER_SPAWN] entityUuid={} markerWorldPos={} spawnX={} spawnY={} spawnZ={} yaw={} bboxMinX={} bboxMinY={} bboxMinZ={} bboxMaxX={} bboxMaxY={} bboxMaxZ={} width={} height={} health={} onGround={} isInWall={} collidingBlockCount={} collidingBlocks={} spawnTick={} dimension={}",
                         trace.uuid, position, entity.getX(), entity.getY(), entity.getZ(), entity.getYRot(), entity.getBoundingBox().minX,
                         entity.getBoundingBox().minY, entity.getBoundingBox().minZ, entity.getBoundingBox().maxX, entity.getBoundingBox().maxY,
