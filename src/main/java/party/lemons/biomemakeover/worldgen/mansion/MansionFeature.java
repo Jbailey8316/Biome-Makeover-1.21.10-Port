@@ -89,11 +89,8 @@ public final class MansionFeature extends Structure {
     private static final Map<String, LateFinalization> LATE_FINALIZATIONS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Map<BlockPos, BlockState>> CROP_TARGETS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> CROP_EXPECTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
-    private static final Map<String, Map<BlockPos, TapestryProof>> TAPESTRY_PROOFS = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final Set<String> TAPESTRY_SUPPORT_AUDITED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Map<String, List<RawTapestryMarker>> RAW_TAPESTRY_MARKERS = new java.util.concurrent.ConcurrentHashMap<>();
 
-    private record TapestryProof(String template, int pieceId, BlockPos position, String variant) {}
     private record RawTapestryMarker(BlockPos marker, BlockPos support) {}
     private record TapestryGeometry(BlockPos marker, BlockPos support, BlockPos markerWorld, BlockPos supportWorld, Direction supportDirection) {}
 
@@ -147,7 +144,6 @@ public final class MansionFeature extends Structure {
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_BEGIN mansionId={} unionPositions={}", entry.mansionId(), unionSize(level, entry.mansionOrigin, entry.layoutSignature));
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=EXECUTE_END mansionId={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
                         entry.mansionId(), result.correctedAir(), result.correctedWaterlogged(), result.authoredWetPreserved());
-                    if (tracing) emitTapestryRuntimeSupportProof(level, mansionId);
                     BiomeMakeover.LOGGER.info("[BM_DUNGEON_RECONCILE] phase=R0 mansionId={} explicitDryWater={} authoredFalseNowWaterlogged={} correctedAir={} correctedWaterlogged={} authoredWetPreserved={}",
                         entry.mansionId(), result.explicitDryWater(), result.authoredFalseNowWaterlogged(), result.correctedAir(), result.correctedWaterlogged(), result.authoredWetPreserved());
                     BiomeMakeover.LOGGER.info("[BM_RECONCILE_LIFECYCLE] event=REMOVE mansionId={}", entry.mansionId());
@@ -189,33 +185,6 @@ public final class MansionFeature extends Structure {
             && placedPlacements.equals(expectedPlacements)
             && placedPieces.size() == expectedOrdinals.size()
             && placedPieces.containsAll(expectedOrdinals);
-    }
-
-    private static void emitTapestryRuntimeSupportProof(ServerLevel level, String mansionId) {
-        if (!TAPESTRY_SUPPORT_AUDITED.add(mansionId)) return;
-        Map<BlockPos, TapestryProof> proofs = TAPESTRY_PROOFS.getOrDefault(mansionId, Map.of());
-        for (TapestryProof proof : proofs.values()) {
-            BlockState state = level.getBlockState(proof.position());
-            if (!(state.getBlock() instanceof MansionWallTapestryBlock)) continue;
-            Direction facing = state.getValue(MansionWallTapestryBlock.FACING);
-            BlockPos expectedSupport = proof.position().relative(facing.getOpposite());
-            BlockPos north = proof.position().north(), east = proof.position().east();
-            BlockPos south = proof.position().south(), west = proof.position().west();
-            List<Direction> valid = new java.util.ArrayList<>();
-            for (Direction direction : new Direction[] {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST})
-                if (level.getBlockState(proof.position().relative(direction)).isSolid()) valid.add(direction);
-            Direction actual = valid.size() == 1 ? valid.get(0) : null;
-            BlockPos actualPos = actual == null ? null : proof.position().relative(actual);
-            boolean supportMatch = actualPos != null && expectedSupport.equals(actualPos);
-            BiomeMakeover.LOGGER.info("[BM_TAPESTRY_RUNTIME_SUPPORT_PROOF] mansionId={} template={} pieceId={} tapestryPos={} variant={} finalFacing={} expectedSupportDirectionFromFacing={} expectedSupportPos={} expectedSupportState={} expectedSupportCanSupport={} northPos={} northState={} eastPos={} eastState={} southPos={} southState={} westPos={} westState={} actualValidSupportDirections={} canSurvive={} actualStructuralSupportDirection={} actualStructuralSupportPos={} supportMatch={}",
-                mansionId, proof.template(), proof.pieceId(), proof.position(), proof.variant(), facing,
-                facing.getOpposite(), expectedSupport, level.getBlockState(expectedSupport).getBlock(), level.getBlockState(expectedSupport).isSolid(),
-                north, level.getBlockState(north).getBlock(), east, level.getBlockState(east).getBlock(),
-                south, level.getBlockState(south).getBlock(), west, level.getBlockState(west).getBlock(), valid,
-                state.canSurvive(level, proof.position()), actual, actualPos, supportMatch);
-        }
-        TAPESTRY_PROOFS.remove(mansionId);
-        TAPESTRY_SUPPORT_AUDITED.remove(mansionId);
     }
 
     /**
@@ -559,7 +528,6 @@ public final class MansionFeature extends Structure {
     public static final class Piece extends TemplateStructurePiece {
         private static final boolean TRACE = Boolean.getBoolean("bm.mansion.trace");
         private static final AtomicLong TRACE_ORDER = new AtomicLong();
-        private static final AtomicLong TAPESTRY_PLACEMENT_TRACE_COUNT = new AtomicLong();
         private final boolean ground;
         private final boolean wall;
         private final BlockPos mansionOrigin;
@@ -692,28 +660,6 @@ public final class MansionFeature extends Structure {
                         : tapestryGeometry.supportDirection();
                     handleDirectionalMetadata(metadata, filterBlocksFacing,
                         semanticFacing, info.pos(), level, random);
-                    if (TRACE && "tapestry".equals(metadata) && TAPESTRY_PLACEMENT_TRACE_COUNT.incrementAndGet() <= 16) {
-                        BlockState placed = level.getBlockState(info.pos());
-                        String form = placed.getBlock() instanceof MansionWallTapestryBlock ? "wall"
-                            : placed.getBlock() instanceof MansionStandingTapestryBlock ? "standing" : "unknown";
-                        String finalState = placed.hasProperty(MansionWallTapestryBlock.FACING)
-                            ? placed.getValue(MansionWallTapestryBlock.FACING).getSerializedName()
-                            : placed.hasProperty(MansionStandingTapestryBlock.ROTATION)
-                                ? Integer.toString(placed.getValue(MansionStandingTapestryBlock.ROTATION)) : "none";
-                        BlockPos support = placed.getBlock() instanceof MansionWallTapestryBlock
-                            ? info.pos().relative(placed.getValue(MansionWallTapestryBlock.FACING).getOpposite())
-                            : info.pos().below();
-                        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_TRANSFORM_PROOF] template={} pieceId={} pieceAnchor={} pieceRotation={} pieceMirror={} rawMarkerLocal={} rawSupportLocal={} transformedMarkerWorld={} transformedSupportWorld={} geometrySupportDirection={} finalBlockPos={} finalFacing={} finalSupportPos={} rendererFacing={} rendererYaw={} rendererWallTranslation={}",
-                            diagnosticTemplate, mansionPieceOrdinal, templatePosition, placeSettings.getRotation(), placeSettings.getMirror(),
-                            tapestryGeometry == null ? "missing" : tapestryGeometry.marker(),
-                            tapestryGeometry == null ? "missing" : tapestryGeometry.support(),
-                            tapestryGeometry == null ? "missing" : tapestryGeometry.markerWorld(),
-                            tapestryGeometry == null ? "missing" : tapestryGeometry.supportWorld(),
-                            tapestryGeometry == null ? "missing" : tapestryGeometry.supportDirection().getSerializedName(),
-                            info.pos(), finalState, support,
-                            form.equals("wall") ? finalState : "none", form.equals("wall") ? "-" + finalState : "none",
-                            form.equals("wall") ? "0.5,-0.16666667,0.5;0,-0.3125,-0.4375" : "none");
-                    }
                 }
             }
             restoreSerializedCrops(level, bounds);
@@ -897,12 +843,6 @@ public final class MansionFeature extends Structure {
                 tapestry = BMBlocks.MANSION_WALL_TAPESTRIES.get(random.nextInt(BMBlocks.MANSION_WALL_TAPESTRIES.size()));
                 level.setBlock(position, tapestry.defaultBlockState()
                     .setValue(MansionWallTapestryBlock.FACING, facing.getOpposite()), 3);
-            }
-            if (level.getLevel() instanceof ServerLevel serverLevel && layoutMetadata != null) {
-                String id = mansionId(serverLevel, mansionOrigin, layoutSignature);
-                TAPESTRY_PROOFS.computeIfAbsent(id, ignored -> new java.util.concurrent.ConcurrentHashMap<>())
-                    .put(position.immutable(), new TapestryProof(diagnosticTemplate, mansionPieceOrdinal, position.immutable(),
-                        BuiltInRegistries.BLOCK.getKey(tapestry).toString()));
             }
         }
 

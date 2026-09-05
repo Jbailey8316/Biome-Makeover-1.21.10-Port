@@ -53,11 +53,9 @@ if ($source -notmatch 'filterBlocks\(' -or $source -notmatch 'Direction filterBl
 if ($source -notmatch 'info\.state\(\)\.mirror\(placeSettings\.getMirror\(\)\)') { throw 'Released marker mirror reconstruction is missing' }
 if ($source -match 'transformedFacing\s*=\s*info\.state\(\)\.mirror\(placeSettings\.getMirror\(\)\)\s*\r?\n?\s*\.rotate') { throw 'Marker direction is rotated twice' }
 if ($source -notmatch 'generateTapestry\(facing' -or $source -notmatch 'setValue\(MansionWallTapestryBlock\.FACING,\s*facing\.getOpposite\(\)\)') { throw 'Production transformed-facing dataflow is not wired to the wall state write' }
-if ($source -match 'BM_TAPESTRY_(?!(TRANSFORM_PROOF|RUNTIME_SUPPORT_PROOF))') { throw 'Superseded tapestry forensic logging remains in production source' }
-if ($source -notmatch 'BM_TAPESTRY_RUNTIME_SUPPORT_PROOF' -or $source -notmatch 'emitTapestryRuntimeSupportProof' -or $source -notmatch 'supportMatch') { throw 'Post-reconciliation runtime support proof is missing' }
+if ($source -match 'BM_TAPESTRY_') { throw 'Temporary tapestry forensic logging remains in production source' }
 if ($source -notmatch 'RotationSegment\.convertToSegment\(context\.getRotation\(\) \+ 180\.0F\)') { throw 'Standing tapestry does not use vanilla BannerBlock yaw-to-ROTATION_16 placement semantics' }
 if ($source -notmatch 'new StandingAndWallBlockItem\(standing, wall, .*Direction\.DOWN') { throw 'Tapestry item does not use vanilla StandingAndWallBlockItem attachment semantics' }
-if ($source -notmatch 'BM_TAPESTRY_TRANSFORM_PROOF') { throw 'R9 transform proof marker is missing' }
 foreach ($needle in @('rawTapestryMarkers','StructureTemplate.transform','getRotationPivot','transformedTapestryGeometry','TapestryGeometry','markerWorld','supportWorld','horizontalDirection','supportDirection')) {
     if ($source.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Geometry-derived Mansion tapestry orientation is missing: $needle" }
 }
@@ -138,7 +136,7 @@ if (-not [string]::IsNullOrWhiteSpace($Jar)) {
         $mansionStream.Dispose()
         $mansionText = [Text.Encoding]::ASCII.GetString($mansionBytes.ToArray())
         if ($rendererText -match 'BM_TAPESTRY_') { throw 'Compiled renderer contains tapestry forensic markers' }
-        if ($mansionText -match 'BM_TAPESTRY_(?!(TRANSFORM_PROOF|RUNTIME_SUPPORT_PROOF))') { throw 'Compiled JAR contains retired tapestry forensic markers' }
+        if ($mansionText -match 'BM_TAPESTRY_') { throw 'Compiled JAR contains retired tapestry forensic markers' }
         if ($names -notcontains 'party/lemons/biomemakeover/block/entity/TapestryBlockEntity.class') { throw 'Compiled JAR missing TapestryBlockEntity' }
     } finally { $zip.Dispose() }
 }

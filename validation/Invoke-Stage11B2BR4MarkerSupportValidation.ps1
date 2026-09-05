@@ -12,7 +12,7 @@ foreach ($needle in @('filterBlocks(','placeSettings.getMirror()','placeSettings
 foreach ($needle in @('rawTapestryMarkers','StructureTemplate.transform','getRotationPivot','transformedTapestryGeometry','TapestryGeometry','markerWorld','supportWorld','horizontalDirection','supportDirection')) {
     if ($text.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing geometry-derived tapestry support contract: $needle" }
 }
-if ($text -match 'BM_TAPESTRY_(?!(TRANSFORM_PROOF|RUNTIME_SUPPORT_PROOF))') { throw 'Superseded tapestry forensic logging remains in production source' }
+if ($text -match 'BM_TAPESTRY_') { throw 'Temporary tapestry forensic logging remains in production source' }
 $auditText = Get-Content -LiteralPath $audit -Raw
 foreach ($needle in @('totalWallMarkers','markerFacingPointsTowardBacking','markerFacingOppositePointsTowardBacking','noAdjacentBacking','ambiguous')) {
     if ($auditText.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing offline audit aggregate: $needle" }

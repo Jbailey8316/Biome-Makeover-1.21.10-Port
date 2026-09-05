@@ -370,6 +370,16 @@ support cell. Both positions are transformed through native
 world support direction then determines the wall state via its opposite. The
 player-placement and renderer paths are unchanged.
 
+## Final frozen contract
+
+Player placement follows vanilla banner semantics. Mansion wall tapestry
+orientation is derived from the transformed authored support geometry, not
+from `directional_data` orientation state. The 17 variants and 56 released
+wall markers remain intact; no NBT changes were made. R12 runtime acceptance
+confirmed generated supports are valid and all audited tapestries survive.
+Temporary R11/R12 runtime proof and transform logging is removed from the
+production artifact.
+
 ## R11 â€” runtime support proof
 
 R11 adds a trace-gated, server-thread-only post-reconciliation support audit.
