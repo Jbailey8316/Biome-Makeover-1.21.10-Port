@@ -527,6 +527,7 @@ public final class MansionFeature extends Structure {
         if (Boolean.getBoolean("bm.mansion.trace")) traceMansionHeight(context, origin, releasedY, terrainSamples, true, "");
         Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
             .sorted(Comparator.comparingInt(MansionRoom::getSortValue)).toList();
+        boolean[] forcedGardenUsed = {false};
         for (MansionRoom room : rooms) {
             int x = origin.getX() + room.getPosition().getX() * MansionLayoutFoundation.CELL_XZ;
             int y = origin.getY() + room.getPosition().getY() * MansionLayoutFoundation.CELL_Y;
@@ -534,7 +535,7 @@ public final class MansionFeature extends Structure {
             Rotation rotation = room.getRotation(context.random());
             BlockPos roomPos = room.getOffsetForRotation(new BlockPos(x, y, z), rotation);
             builder.addPiece(new Piece(details, context.structureTemplateManager(),
-                room.getTemplate(templates, context.random()).toString(), roomPos, rotation,
+                mansionTemplateForRoom(room, templates, context.random(), origin, roomPos, rotation, forcedGardenUsed).toString(), roomPos, rotation,
                 room.getPosition().getY() == 0,
                 room.getRoomType() == RoomType.TOWER_MID || room.getRoomType() == RoomType.TOWER_TOP));
             room.addWalls(details, templates, context.random(), new BlockPos(x, y, z),
@@ -583,6 +584,31 @@ public final class MansionFeature extends Structure {
             heights.get(heights.size() - 1) - heights.get(0), suitable, rejection);
     }
 
+    private static ResourceLocation mansionTemplateForRoom(MansionRoom room, MansionTemplates templates,
+                                                            RandomSource random, BlockPos mansionOrigin, BlockPos worldAnchor, Rotation rotation,
+                                                            boolean[] forcedGardenUsed) {
+        ResourceLocation original = room.getTemplate(templates, random);
+        if (forceRavagerGarden() && !forcedGardenUsed[0] && room.getRoomType() == RoomType.GARDEN) {
+            forcedGardenUsed[0] = true;
+            ResourceLocation forced = ResourceLocation.parse("biomemakeover:mansion/garden/garden_7");
+            BiomeMakeover.LOGGER.info("[BM_MANSION_FORCE_RAVAGER_GARDEN] mansion/layout={} slot/piece={} originalTemplate={} forcedTemplate={} worldAnchor={} rotation={} mirror={} traceEnabled={} forceEnabled={}",
+                mansionOrigin, NEXT_PIECE_ORDINAL.get() == null ? -1 : NEXT_PIECE_ORDINAL.get(), original, forced, worldAnchor,
+                rotation, Mirror.NONE, true, true);
+            return forced;
+        }
+        if (forceRavagerGarden() && room.getRoomType() == RoomType.GARDEN
+            && original.toString().equals("biomemakeover:mansion/garden/garden_7")) {
+            return MansionTemplateType.GARDEN.getTemplates(templates).stream()
+                .filter(candidate -> !candidate.toString().equals("biomemakeover:mansion/garden/garden_7"))
+                .findFirst().orElse(original);
+        }
+        return original;
+    }
+
+    private static boolean forceRavagerGarden() {
+        return Boolean.getBoolean("bm.mansion.trace") && Boolean.getBoolean("bm.mansion.forceRavagerGarden");
+    }
+
     @Override public StructureType<?> type() { return BMStructures.MANSION; }
 
     public MansionTemplates templates() { return templates; }
@@ -599,13 +625,14 @@ public final class MansionFeature extends Structure {
         layout.generateLayout(random, origin.getY());
         Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
             .sorted(Comparator.comparingInt(MansionRoom::getSortValue)).toList();
+        boolean[] forcedGardenUsed = {false};
         for (MansionRoom room : rooms) {
             int x = origin.getX() + room.getPosition().getX() * MansionLayoutFoundation.CELL_XZ;
             int y = origin.getY() + room.getPosition().getY() * MansionLayoutFoundation.CELL_Y;
             int z = origin.getZ() + room.getPosition().getZ() * MansionLayoutFoundation.CELL_XZ;
             Rotation rotation = room.getRotation(random);
             BlockPos roomPos = room.getOffsetForRotation(new BlockPos(x, y, z), rotation);
-            builder.addPiece(new Piece(details, manager, room.getTemplate(templates, random).toString(), roomPos,
+            builder.addPiece(new Piece(details, manager, mansionTemplateForRoom(room, templates, random, origin, roomPos, rotation, forcedGardenUsed).toString(), roomPos,
                 rotation, room.getPosition().getY() == 0,
                 room.getRoomType() == RoomType.TOWER_MID || room.getRoomType() == RoomType.TOWER_TOP));
             room.addWalls(details, templates, random, new BlockPos(x, y, z), manager, layout.getLayout(), builder);
