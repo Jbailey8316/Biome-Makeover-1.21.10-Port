@@ -26,6 +26,7 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.RangedBowAttackGoal;
+import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
@@ -104,6 +105,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     private int finishFightTime;
     private int summonIndex;
     private boolean summonInterrupted;
+    private boolean mimicInterrupted;
     private BlockPos homePos;
     private BlockPos teleportPos;
     private AABB roomBounds;
@@ -142,6 +144,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         active = true;
         if (isSummonPhase(phase) && source.getEntity() instanceof Player) summonInterrupted = true;
+        if (phase == ControllerPhase.MIMIC && source.getEntity() instanceof Player) mimicInterrupted = true;
         return super.hurtServer(level, source, amount);
     }
 
@@ -198,6 +201,10 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             }
             if (summonIndex >= count || phaseTime >= SUMMON_PHASE_TICKS)
                 beginTeleport(selectNextPhaseForStage(random));
+        } else if (active && phase == ControllerPhase.MIMIC) {
+            getNavigation().stop();
+            if (getTarget() != null) getLookControl().setLookAt(getTarget(), 30.0F, 30.0F);
+            if (mimicInterrupted) beginTeleport(selectNextPhaseForStage(random));
         } else if (active && phase == ControllerPhase.RAVAGER) {
             if (getVehicle() == null) beginTeleport(selectNextPhaseForStage(random));
             else if (getTarget() != null) getLookControl().setLookAt(getTarget(), 30.0F, 30.0F);
@@ -254,6 +261,12 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             summonInterrupted = false;
             getNavigation().stop();
             if (playEntrySound) playSound(net.minecraft.sounds.SoundEvents.EVOKER_PREPARE_SUMMON, 1.0F, 1.0F);
+        } else if (selected == ControllerPhase.MIMIC) {
+            setControllerState(STATE_FIGHTING);
+            mimicInterrupted = false;
+            addPhaseGoals(new RangedAttackGoal(this, 1.0D, 12, 15.0F));
+            spawnMimics();
+            if (playEntrySound) playSound(BMSounds.ADJUDICATOR_MIMIC, 1.0F, 1.0F);
         } else if (selected == ControllerPhase.RAVAGER) {
             setControllerState(STATE_FIGHTING);
             setControllerInvulnerable(true);
@@ -322,6 +335,61 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             int count = summonCount(phase);
             while (summonIndex < count) { spawnSummonedEntity(phase); summonIndex++; }
         }
+        if (phase == ControllerPhase.MIMIC) clearMimics();
+    }
+
+    private void spawnMimics() {
+        List<BlockPos> used = new ArrayList<>();
+        int count = 3 + random.nextInt(4);
+        mimicTrace("PHASE_ENTER boss=" + getUUID() + " count=" + count + " duration=" + ATTACK_PHASE_TICKS);
+        for (int i = 0; i < count; i++) {
+            BlockPos spawnPos;
+            do { spawnPos = chooseArenaPosition(); } while (used.contains(spawnPos));
+            used.add(spawnPos);
+            if (level().getBlockState(spawnPos.below()).isAir())
+                level().setBlock(spawnPos.below(), Blocks.COBBLESTONE.defaultBlockState(), 3);
+            AdjudicatorMimicEntity mimic = party.lemons.biomemakeover.init.BMEntities.ADJUDICATOR_MIMIC
+                .create(level(), EntitySpawnReason.NATURAL);
+            if (mimic == null) continue;
+            AdjudicatorAlliance.assign(mimic, this);
+            mimic.finalizeSpawn((ServerLevel) level(), ((ServerLevel) level()).getCurrentDifficultyAt(spawnPos), EntitySpawnReason.NATURAL, null);
+            mimic.snapTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, 0.0F, 0.0F);
+              mimic.setTarget(getTarget());
+              level().addFreshEntity(mimic);
+              mimicTrace("MIMIC_SPAWN uuid=" + mimic.getUUID() + " position=" + mimic.blockPosition()
+                  + " target=" + (getTarget() == null ? "none" : getTarget().getUUID())
+                  + " encounterId=" + AdjudicatorAlliance.encounterId(this));
+              clearMimicArea(mimic);
+        }
+        level().broadcastEntityEvent(this, (byte) 46);
+    }
+
+    private void clearMimics() {
+          if (roomBounds == null) return;
+          List<AdjudicatorMimicEntity> mimics = level().getEntitiesOfClass(AdjudicatorMimicEntity.class, roomBounds,
+              mimic -> AdjudicatorAlliance.allied(this, mimic));
+          mimics.forEach(mimic -> {
+              mimicTrace("MIMIC_REMOVE uuid=" + mimic.getUUID() + " reason=phase_exit");
+              mimic.discard();
+          });
+          mimicTrace("PHASE_EXIT remainingMimics=0");
+    }
+
+    private void mimicTrace(String message) {
+        if (Boolean.getBoolean("bm.mansion.trace"))
+            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_ADJUDICATOR_MIMIC_PROOF] {}", message);
+    }
+
+    private void clearMimicArea(AdjudicatorMimicEntity mimic) {
+        if (!(level() instanceof ServerLevel server)) return;
+        AABB box = mimic.getBoundingBox();
+        BlockPos.betweenClosed(BlockPos.containing(box.minX, box.minY, box.minZ),
+            BlockPos.containing(box.maxX, box.maxY, box.maxZ)).forEach(pos -> {
+                if (WitherBoss.canDestroy(server.getBlockState(pos))) {
+                    server.destroyBlock(pos, true, this);
+                    server.levelEvent(null, 1022, pos, 0);
+                }
+            });
     }
 
     private void selectTargetInArena() {
@@ -532,7 +600,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     }
 
     private static boolean isImplementedPhase(ControllerPhase phase) {
-        return phase != ControllerPhase.MIMIC && phase != ControllerPhase.STONE_GOLEM;
+        return phase != ControllerPhase.STONE_GOLEM;
     }
 
     private int arenaMonsterCount() {
@@ -571,6 +639,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         output.putInt("PhaseTime", phaseTime);
         output.putInt("FinishFightTime", finishFightTime);
         output.putInt("SummonIndex", summonIndex);
+        output.putBoolean("MimicInterrupted", mimicInterrupted);
         output.putInt("State", entityData.get(STATE));
         output.putBoolean("Charging", entityData.get(CHARGING));
         output.putBoolean("Invulnerable", entityData.get(INVULNERABLE));
@@ -597,6 +666,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         phaseTime = input.getIntOr("PhaseTime", 0);
         finishFightTime = input.getIntOr("FinishFightTime", 0);
         summonIndex = input.getIntOr("SummonIndex", 0);
+        mimicInterrupted = input.getBooleanOr("MimicInterrupted", false);
         entityData.set(STATE, input.getIntOr("State", 0));
         entityData.set(CHARGING, input.getBooleanOr("Charging", false));
         entityData.set(INVULNERABLE, input.getBooleanOr("Invulnerable", false));

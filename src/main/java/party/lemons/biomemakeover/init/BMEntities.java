@@ -32,6 +32,7 @@ import party.lemons.biomemakeover.entity.MothEntity;
 import party.lemons.biomemakeover.entity.MushroomTraderEntity;
 import party.lemons.biomemakeover.entity.GhostEntity;
 import party.lemons.biomemakeover.entity.AdjudicatorEntity;
+import party.lemons.biomemakeover.entity.AdjudicatorMimicEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
@@ -94,6 +95,9 @@ public final class BMEntities {
     public static final EntityType<AdjudicatorEntity> ADJUDICATOR = registerEntity("adjudicator",
         EntityType.Builder.<AdjudicatorEntity>of(AdjudicatorEntity::new, MobCategory.MONSTER)
             .sized(.6F, 1.95F).fireImmune().noSummon().clientTrackingRange(12));
+    public static final EntityType<AdjudicatorMimicEntity> ADJUDICATOR_MIMIC = registerEntity("adjudicator_mimic",
+        EntityType.Builder.<AdjudicatorMimicEntity>of(AdjudicatorMimicEntity::new, MobCategory.MONSTER)
+            .sized(.6F, 1.95F).fireImmune().noSummon().clientTrackingRange(12));
 
     private BMEntities() {
     }
@@ -128,6 +132,7 @@ public final class BMEntities {
         FabricDefaultAttributeRegistry.register(MUSHROOM_TRADER, MushroomTraderEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(GHOST, GhostEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(ADJUDICATOR, AdjudicatorEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(ADJUDICATOR_MIMIC, AdjudicatorMimicEntity.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,

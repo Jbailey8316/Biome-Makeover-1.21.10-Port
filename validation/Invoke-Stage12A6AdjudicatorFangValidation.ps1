@@ -16,7 +16,7 @@ foreach ($required in @(
 )) {
     if ($source -notlike "*$required*") { throw "Missing Stage 12A.6 contract: $required" }
 }
-foreach ($deferred in @('AdjudicatorMimicEntity', 'StoneGolemEntity')) {
+foreach ($deferred in @('StoneGolemEntity')) {
     if ($source -like "*$deferred*") { throw "Deferred phase leaked into Stage 12A.6: $deferred" }
 }
 if ($source -match 'EnchantedTotem|adjudicator_tapestry') { throw 'Reward code leaked into Stage 12A.6' }

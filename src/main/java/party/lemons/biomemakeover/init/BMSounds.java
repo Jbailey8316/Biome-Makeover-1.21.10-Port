@@ -64,6 +64,9 @@ public final class BMSounds {
     public static final SoundEvent ADJUDICATOR_DEATH = register("adjudicator_death");
     public static final SoundEvent ADJUDICATOR_SPELL_3 = register("adjudicator_spell_3");
     public static final SoundEvent ADJUDICATOR_GRUNT = register("adjudicator_grunt");
+    public static final SoundEvent ADJUDICATOR_MIMIC = register("adjudicator_mimic");
+    public static final SoundEvent ADJUDICATOR_LAUGH = register("adjudicator_laugh");
+    public static final SoundEvent ADJUDICATOR_NO = register("adjudicator_no");
 
     private BMSounds() {}
 

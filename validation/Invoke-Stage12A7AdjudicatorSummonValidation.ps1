@@ -24,7 +24,7 @@ foreach ($required in @(
 )) {
     if ($source -notlike "*$required*") { throw "Missing Stage 12A.7 contract: $required" }
 }
-foreach ($deferred in @('AdjudicatorMimicEntity', 'StoneGolemEntity', 'EnchantedTotem', 'adjudicator_tapestry')) {
+foreach ($deferred in @('StoneGolemEntity', 'EnchantedTotem', 'adjudicator_tapestry')) {
     if ($source -like "*$deferred*") { throw "Deferred Stage 12A.7 system leaked into implementation: $deferred" }
 }
 Write-Output 'STAGE 12A.7 ADJUDICATOR SUMMON VALIDATION PASSED (Ravager and four vanilla summon phases)'
