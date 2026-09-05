@@ -359,3 +359,12 @@ bookkeeping, and coordinate-trace plumbing were removed. Static validators
 remain and now validate production code, resources, loot, transforms, item
 definitions, special-renderer resolution, and advancement contracts directly.
 Mansion templates and all accepted parity systems remain unchanged.
+
+## R11 â€” runtime support proof
+
+R11 adds a trace-gated, server-thread-only post-reconciliation support audit.
+It compares each generated wall tapestry's computed support position with the
+actual adjacent structural support after Mansion execution completes. This is
+diagnostic only; no structure placement, block state, renderer, item, or NBT
+behavior is changed. The existing static audit covers all 56 markers: each has
+one authored backing block, with no ambiguous or unsupported marker.

@@ -9,7 +9,7 @@ $text = Get-Content -LiteralPath $feature -Raw
 foreach ($needle in @('filterBlocks(','placeSettings.getMirror()','placeSettings.getRotation()','transformedFacing','facing.getOpposite()')) {
     if ($text.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing marker direction contract: $needle" }
 }
-if ($text -match 'BM_TAPESTRY_(?!TRANSFORM_PROOF)') { throw 'Superseded tapestry forensic logging remains in production source' }
+if ($text -match 'BM_TAPESTRY_(?!(TRANSFORM_PROOF|RUNTIME_SUPPORT_PROOF))') { throw 'Superseded tapestry forensic logging remains in production source' }
 $auditText = Get-Content -LiteralPath $audit -Raw
 foreach ($needle in @('totalWallMarkers','markerFacingPointsTowardBacking','markerFacingOppositePointsTowardBacking','noAdjacentBacking','ambiguous')) {
     if ($auditText.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing offline audit aggregate: $needle" }
