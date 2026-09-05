@@ -11,8 +11,7 @@ foreach ($required in @(
     'for (int i = 0; i < 16; i++)',
     'direction.getStepX() * (i + 1)',
     'direction.getStepZ() * (i + 1)',
-    'ControllerPhase.FANG_ATTACK, ControllerPhase.FANG_BARRAGE',
-    'BM_ADJUDICATOR_FANG_PROOF'
+    'ControllerPhase.FANG_ATTACK, ControllerPhase.FANG_BARRAGE'
 )) {
     if ($source -notlike "*$required*") { throw "Missing Stage 12A.6 contract: $required" }
 }

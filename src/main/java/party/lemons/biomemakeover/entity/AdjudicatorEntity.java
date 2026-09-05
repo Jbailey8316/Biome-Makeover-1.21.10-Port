@@ -225,17 +225,9 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         } else if (selected == ControllerPhase.FANG_ATTACK) {
             setControllerState(STATE_SUMMONING);
             if (playEntrySound) playSound(net.minecraft.sounds.SoundEvents.EVOKER_PREPARE_ATTACK, 1.0F, 1.0F);
-            fangTrace("PHASE_ENTER FANGS timer=0 state=" + getControllerState()
-                + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
-            coordinationTrace("PHASE_ENTER", selected);
         } else if (selected == ControllerPhase.FANG_BARRAGE) {
             setControllerState(STATE_SUMMONING);
-            fangTrace("PHASE_ENTER FANG_BARRAGE timer=0 state=" + getControllerState()
-                + " charging=" + isChargingCrossbow() + " invulnerable=" + isControllerInvulnerable());
-            coordinationTrace("PHASE_ENTER", selected);
         }
-        if (selected == ControllerPhase.BOW_ATTACK || selected == ControllerPhase.MELEE_ATTACK)
-            coordinationTrace("PHASE_ENTER", selected);
     }
 
     private void restorePhaseExecutionIfNeeded() {
@@ -323,7 +315,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     private void castFangs() {
         LivingEntity target = getTarget();
         if (!isTargetInArena(target)) return;
-        coordinationTrace("FANG_CAST", ControllerPhase.FANG_ATTACK);
         double minY = Math.min(target.getY(), getY());
         double maxY = Math.max(target.getY(), getY()) + 1.0D;
         float angle = (float) Math.atan2(target.getZ() - getZ(), target.getX() - getX());
@@ -338,24 +329,17 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
                 conjureFang(getX() + Math.cos(yaw) * 2.5D, getZ() + Math.sin(yaw) * 2.5D,
                     minY, maxY, yaw, 3);
             }
-            fangTrace("FANG_CAST pattern=close_radial count=13 target=" + target.blockPosition()
-                + " boss=" + blockPosition() + " timer=" + phaseTime);
         } else {
             for (int i = 0; i < 16; i++) {
                 double distance = 1.25D * (i + 1);
                 conjureFang(getX() + Math.cos(angle) * distance, getZ() + Math.sin(angle) * distance,
                     minY, maxY, angle, i);
             }
-            fangTrace("FANG_CAST pattern=target_line count=16 target=" + target.blockPosition()
-                + " boss=" + blockPosition() + " timer=" + phaseTime);
         }
     }
 
     private void castFangBarrage() {
-        coordinationTrace("BARRAGE_WAVE", ControllerPhase.FANG_BARRAGE);
         playSound(net.minecraft.sounds.SoundEvents.EVOKER_PREPARE_SUMMON, 1.0F, 1.0F);
-        fangTrace("BARRAGE_WAVE wave=" + phaseTime / 50 + " fangCount=40 boss=" + blockPosition()
-            + " timer=" + phaseTime);
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             for (int i = 0; i < 10; i++) {
                 conjureFang(getX() + direction.getStepX() * (i + 1),
@@ -382,35 +366,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             pos = pos.below();
         } while (pos.getY() >= net.minecraft.util.Mth.floor(maxY) - 1);
         if (found) level().addFreshEntity(new EvokerFangs(level(), x, pos.getY() + height, z, yaw, warmup, this));
-    }
-
-    private void fangTrace(String detail) {
-        if (Boolean.getBoolean("bm.mansion.trace"))
-            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
-                "[BM_ADJUDICATOR_FANG_PROOF] entity={} {}", getUUID(), detail);
-    }
-
-    private void coordinationTrace(String event, ControllerPhase currentPhase) {
-        if (!Boolean.getBoolean("bm.mansion.trace")) return;
-        LivingEntity target = getTarget();
-        String targetPosition = target == null ? "none" : target.position().toString();
-        double desiredYaw = target == null ? Double.NaN
-            : Math.toDegrees(Math.atan2(target.getZ() - getZ(), target.getX() - getX())) - 90.0D;
-        double yawError = target == null ? Double.NaN : wrapDegrees(desiredYaw - getYRot());
-        String goals = phaseGoals.stream().map(goal -> goal.getClass().getSimpleName()).toList().toString();
-        party.lemons.biomemakeover.BiomeMakeover.LOGGER.info(
-            "[BM_ADJUDICATOR_COMBAT_COORDINATION_PROOF] event={} phase={} bossPosition={} targetPosition={} "
-                + "bodyYaw={} headYaw={} desiredTargetYaw={} yawErrorDegrees={} navigationIsDone={} activeGoalNames={} "
-                + "STATE={} CHARGING={} INVULNERABLE={}", event, currentPhase.id(), position(), targetPosition,
-            getYRot(), getYHeadRot(), desiredYaw, yawError, getNavigation().isDone(), goals,
-            getControllerState(), isChargingCrossbow(), isControllerInvulnerable());
-    }
-
-    private static double wrapDegrees(double degrees) {
-        degrees %= 360.0D;
-        if (degrees >= 180.0D) degrees -= 360.0D;
-        if (degrees < -180.0D) degrees += 360.0D;
-        return degrees;
     }
 
     private void updateBossBarPlayers() {

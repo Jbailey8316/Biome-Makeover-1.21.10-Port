@@ -24,6 +24,8 @@ render state. `TELEPORT` and `SUMMONING` use the released Illager-style
 casting arm pose; bow uses the aimed weapon pose; melee uses the native
 weapon-swing animation. Fang phases stop navigation and direct look control
 toward the validated arena target, while first-tick enrollment adds players
-to the boss bar before combat transition. The bounded
-`BM_ADJUDICATOR_FANG_PROOF` and `BM_ADJUDICATOR_COMBAT_COORDINATION_PROOF`
-traces are temporary and gated by `bm.mansion.trace`.
+to the boss bar before combat transition. This five-phase implementation was
+runtime accepted; the remaining eight released phases stay behind the
+temporary implementation-availability gate. No Mythas combat tuning was
+added, so solo difficulty is intentionally incomplete until those phases are
+restored.
