@@ -41,9 +41,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.level.ServerLevel;
@@ -65,8 +63,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import party.lemons.biomemakeover.worldgen.mansion.room.MansionRoom;
 import party.lemons.biomemakeover.worldgen.mansion.RoomType;
@@ -89,49 +85,6 @@ public final class MansionFeature extends Structure {
     private static final Map<String, Set<String>> PLACED_PLACEMENTS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Integer> EXPECTED_UNION_SIZES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Integer> EXPECTED_BOSS_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final Map<BlockPos, TargetTrace> MANSION_TARGET_TRACES = new ConcurrentHashMap<>();
-    private static final Set<String> ARMED_GARDEN_TARGETS = ConcurrentHashMap.newKeySet();
-    private static final int MAX_ARMED_GARDEN_TARGETS = 16;
-    private static final BlockPos[] GARDEN_TARGET_LOCALS = {
-        new BlockPos(6, 1, 4), new BlockPos(6, 2, 4), new BlockPos(6, 3, 4)
-    };
-    private static final BlockPos RAVAGER_MARKER_LOCAL = new BlockPos(5, 1, 5);
-
-    /**
-     * Arms the trace from the actual garden piece settings.  This is deliberately
-     * diagnostic-only: it records coordinates but never participates in placement.
-     */
-    private static void armGardenTargetTrace(ResourceLocation template, BlockPos anchor,
-                                              StructurePlaceSettings settings, BlockPos mansionOrigin,
-                                              int pieceOrdinal) {
-        if (!Boolean.getBoolean("bm.mansion.trace")
-            || !template.toString().equals("biomemakeover:mansion/garden/garden_7")) return;
-        String key = mansionOrigin + ":" + pieceOrdinal + ":" + anchor + ":" + template;
-        if (ARMED_GARDEN_TARGETS.size() >= MAX_ARMED_GARDEN_TARGETS || !ARMED_GARDEN_TARGETS.add(key)) return;
-
-        TargetTrace[] targets = new TargetTrace[GARDEN_TARGET_LOCALS.length];
-        for (int i = 0; i < GARDEN_TARGET_LOCALS.length; i++) {
-            BlockPos local = GARDEN_TARGET_LOCALS[i];
-            BlockPos world = anchor.offset(StructureTemplate.calculateRelativePosition(settings, local));
-            TargetTrace target = new TargetTrace(world, local, template.toString(), anchor,
-                settings.getRotation(), settings.getMirror(), mansionOrigin, pieceOrdinal);
-            targets[i] = target;
-            MANSION_TARGET_TRACES.put(world, target);
-        }
-        BlockPos markerWorld = anchor.offset(StructureTemplate.calculateRelativePosition(settings, RAVAGER_MARKER_LOCAL));
-        BiomeMakeover.LOGGER.info("[BM_MANSION_TARGET_TRACE_ARMED] mansionId={} template={} pieceId={} anchor={} rotation={} mirror={} markerLocal={} markerWorld={} targetLocal1={} targetWorld1={} targetLocal2={} targetWorld2={} targetLocal3={} targetWorld3={} thread={}",
-            mansionOrigin, template, pieceOrdinal, anchor, settings.getRotation(), settings.getMirror(),
-            RAVAGER_MARKER_LOCAL, markerWorld,
-            targets[0].local(), targets[0].world(), targets[1].local(), targets[1].world(),
-            targets[2].local(), targets[2].world(), Thread.currentThread().getName());
-    }
-
-    public static TargetTrace targetTraceFor(BlockPos worldPos) {
-        return MANSION_TARGET_TRACES.get(worldPos);
-    }
-
-    public record TargetTrace(BlockPos world, BlockPos local, String template, BlockPos anchor,
-                              Rotation rotation, Mirror mirror, BlockPos mansionOrigin, int pieceOrdinal) { }
     private static final Set<String> RUNTIME_REGISTERED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Map<String, LateFinalization> LATE_FINALIZATIONS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<String, Map<BlockPos, BlockState>> CROP_TARGETS = new java.util.concurrent.ConcurrentHashMap<>();
@@ -148,22 +101,6 @@ public final class MansionFeature extends Structure {
     private static final Map<String, Set<String>> PLACED_PIECES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<String> EXECUTED_MANSIONS = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static volatile boolean delayedFluidTraceInstalled;
-    private static final Map<UUID, RavagerTrace> RAVAGER_TRACES = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final java.util.concurrent.atomic.AtomicInteger SPAWN_SAFE_ACCESS_EMISSIONS = new java.util.concurrent.atomic.AtomicInteger();
-
-    private static final class RavagerTrace {
-        final ServerLevel level; final UUID uuid; final BlockPos marker; final long spawnTick;
-        final String dimension; final Map<BlockPos, BlockState> reference;
-        final double spawnX, spawnY, spawnZ; final float yaw; final float width, height;
-        float lastHealth;
-        boolean collisionSeen, damageSeen, completed;
-        RavagerTrace(ServerLevel level, Entity entity, BlockPos marker, Map<BlockPos, BlockState> reference) {
-            this.level = level; this.uuid = entity.getUUID(); this.marker = marker.immutable(); this.spawnTick = level.getGameTime();
-            this.dimension = level.dimension().location().toString(); this.reference = Map.copyOf(reference);
-            this.spawnX = entity.getX(); this.spawnY = entity.getY(); this.spawnZ = entity.getZ(); this.yaw = entity.getYRot();
-            this.width = entity.getBbWidth(); this.height = entity.getBbHeight(); this.lastHealth = health(entity);
-        }
-    }
 
     public static void enableDelayedFluidTrace() {
         if (!delayedFluidTraceInstalled) {
@@ -178,7 +115,6 @@ public final class MansionFeature extends Structure {
 
     private static void tickDelayedFluidTraces(ServerLevel level) {
         boolean tracing = Boolean.getBoolean("bm.mansion.trace");
-        if (tracing) tickRavagerTraces(level);
         for (DelayedFluidTrace entry : DELAYED_FLUID_TRACES) {
             if (entry.level != level) continue;
             String mansionId = entry.mansionId();
@@ -234,88 +170,6 @@ public final class MansionFeature extends Structure {
             if (ageTicks >= 900) { late.retention(level, "D45S"); LATE_FINALIZATIONS.remove(late.id, late); }
         }
     }
-
-    private static void tickRavagerTraces(ServerLevel level) {
-        for (RavagerTrace trace : RAVAGER_TRACES.values()) {
-            if (trace.level != level || trace.completed) continue;
-            Entity entity = level.getEntity(trace.uuid);
-            if (entity == null) continue;
-            long age = Math.max(0L, level.getGameTime() - trace.spawnTick);
-            if (age == 0L || age == 1L || age == 5L || age == 20L || age == 40L || age == 100L) {
-                emitRavagerClearance(trace, entity, age);
-                compareRavagerReference(trace, entity, age);
-            }
-            if (!trace.collisionSeen && collidingBlocks(level, entity).count > 0) {
-                trace.collisionSeen = true;
-                CollisionSnapshot collision = collidingBlocks(level, entity);
-                BiomeMakeover.LOGGER.info("[BM_MANSION_RAVAGER_FIRST_COLLISION] serverTick={} ticksSinceSpawn={} entityUuid={} previousPos={} currentPos={} distanceFromSpawn={} bbox={} collidingBlocks={} health={} isInWall={}",
-                    level.getGameTime(), age, trace.uuid, trace.spawnX + "," + trace.spawnY + "," + trace.spawnZ,
-                    entity.position(), distance(trace, entity), entity.getBoundingBox(), collision.blocks, health(entity), collision.count > 0);
-            }
-            float health = health(entity);
-            if (!trace.damageSeen && health < trace.lastHealth) {
-                trace.damageSeen = true;
-                CollisionSnapshot collision = collidingBlocks(level, entity);
-                BiomeMakeover.LOGGER.info("[BM_MANSION_RAVAGER_FIRST_DAMAGE] ticksSinceSpawn={} previousHealth={} currentHealth={} position={} distanceFromSpawn={} isInWall={} collidingBlockCount={} collidingBlocks={}",
-                    age, trace.lastHealth, health, entity.position(), distance(trace, entity), collision.count > 0, collision.count, collision.blocks);
-            }
-            trace.lastHealth = health;
-            if (age > 100L) trace.completed = true;
-        }
-        RAVAGER_TRACES.values().removeIf(t -> t.level == level && t.completed);
-    }
-
-    private static void emitRavagerClearance(RavagerTrace trace, Entity entity, long age) {
-        CollisionSnapshot collision = collidingBlocks(trace.level, entity);
-        BiomeMakeover.LOGGER.info("[BM_MANSION_RAVAGER_CLEARANCE] delay={} entityUuid={} x={} y={} z={} deltaFromSpawnX={} deltaFromSpawnY={} deltaFromSpawnZ={} horizontalDistanceFromSpawn={} bbox={} health={} isAlive={} isInWall={} collidingBlockCount={} collidingBlocks={} nearbyBlocks={}",
-            age == 0 ? "D0" : "D" + age, trace.uuid, entity.getX(), entity.getY(), entity.getZ(), entity.getX() - trace.spawnX,
-            entity.getY() - trace.spawnY, entity.getZ() - trace.spawnZ, distance(trace, entity), entity.getBoundingBox(), health(entity), entity.isAlive(), collision.count > 0, collision.count, collision.blocks, nearbyBlocks(trace.level, entity));
-    }
-
-    private static void compareRavagerReference(RavagerTrace trace, Entity entity, long age) {
-        if (age != 20L && age != 100L) return;
-        int emitted = 0;
-        Set<BlockPos> positions = new java.util.HashSet<>(trace.reference.keySet());
-        AABB box = entity.getBoundingBox().inflate(2.0D);
-        BlockPos min = BlockPos.containing(box.minX, box.minY, box.minZ), max = BlockPos.containing(box.maxX, box.maxY, box.maxZ);
-        for (BlockPos pos : BlockPos.betweenClosed(min, max)) positions.add(pos.immutable());
-        for (BlockPos pos : positions) {
-            BlockState oldState = trace.reference.getOrDefault(pos, Blocks.AIR.defaultBlockState());
-            BlockState newState = trace.level.getBlockState(pos);
-            if (!oldState.equals(newState) && emitted++ < 16) {
-                BiomeMakeover.LOGGER.info("[BM_MANSION_RAVAGER_BLOCK_CHANGE] ticksSinceSpawn={} pos={} oldBlockState={} newBlockState={} ravagerCurrentDistanceFromSpawn={}",
-                    age, pos, oldState, newState, distance(trace, entity));
-            }
-        }
-    }
-
-    private record CollisionSnapshot(int count, String blocks) {}
-
-    private static CollisionSnapshot collidingBlocks(net.minecraft.world.level.BlockGetter level, Entity entity) {
-        AABB box = entity.getBoundingBox(); Set<String> found = new java.util.LinkedHashSet<>();
-        BlockPos min = BlockPos.containing(box.minX, box.minY, box.minZ), max = BlockPos.containing(box.maxX, box.maxY, box.maxZ);
-        for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-            BlockState state = level.getBlockState(pos);
-            if (state.getCollisionShape(level, pos).isEmpty()) continue;
-            AABB shape = state.getCollisionShape(level, pos).bounds().move(pos);
-            if (shape.intersects(box)) found.add(BuiltInRegistries.BLOCK.getKey(state.getBlock()) + "@" + pos.getX() + "," + pos.getY() + "," + pos.getZ());
-        }
-        return new CollisionSnapshot(found.size(), String.join(";", found));
-    }
-
-    private static String nearbyBlocks(ServerLevel level, Entity entity) {
-        AABB box = entity.getBoundingBox().inflate(1.0D); Set<String> found = new java.util.LinkedHashSet<>();
-        BlockPos min = BlockPos.containing(box.minX, box.minY, box.minZ), max = BlockPos.containing(box.maxX, box.maxY, box.maxZ);
-        for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-            BlockState state = level.getBlockState(pos);
-            if (!state.isAir() && found.size() < 32) found.add(BuiltInRegistries.BLOCK.getKey(state.getBlock()) + "@" + pos.getX() + "," + pos.getY() + "," + pos.getZ());
-        }
-        return String.join(";", found);
-    }
-
-    private static float health(Entity entity) { return entity instanceof LivingEntity living ? living.getHealth() : -1.0F; }
-    private static double distance(RavagerTrace trace, Entity entity) { return Math.sqrt(entity.distanceToSqr(trace.spawnX, trace.spawnY, trace.spawnZ)); }
-
 
     private static boolean isFinalPlacementComplete(String mansionId) {
         Set<String> expectedPlacements = EXPECTED_PLACEMENTS.get(mansionId);
@@ -572,7 +426,6 @@ public final class MansionFeature extends Structure {
         if (Boolean.getBoolean("bm.mansion.trace")) traceMansionHeight(context, origin, releasedY, terrainSamples, true, "");
         Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
             .sorted(Comparator.comparingInt(MansionRoom::getSortValue)).toList();
-        boolean[] forcedGardenUsed = {false};
         for (MansionRoom room : rooms) {
             int x = origin.getX() + room.getPosition().getX() * MansionLayoutFoundation.CELL_XZ;
             int y = origin.getY() + room.getPosition().getY() * MansionLayoutFoundation.CELL_Y;
@@ -580,7 +433,7 @@ public final class MansionFeature extends Structure {
             Rotation rotation = room.getRotation(context.random());
             BlockPos roomPos = room.getOffsetForRotation(new BlockPos(x, y, z), rotation);
             builder.addPiece(new Piece(details, context.structureTemplateManager(),
-                mansionTemplateForRoom(room, templates, context.random(), origin, roomPos, rotation, forcedGardenUsed).toString(), roomPos, rotation,
+                mansionTemplateForRoom(room, templates, context.random()).toString(), roomPos, rotation,
                 room.getPosition().getY() == 0,
                 room.getRoomType() == RoomType.TOWER_MID || room.getRoomType() == RoomType.TOWER_TOP));
             room.addWalls(details, templates, context.random(), new BlockPos(x, y, z),
@@ -629,29 +482,9 @@ public final class MansionFeature extends Structure {
             heights.get(heights.size() - 1) - heights.get(0), suitable, rejection);
     }
 
-    private static ResourceLocation mansionTemplateForRoom(MansionRoom room, MansionTemplates templates,
-                                                            RandomSource random, BlockPos mansionOrigin, BlockPos worldAnchor, Rotation rotation,
-                                                            boolean[] forcedGardenUsed) {
+    private static ResourceLocation mansionTemplateForRoom(MansionRoom room, MansionTemplates templates, RandomSource random) {
         ResourceLocation original = room.getTemplate(templates, random);
-        if (forceRavagerGarden() && !forcedGardenUsed[0] && room.getRoomType() == RoomType.GARDEN) {
-            forcedGardenUsed[0] = true;
-            ResourceLocation forced = ResourceLocation.parse("biomemakeover:mansion/garden/garden_7");
-            BiomeMakeover.LOGGER.info("[BM_MANSION_FORCE_RAVAGER_GARDEN] mansion/layout={} slot/piece={} originalTemplate={} forcedTemplate={} worldAnchor={} rotation={} mirror={} traceEnabled={} forceEnabled={}",
-                mansionOrigin, NEXT_PIECE_ORDINAL.get() == null ? -1 : NEXT_PIECE_ORDINAL.get(), original, forced, worldAnchor,
-                rotation, Mirror.NONE, true, true);
-            return forced;
-        }
-        if (forceRavagerGarden() && room.getRoomType() == RoomType.GARDEN
-            && original.toString().equals("biomemakeover:mansion/garden/garden_7")) {
-            return MansionTemplateType.GARDEN.getTemplates(templates).stream()
-                .filter(candidate -> !candidate.toString().equals("biomemakeover:mansion/garden/garden_7"))
-                .findFirst().orElse(original);
-        }
         return original;
-    }
-
-    private static boolean forceRavagerGarden() {
-        return Boolean.getBoolean("bm.mansion.trace") && Boolean.getBoolean("bm.mansion.forceRavagerGarden");
     }
 
     @Override public StructureType<?> type() { return BMStructures.MANSION; }
@@ -670,14 +503,13 @@ public final class MansionFeature extends Structure {
         layout.generateLayout(random, origin.getY());
         Collection<MansionRoom> rooms = layout.getLayout().getEntries().stream()
             .sorted(Comparator.comparingInt(MansionRoom::getSortValue)).toList();
-        boolean[] forcedGardenUsed = {false};
         for (MansionRoom room : rooms) {
             int x = origin.getX() + room.getPosition().getX() * MansionLayoutFoundation.CELL_XZ;
             int y = origin.getY() + room.getPosition().getY() * MansionLayoutFoundation.CELL_Y;
             int z = origin.getZ() + room.getPosition().getZ() * MansionLayoutFoundation.CELL_XZ;
             Rotation rotation = room.getRotation(random);
             BlockPos roomPos = room.getOffsetForRotation(new BlockPos(x, y, z), rotation);
-            builder.addPiece(new Piece(details, manager, mansionTemplateForRoom(room, templates, random, origin, roomPos, rotation, forcedGardenUsed).toString(), roomPos,
+            builder.addPiece(new Piece(details, manager, mansionTemplateForRoom(room, templates, random).toString(), roomPos,
                 rotation, room.getPosition().getY() == 0,
                 room.getRoomType() == RoomType.TOWER_MID || room.getRoomType() == RoomType.TOWER_TOP));
             room.addWalls(details, templates, random, new BlockPos(x, y, z), manager, layout.getLayout(), builder);
@@ -717,7 +549,6 @@ public final class MansionFeature extends Structure {
             this.mansionPieceOrdinal = NEXT_PIECE_ORDINAL.get() == null ? -1 : NEXT_PIECE_ORDINAL.get();
             if (NEXT_PIECE_ORDINAL.get() != null) NEXT_PIECE_ORDINAL.set(NEXT_PIECE_ORDINAL.get() + 1);
             if (LAYOUT_PIECES.get() != null) LAYOUT_PIECES.get().add(this);
-            armGardenTargetTrace(template, templatePosition, placeSettings, mansionOrigin, mansionPieceOrdinal);
     }
 
     public Piece(MansionDetails details, StructureTemplateManager manager, String template, BlockPos position,
@@ -1048,30 +879,6 @@ public final class MansionFeature extends Structure {
                 mob.setPersistenceRequired();
             }
             world.addFreshEntityWithPassengers(entity);
-            if (Boolean.getBoolean("bm.mansion.trace") && metadata.startsWith("ravager")) {
-                ServerLevel serverLevel = world.getLevel();
-                Map<BlockPos, BlockState> reference = new HashMap<>();
-                for (int x = -2; x <= 2; x++) for (int y = 0; y <= 3; y++) for (int z = -2; z <= 2; z++) {
-                    BlockPos sample = position.offset(x, y, z);
-                    // Worldgen callbacks must read through the supplied region.
-                    // ServerLevel lookup can synchronously acquire an unavailable
-                    // chunk and join its generation future.
-                    BlockState state = world.getBlockState(sample);
-                    if (!state.isAir()) reference.put(sample.immutable(), state);
-                }
-                if (SPAWN_SAFE_ACCESS_EMISSIONS.getAndIncrement() < 32)
-                    BiomeMakeover.LOGGER.info("[BM_MANSION_SPAWN_SAFE_ACCESS] metadata/type={} markerPos={} currentChunk={} accessMethod=WorldGenLevel.getBlockState requestedExternalChunk=false thread={}",
-                        metadata, position, new ChunkPos(position), Thread.currentThread().getName());
-                RavagerTrace trace = new RavagerTrace(serverLevel, entity, position, reference);
-                if (RAVAGER_TRACES.putIfAbsent(trace.uuid, trace) == null) {
-                    CollisionSnapshot collision = collidingBlocks(world, entity);
-                    BiomeMakeover.LOGGER.info("[BM_MANSION_RAVAGER_SPAWN] entityUuid={} markerWorldPos={} spawnX={} spawnY={} spawnZ={} yaw={} bboxMinX={} bboxMinY={} bboxMinZ={} bboxMaxX={} bboxMaxY={} bboxMaxZ={} width={} height={} health={} onGround={} isInWall={} collidingBlockCount={} collidingBlocks={} spawnTick={} dimension={}",
-                        trace.uuid, position, entity.getX(), entity.getY(), entity.getZ(), entity.getYRot(), entity.getBoundingBox().minX,
-                        entity.getBoundingBox().minY, entity.getBoundingBox().minZ, entity.getBoundingBox().maxX, entity.getBoundingBox().maxY,
-                        entity.getBoundingBox().maxZ, trace.width, trace.height, health(entity), entity.onGround(), collision.count > 0, collision.count,
-                        collision.blocks, trace.spawnTick, trace.dimension);
-                }
-            }
         }
 
         private void generateIvy(Direction direction, BlockPos position, WorldGenLevel world, RandomSource random) {

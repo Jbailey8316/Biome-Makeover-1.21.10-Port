@@ -29,3 +29,12 @@ not randomized or grown. Prism confirmed complete restoration with
 
 The Mansion fluid and crop parity threads are CLOSED. R20R.4 remains retained
 as historical forensic evidence.
+# Permanent Mythas safety note
+
+The released 1.20.1 Mansion permits a latent ordering hazard: biome tree
+decoration can run after Mansion structure placement and structure-spawned
+mobs. The port includes a separate **MYTHAS ENHANCEMENT** that rejects tree
+features whose root/trunk-base columns intersect an actively generating
+Biome Makeover Mansion footprint. This preserves released Mansion templates
+and mob-marker semantics, changes no NBT, and does not suppress unrelated
+vegetation or trees rooted outside the footprint.

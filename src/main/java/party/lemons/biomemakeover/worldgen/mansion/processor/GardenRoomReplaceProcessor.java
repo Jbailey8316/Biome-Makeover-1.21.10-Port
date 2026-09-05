@@ -11,26 +11,9 @@ import party.lemons.biomemakeover.worldgen.mansion.MansionGrid;
 
 public class GardenRoomReplaceProcessor extends FloorRoomReplaceProcessor
 {
-    private boolean forcedGardenUsed;
-
     @Override
     public boolean isValid(RandomSource random, int floor, MansionGrid<MansionRoom> layout, MansionRoom currentRoom)
     {
-        if(floor == 0 && forceRavagerGarden() && !forcedGardenUsed)
-        {
-            boolean isSurrounded = true;
-            for(Direction dir : MansionMath.HORIZONTALS)
-            {
-                if(!layout.contains(currentRoom.getPosition().relative(dir)))
-                {
-                    isSurrounded = false;
-                    break;
-                }
-            }
-            if (isSurrounded) forcedGardenUsed = true;
-            return isSurrounded;
-        }
-
         if(floor == 0 && random.nextInt(3) == 0)
         {
             boolean isSurrounded = true;
@@ -46,11 +29,6 @@ public class GardenRoomReplaceProcessor extends FloorRoomReplaceProcessor
         }
 
         return false;
-    }
-
-    private static boolean forceRavagerGarden()
-    {
-        return Boolean.getBoolean("bm.mansion.trace") && Boolean.getBoolean("bm.mansion.forceRavagerGarden");
     }
 
     @Override

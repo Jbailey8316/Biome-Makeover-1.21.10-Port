@@ -5,7 +5,6 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.GiantTrunkPlacer;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import party.lemons.biomemakeover.BiomeMakeover;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-/** Trace-gated Mythas safety boundary for trees rooted inside Mansion geometry. */
+/** Mythas safety boundary for trees rooted inside Mansion geometry. */
 public final class MansionTreeProtection {
     private static final Map<WorldGenLevel, List<Footprint>> FOOTPRINTS =
         Collections.synchronizedMap(new WeakHashMap<>());
@@ -41,10 +40,6 @@ public final class MansionTreeProtection {
                 for (BlockPos root : roots) for (BoundingBox box : footprint.boxes) {
                     if (root.getX() >= box.minX() && root.getX() <= box.maxX()
                         && root.getZ() >= box.minZ() && root.getZ() <= box.maxZ()) {
-                        if (Boolean.getBoolean("bm.mansion.trace"))
-                            BiomeMakeover.LOGGER.info("[BM_MANSION_TREE_REJECTED] mansionId={} treeOrigin={} checkedRootColumns={} intersectingMansionColumn={} featureType={} thread={}",
-                                footprint.id, origin, roots, root, config.trunkPlacer.getClass().getSimpleName(),
-                                Thread.currentThread().getName());
                         return true;
                     }
                 }
