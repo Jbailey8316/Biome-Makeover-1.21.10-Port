@@ -9,6 +9,7 @@ $text = Get-Content -LiteralPath $feature -Raw
 foreach ($needle in @('BM_TAPESTRY_MARKER_DIRECTION','candidateSupportAtFacingOpposite','candidateSupportAtFacing','pieceRotation','facing.getOpposite()')) {
     if ($text.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing marker direction contract: $needle" }
 }
+if ($text.IndexOf('BM_TAPESTRY_PLACED_STATE', [StringComparison]::Ordinal) -lt 0 -or $text.IndexOf('transformedMarkerFacing', [StringComparison]::Ordinal) -lt 0) { throw 'Missing post-write tapestry state assertion/dataflow fields' }
 $auditText = Get-Content -LiteralPath $audit -Raw
 foreach ($needle in @('totalWallMarkers','markerFacingPointsTowardBacking','markerFacingOppositePointsTowardBacking','noAdjacentBacking','ambiguous')) {
     if ($auditText.IndexOf($needle, [StringComparison]::Ordinal) -lt 0) { throw "Missing offline audit aggregate: $needle" }

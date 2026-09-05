@@ -50,6 +50,8 @@ if ($source -notmatch 'submitModelPart' -or $source -notmatch 'entitySolid\(stat
 if ($source -notmatch 'LayerDefinition\.create\(mesh, 64, 64\)' -or $source -notmatch 'texOffs\(0, 0\)') { throw 'Released 64x64 tapestry UV contract missing' }
 if ($source -notmatch 'facing\.getOpposite\(\)' -or $source -notmatch 'setBlock\(position') { throw 'Released marker-facing/in-place placement contract missing' }
 if ($source -notmatch 'mirror\(placeSettings\.getMirror\(\)\)\.rotate\(placeSettings\.getRotation\(\)\)' -or $source -notmatch 'transformedFacing') { throw 'Rotated marker direction transform contract missing' }
+if ($source -notmatch 'generateTapestry\(facing, serializedFacing' -or $source -notmatch 'setValue\(MansionWallTapestryBlock\.FACING, facing\.getOpposite\(\)\)') { throw 'Production transformed-facing dataflow is not wired to the wall state write' }
+if ($source -notmatch 'BM_TAPESTRY_PLACED_STATE' -or $source -notmatch 'actualWorldFacing') { throw 'Post-write world-state assertion missing' }
 if ($source -notmatch 'TAPESTRY_POSITIONS' -or $source -notmatch 'BM_TAPESTRY_FINAL_STATE' -or $source -notmatch 'BM_TAPESTRY_FINAL_SUMMARY') { throw 'Final tapestry support audit missing' }
 if ($source -notmatch 'BM_TAPESTRY_SPATIAL' -or $source -notmatch 'transformDirection' -or $source -notmatch 'flagCenterLocal') { throw 'Matrix-based tapestry spatial trace missing' }
 if ($source -notmatch 'blockOrigin' -or $source -notmatch 'worldCenter\.sub\(blockOrigin\)') { throw 'Spatial diagnostic is not block-relative' }

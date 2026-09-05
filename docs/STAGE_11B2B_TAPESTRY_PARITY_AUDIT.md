@@ -216,6 +216,16 @@ R.2 changes only that field to `"structures": ["biomemakeover:mansion"]`.
 The parent remains hidden=false, toast/chat enabled, and the all-tapestries
 advancement retains its 17 released item predicates and Mansion parent.
 
+## R.5.1 production dataflow contract
+
+The production path carries both `serializedFacing` and the transformed
+semantic `facing` into `handleDirectionalMetadata`, then into
+`generateTapestry`. The wall state write derives directly from that transformed
+value: `setValue(FACING, facing.getOpposite())`. Immediately after the write,
+`BM_TAPESTRY_PLACED_STATE` reads the block state back from the world and records
+the requested and actual facing, support block, and survival result. This closes
+the raw → transformed → requested → actual-world-state contract for Prism.
+
 ## R.4 marker/support forensic result
 
 The released NBT audit covers all 56 `metadata=tapestry` occurrences. In every
