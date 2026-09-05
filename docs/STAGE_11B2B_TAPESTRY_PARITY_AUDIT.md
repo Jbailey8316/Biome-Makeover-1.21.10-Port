@@ -157,12 +157,19 @@ opposite of the selected attachment direction, support at
 item is the vanilla `StandingAndWallBlockItem` with `Direction.DOWN`, so wall
 selection and standing fallback use the same placement decision as banners.
 
-Mansion directional-data still supplies the already piece-transformed marker
-direction from native `StructureTemplate.filterBlocks` exactly once; the
-handler applies the released wall `opposite()` semantics and does not rotate
-the final tapestry state again. The 56 marker
-occurrences and all 168 NBT templates remain unchanged. `BM_TAPESTRY_PLACEMENT_TRACE`
-is a temporary, trace-gated, 16-entry runtime diagnostic for Prism verification.
+Mansion directional-data uses the native `StructureTemplate.filterBlocks`
+callback position, then reconstructs the released marker direction with the
+native marker-state `mirror(placeSettings.getMirror())` operation. This is
+required because the 1.21.10 `filterBlocks` overload used by the port applies
+rotation to its returned state but does not apply mirror; applying rotation
+again would be a double transform. The handler then
+applies the released wall `opposite()` semantics exactly once and does not
+rotate the final tapestry state again. The 56 marker
+occurrences and all 168 NBT templates remain unchanged. `BM_TAPESTRY_TRANSFORM_PROOF`
+is a temporary, trace-gated, 16-entry runtime diagnostic. Its
+`filterBlocksFacing` field is explicitly the state returned by the production
+filter call; the offline NBT audit remains the authority for true serialized
+marker values.
 
 ## R.1 renderer and advancement repair
 

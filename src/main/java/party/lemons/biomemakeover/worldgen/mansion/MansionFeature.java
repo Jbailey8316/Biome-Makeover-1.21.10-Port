@@ -643,13 +643,15 @@ public final class MansionFeature extends Structure {
             for (var info : template.filterBlocks(templatePosition, placeSettings, BMBlocks.DIRECTIONAL_DATA)) {
                 if (info.nbt() != null && info.state().hasProperty(DirectionalBlock.FACING)) {
                     String metadata = info.nbt().getStringOr("metadata", "");
-                    // filterBlocks returns the marker state after the native structure
-                    // rotation transform.  Consume it directly, as the released
-                    // TemplateStructurePiece callback did; transforming it again would
-                    // rotate the direction twice.
-                    Direction transformedFacing = info.state().getValue(DirectionalBlock.FACING);
-                    Direction serializedFacing = transformedFacing;
-                    handleDirectionalMetadata(metadata, serializedFacing,
+                    // The 1.21.10 filterBlocks overload used here transforms the
+                    // callback position and applies rotation to the returned state,
+                    // but does not apply the configured mirror.  Reconstruct the
+                    // released semantic direction with the native state helpers;
+                    // this is the known-good Mansion path from b342b2a.
+                    Direction filterBlocksFacing = info.state().getValue(DirectionalBlock.FACING);
+                    Direction transformedFacing = info.state().mirror(placeSettings.getMirror())
+                        .getValue(DirectionalBlock.FACING);
+                    handleDirectionalMetadata(metadata, filterBlocksFacing,
                         transformedFacing, info.pos(), level, random);
                     if (TRACE && "tapestry".equals(metadata) && TAPESTRY_PLACEMENT_TRACE_COUNT.incrementAndGet() <= 16) {
                         BlockState placed = level.getBlockState(info.pos());
@@ -662,10 +664,9 @@ public final class MansionFeature extends Structure {
                         BlockPos support = placed.getBlock() instanceof MansionWallTapestryBlock
                             ? info.pos().relative(placed.getValue(MansionWallTapestryBlock.FACING).getOpposite())
                             : info.pos().below();
-                        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_PLACEMENT_TRACE] template={} pieceId={} localMarkerPos={} variant={} form={} markerPos={} finalBlockPos={} rawMarkerFacing={} transformedMarkerFacing={} pieceRotation={} pieceMirror={} currentOppositeApplied=true finalFacingOrRotation={} supportPos={} rendererFacing={} rendererYaw={} rendererWallTranslation={}",
-                            diagnosticTemplate, mansionPieceOrdinal, info.pos().subtract(templatePosition),
-                            BuiltInRegistries.BLOCK.getKey(placed.getBlock()), form, info.pos(), info.pos(),
-                            serializedFacing.getSerializedName(), transformedFacing.getSerializedName(), placeSettings.getRotation(), placeSettings.getMirror(), finalState, support,
+                        BiomeMakeover.LOGGER.info("[BM_TAPESTRY_TRANSFORM_PROOF] template={} pieceId={} pieceAnchor={} pieceRotation={} pieceMirror={} filterBlocksWorldPos={} filterBlocksFacing={} semanticMarkerFacing={} markerConventionSupportDirection=opposite finalBlockPos={} finalFacing={} finalSupportPos={} rendererFacing={} rendererYaw={} rendererWallTranslation={}",
+                            diagnosticTemplate, mansionPieceOrdinal, templatePosition, placeSettings.getRotation(), placeSettings.getMirror(), info.pos(),
+                            filterBlocksFacing.getSerializedName(), transformedFacing.getSerializedName(), info.pos(), finalState, support,
                             form.equals("wall") ? finalState : "none", form.equals("wall") ? "-" + finalState : "none",
                             form.equals("wall") ? "0.5,-0.16666667,0.5;0,-0.3125,-0.4375" : "none");
                     }
