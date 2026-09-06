@@ -17,6 +17,7 @@ import party.lemons.biomemakeover.init.BMEntities;
 
 public final class BMWorldgen {
     private static final TagKey<Biome> SWAMPS = TagKey.create(Registries.BIOME, BiomeMakeover.id("swamps"));
+    private static final TagKey<Biome> BEACHES = TagKey.create(Registries.BIOME, BiomeMakeover.id("beaches"));
     private static ResourceKey<PlacedFeature> mushroom(String path) {
         return ResourceKey.create(Registries.PLACED_FEATURE, BiomeMakeover.id("mushroom_fields/" + path));
     }
@@ -56,6 +57,7 @@ public final class BMWorldgen {
     public static void initialize() {
         BiomeModifications.addSpawn(BiomeSelectors.includeByKey(Biomes.MUSHROOM_FIELDS),
             MobCategory.WATER_AMBIENT, BMEntities.GLOWFISH, 7, 2, 7);
+        BiomeModifications.addSpawn(BiomeSelectors.tag(BEACHES), MobCategory.CREATURE, BMEntities.HELMIT_CRAB, 6, 2, 5);
         BiomeModifications.addSpawn(BiomeSelectors.tag(net.minecraft.tags.BiomeTags.IS_BADLANDS),
             MobCategory.CREATURE, BMEntities.SCUTTLER, 4, 1, 2);
         addMushroom(GenerationStep.Decoration.UNDERGROUND_DECORATION, UNDERGROUND_MYCELIUM);

@@ -34,6 +34,7 @@ import party.lemons.biomemakeover.entity.GhostEntity;
 import party.lemons.biomemakeover.entity.AdjudicatorEntity;
 import party.lemons.biomemakeover.entity.AdjudicatorMimicEntity;
 import party.lemons.biomemakeover.entity.StoneGolemEntity;
+import party.lemons.biomemakeover.entity.HelmitCrabEntity;
 
 public final class BMEntities {
     public static final TagKey<Item> SCUTTLER_FOOD = TagKey.create(Registries.ITEM, BiomeMakeover.id("scuttler_food"));
@@ -103,6 +104,10 @@ public final class BMEntities {
         EntityType.Builder.<StoneGolemEntity>of(StoneGolemEntity::new, MobCategory.MISC)
             .sized(1.6F, 2.5F).clientTrackingRange(12));
     public static final Item STONE_GOLEM_SPAWN_EGG = registerSpawnEgg("stone_golem_spawn_egg", STONE_GOLEM);
+    public static final EntityType<HelmitCrabEntity> HELMIT_CRAB = registerEntity("helmit_crab",
+        EntityType.Builder.<HelmitCrabEntity>of(HelmitCrabEntity::new, MobCategory.CREATURE)
+            .sized(.825F, .5F).clientTrackingRange(12));
+    public static final Item HELMIT_CRAB_SPAWN_EGG = registerSpawnEgg("helmit_crab_spawn_egg", HELMIT_CRAB);
 
     private BMEntities() {
     }
@@ -139,6 +144,7 @@ public final class BMEntities {
         FabricDefaultAttributeRegistry.register(ADJUDICATOR, AdjudicatorEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(ADJUDICATOR_MIMIC, AdjudicatorMimicEntity.createAttributes());
         FabricDefaultAttributeRegistry.register(STONE_GOLEM, StoneGolemEntity.createAttributes());
+        FabricDefaultAttributeRegistry.register(HELMIT_CRAB, HelmitCrabEntity.createAttributes());
         SpawnPlacements.register(
             OWL,
             SpawnPlacementTypes.ON_GROUND,
@@ -166,5 +172,8 @@ public final class BMEntities {
                 && level.getRawBrightness(pos, 0) > 2);
         SpawnPlacements.register(MOTH, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING,
             MothEntity::checkSpawnRules);
+        SpawnPlacements.register(HELMIT_CRAB, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING,
+            HelmitCrabEntity::checkSpawnRules);
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.SPAWN_EGGS).register(entries -> entries.accept(HELMIT_CRAB_SPAWN_EGG));
     }
 }

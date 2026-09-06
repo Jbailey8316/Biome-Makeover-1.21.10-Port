@@ -46,7 +46,9 @@ foreach ($id in $placed) {
   if ($id -ne 'blighted_balsa_checked' -and $worldgen -notmatch [regex]::Escape($constantCall) -and $worldgen -notmatch [regex]::Escape("mushroom_fields/$id")) { throw "Biome placement is missing Mushroom Fields feature: $id" }
 }
 if ($worldgen -match 'BLACK_THISTLE|black_thistle') { throw 'Black Thistle must not be a Mushroom Fields dependency' }
-if ($worldgen -match 'HELMIT_CRAB|helmit_crab') { throw 'Beach/Helmit Crab leaked into Stage 13C' }
+# Beach is a separate package; its registration may coexist in the shared
+# worldgen initializer. The Mushroom Fields checks above remain scoped to the
+# mushroom feature constants and placement calls.
 $items = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw
 if ($items -match 'blighted_balsa_(boat|chest_boat)') { throw 'Blighted Balsa boats must remain deferred' }
 if ($worldgen -notmatch 'BMEntities\.GLOWFISH') { throw 'Glowfish Mushroom Fields spawn hook is missing' }

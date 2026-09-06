@@ -293,6 +293,42 @@ tasks.register('generateStage10AItemResources') {
     }
 }
 
+tasks.register('generateStage13DItemDefinitions') {
+    outputs.dir(layout.buildDirectory.dir('generated/stage13dResources'))
+    doLast {
+        def root = layout.buildDirectory.dir('generated/stage13dResources').get()
+        def output = root.dir('assets/biomemakeover/items').asFile
+        def models = root.dir('assets/biomemakeover/models/item').asFile
+        def textures = root.dir('assets/biomemakeover/textures/item').asFile
+        output.mkdirs(); models.mkdirs(); textures.mkdirs()
+        ['raw_crab', 'cooked_crab', 'crab_chowder', 'helmit_crab_spawn_egg'].each { id ->
+            new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson(
+                [model:[type:'minecraft:model', model:"biomemakeover:item/${id}"]])) + System.lineSeparator()
+        }
+        ['raw_crab', 'cooked_crab', 'crab_chowder'].each { id ->
+            new File(models, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson(
+                [parent:'minecraft:item/generated', textures:[layer0:"biomemakeover:item/${id}"]])) + System.lineSeparator()
+        }
+        def clientJar = fileTree("${projectDir}/.gradle/loom-cache/minecraftMaven").matching { include '**/minecraft-clientOnly-*.jar' }.files.sort { it.absolutePath }.last()
+        new ZipFile(clientJar).withCloseable { zip ->
+            def template = ImageIO.read(zip.getInputStream(zip.getEntry('assets/minecraft/textures/item/pig_spawn_egg.png')))
+            def image = new BufferedImage(template.width, template.height, BufferedImage.TYPE_INT_ARGB)
+            for (int x = 0; x < template.width; x++) for (int y = 0; y < template.height; y++) {
+                int argb=template.getRGB(x,y), alpha=(argb>>>24)&255
+                if (alpha==0) { image.setRGB(x,y,0); continue }
+                int brightness=(((argb>>>16)&255)+((argb>>>8)&255)+(argb&255))/3
+                int target=brightness<190 ? 0xeb7b65 : 0xbd2520
+                float shade=brightness/220F
+                int r=Math.min(255,Math.round(((target>>>16)&255)*shade)), g=Math.min(255,Math.round(((target>>>8)&255)*shade)), b=Math.min(255,Math.round((target&255)*shade))
+                image.setRGB(x,y,(alpha<<24)|(r<<16)|(g<<8)|b)
+            }
+            ImageIO.write(image, 'png', new File(textures, 'helmit_crab_spawn_egg.png'))
+        }
+        new File(models, 'helmit_crab_spawn_egg.json').text = JsonOutput.prettyPrint(JsonOutput.toJson(
+            [parent:'minecraft:item/generated', textures:[layer0:'biomemakeover:item/helmit_crab_spawn_egg']])) + System.lineSeparator()
+    }
+}
+
 tasks.register('compileStage10ATemplateValidator', JavaCompile) {
     dependsOn tasks.named('classes')
     source file('validation/java/Stage10ATemplateRuntimeValidator.java')
@@ -411,12 +447,14 @@ processResources {
     dependsOn tasks.named('generateStage6ItemDefinitions')
     dependsOn tasks.named('generateStage8ItemDefinitions')
     dependsOn tasks.named('generateStage10AItemResources')
+    dependsOn tasks.named('generateStage13DItemDefinitions')
     from(stage3GeneratedResources)
     from(stage4GeneratedResources)
     from(stage5GeneratedResources)
     from(stage6GeneratedResources)
     from(stage8GeneratedResources)
     from(stage10aGeneratedResources)
+    from(layout.buildDirectory.dir('generated/stage13dResources'))
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
@@ -425,6 +463,24 @@ processResources {
     // Stage 3 parity resources are sourced verbatim from the pinned, tracked
     // 1.20.1 release tree. The includes are deliberately ownership-scoped;
     // structures and unrelated biome themes are excluded.
+    from('reference/Biome-Makeover-1.20/common/src/main/resources') {
+        // Stage 13D Beach package: unchanged released resources are sourced
+        // from the pinned tree; Java registrations provide the 1.21.10 wiring.
+        include 'assets/biomemakeover/textures/item/raw_crab.png', 'assets/biomemakeover/textures/item/cooked_crab.png', 'assets/biomemakeover/textures/item/crab_chowder.png'
+        include 'assets/biomemakeover/textures/entity/helmit_crab/*.png'
+        include 'assets/biomemakeover/sounds/crab/*.ogg'
+        include 'assets/biomemakeover/sounds.json'
+        include 'data/biomemakeover/loot_tables/entities/helmit_crab.json'
+        include 'data/biomemakeover/recipes/crab_chowder.json', 'data/biomemakeover/recipes/cooking/cooked_crab*.json'
+        include 'data/biomemakeover/tags/worldgen/biome/beaches.json', 'data/biomemakeover/tags/blocks/crab_spawnable_on.json', 'data/biomemakeover/tags/items/helmit_crab_exception.json'
+        include 'data/biomemakeover/advancements/biomemakeover/*crab*.json'
+        eachFile { details ->
+            if (details.path == 'assets/biomemakeover/sounds.json') details.exclude()
+            details.path = details.path.replace('/loot_tables/', '/loot_table/')
+                .replace('/recipes/', '/recipe/').replace('/advancements/', '/advancement/')
+                .replace('/tags/blocks/', '/tags/block/').replace('/tags/items/', '/tags/item/')
+        }
+    }
     from('reference/Biome-Makeover-1.20/common/src/main/resources') {
         include 'assets/biomemakeover/blockstates/*glowshroom*.json'
         include 'assets/biomemakeover/blockstates/*mushroom_brick*.json'
@@ -787,7 +843,8 @@ processResources {
         def soundOut = new File(destinationDir, 'assets/biomemakeover/sounds.json')
         def currentSounds = soundOut.exists() ? new JsonSlurper().parse(soundOut) : [:]
         def historicalSounds = new JsonSlurper().parse(new File(historicalRoot, 'sounds.json'))
-        ['scuttler_rattle','scuttler_step','scuttler_hurt','scuttler_death','tumbleweed_tumble','tumbleweed_break'].each {
+        ['scuttler_rattle','scuttler_step','scuttler_hurt','scuttler_death','tumbleweed_tumble','tumbleweed_break',
+         'crab_death','crab_enter_shell','crab_leave_shell','crab_hurt','crab_scuttle','crab_snip'].each {
             currentSounds[it] = historicalSounds[it]
         }
         ['entity.dragonfly.loop','entity.dragonfly.hurt','entity.dragonfly.death','entity.decayed.swim','entity.decayed.step',

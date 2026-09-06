@@ -71,6 +71,12 @@ public final class BMSounds {
     public static final SoundEvent STONE_GOLEM_DEATH = register("stone_golem_death");
     public static final SoundEvent STONE_GOLEM_TURN = register("stone_golem_turn");
     public static final SoundEvent STONE_GOLEM_STOP = register("stone_golem_stop");
+    public static final SoundEvent CRAB_HURT = register("crab_hurt");
+    public static final SoundEvent CRAB_DEATH = register("crab_death");
+    public static final SoundEvent CRAB_SCUTTLE = register("crab_scuttle");
+    public static final SoundEvent CRAB_SNIP = register("crab_snip");
+    public static final SoundEvent CRAB_ENTER_SHELL = register("crab_enter_shell");
+    public static final SoundEvent CRAB_LEAVE_SHELL = register("crab_leave_shell");
 
     private BMSounds() {}
 

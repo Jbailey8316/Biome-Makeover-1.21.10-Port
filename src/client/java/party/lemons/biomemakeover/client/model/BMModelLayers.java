@@ -20,6 +20,7 @@ public final class BMModelLayers {
     public static final ModelLayerLocation TAPESTRY = new ModelLayerLocation(BiomeMakeover.id("tapestry"), "main");
     public static final ModelLayerLocation ADJUDICATOR = new ModelLayerLocation(BiomeMakeover.id("adjudicator"), "main");
     public static final ModelLayerLocation STONE_GOLEM = new ModelLayerLocation(BiomeMakeover.id("stone_golem"), "main");
+    public static final ModelLayerLocation HELMIT_CRAB = new ModelLayerLocation(BiomeMakeover.id("helmit_crab"), "main");
 
     private BMModelLayers() {}
 
@@ -39,5 +40,6 @@ public final class BMModelLayers {
         EntityModelLayerRegistry.registerModelLayer(TAPESTRY, TapestryModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(ADJUDICATOR, AdjudicatorModel::createBodyLayer);
         EntityModelLayerRegistry.registerModelLayer(STONE_GOLEM, StoneGolemModel::createBodyLayer);
+        EntityModelLayerRegistry.registerModelLayer(HELMIT_CRAB, HelmitCrabModel::createBodyLayer);
     }
 }

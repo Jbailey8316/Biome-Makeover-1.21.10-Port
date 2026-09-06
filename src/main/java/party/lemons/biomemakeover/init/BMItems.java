@@ -77,6 +77,9 @@ public final class BMItems {
         .usingConvertsTo(Items.BOWL).food(COOKED_GLOWFISH_FOOD, STEW_CONSUMABLE)));
     public static final Item GLOWFISH = register("glowfish", p -> new Item(p.food(GLOWFISH_FOOD, GLOWFISH_CONSUMABLE)));
     public static final Item COOKED_GLOWFISH = register("cooked_glowfish", p -> new Item(p.food(COOKED_GLOWFISH_FOOD, GLOWFISH_CONSUMABLE)));
+    public static final Item RAW_CRAB = register("raw_crab", p -> new Item(p.food(new FoodProperties(2, .1F, false))));
+    public static final Item COOKED_CRAB = register("cooked_crab", p -> new Item(p.food(new FoodProperties(5, .6F, false))));
+    public static final Item CRAB_CHOWDER = register("crab_chowder", p -> new Item(p.stacksTo(1).food(new FoodProperties(11, .9F, false)).usingConvertsTo(Items.BOWL)));
     public static final Item GLOWFISH_BUCKET = register("glowfish_bucket", p -> new GlowfishBucketItem(
         BMEntities.GLOWFISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p.stacksTo(1)));
     public static final Item BLIGHTED_BALSA_SIGN = register("blighted_balsa_sign", p -> new SignItem(
@@ -195,6 +198,7 @@ public final class BMItems {
     public static void initialize() {
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.NATURAL_BLOCKS).register(entries -> {
             entries.accept(LEAF_LITTER);
+            entries.accept(RAW_CRAB); entries.accept(COOKED_CRAB); entries.accept(CRAB_CHOWDER);
             entries.accept(GLOWSHROOM_STEW); entries.accept(GLOWFISH); entries.accept(COOKED_GLOWFISH); entries.accept(GLOWFISH_BUCKET);
             entries.accept(SCUTTLER_TAIL); entries.accept(ECTOPLASM); entries.accept(PINK_BUD); entries.accept(MAGENTA_BUD); entries.accept(COWBOY_HAT); entries.accept(WITCH_HAT); entries.accept(CRACKED_BRICK); entries.accept(LIGHTNING_BOTTLE); entries.accept(ILLUNITE_SHARD);
             entries.accept(ANCIENT_OAK_SIGN); entries.accept(ANCIENT_OAK_HANGING_SIGN);

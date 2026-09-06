@@ -66,6 +66,7 @@ import party.lemons.biomemakeover.worldgen.mansion.MansionDirectionalDataBlock;
 import party.lemons.biomemakeover.worldgen.mansion.MansionWallTapestryBlock;
 
 public final class BMBlocks {
+    public static final TagKey<Block> CRAB_SPAWNABLE_ON = TagKey.create(Registries.BLOCK, BiomeMakeover.id("crab_spawnable_on"));
     public static final net.minecraft.tags.TagKey<Block> MOTH_ATTRACTIVE = net.minecraft.tags.TagKey.create(
         net.minecraft.core.registries.Registries.BLOCK, BiomeMakeover.id("moth_attractive"));
     public static final TagKey<Block> BARREL_CACTUS_PLANTABLE = blockTag("barrel_cactus_plantable_on");

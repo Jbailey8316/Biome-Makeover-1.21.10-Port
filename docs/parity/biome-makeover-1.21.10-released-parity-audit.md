@@ -201,3 +201,11 @@ content are not released parity and do not count against the released backlog.
 - Mansion inventory remains 168 total / 165 active / 3 released orphans.
 - Structure NBT changes: 0.
 - Preservation tag remains unchanged.
+
+## Stage 13D update
+
+Stage 13D implements the released Beach / Helmit Crab package: natural Beach
+spawning, substrate tags, crab behavior, food/loot/recipes, client resources,
+and sounds. It remains **IMPLEMENTED / PRISM RUNTIME REQUIRED** until fresh-
+world natural-spawn testing is accepted. Ghost Town and Mythas enhancements
+remain out of scope.

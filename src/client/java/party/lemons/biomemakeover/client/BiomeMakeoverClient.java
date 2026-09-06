@@ -52,6 +52,7 @@ import party.lemons.biomemakeover.client.render.GhostRenderer;
 import party.lemons.biomemakeover.client.render.AdjudicatorRenderer;
 import party.lemons.biomemakeover.client.render.AdjudicatorMimicRenderer;
 import party.lemons.biomemakeover.client.render.StoneGolemRenderer;
+import party.lemons.biomemakeover.client.render.HelmitCrabRenderer;
 import party.lemons.biomemakeover.client.screen.AltarScreen;
 import party.lemons.biomemakeover.client.sound.AltarCursingSound;
 import party.lemons.biomemakeover.block.entity.AltarBlockEntity;
@@ -117,6 +118,7 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         EntityRenderers.register(BMEntities.ADJUDICATOR, AdjudicatorRenderer::new);
         EntityRenderers.register(BMEntities.ADJUDICATOR_MIMIC, AdjudicatorMimicRenderer::new);
         EntityRenderers.register(BMEntities.STONE_GOLEM, StoneGolemRenderer::new);
+        EntityRenderers.register(BMEntities.HELMIT_CRAB, HelmitCrabRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.LIGHTNING_BUG_BOTTLE,LightningBugBottleRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.ALTAR,AltarRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.TAPESTRY,MansionTapestryRenderer::new);
