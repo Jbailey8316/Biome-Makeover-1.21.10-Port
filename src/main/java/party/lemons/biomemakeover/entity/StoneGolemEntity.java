@@ -20,6 +20,7 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
@@ -58,8 +59,31 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
     private int combatTraceTicker;
     private LivingEntity combatTraceTarget;
     private boolean combatTraceGoal;
+    private boolean controlTraceMounted;
 
     public StoneGolemEntity(EntityType<? extends StoneGolemEntity> type, Level level) { super(type, level); }
+
+    @Override protected void updateControlFlags() {
+        super.updateControlFlags();
+        LivingEntity controller = getControllingPassenger();
+        boolean mountedEncounter = controller instanceof AdjudicatorEntity
+            && AdjudicatorAlliance.allied(this, controller);
+        if (mountedEncounter) {
+            goalSelector.enableControlFlag(Goal.Flag.MOVE);
+            goalSelector.enableControlFlag(Goal.Flag.LOOK);
+            goalSelector.enableControlFlag(Goal.Flag.JUMP);
+        }
+        if (mountedEncounter != controlTraceMounted && Boolean.getBoolean("bm.mansion.trace")) {
+            controlTraceMounted = mountedEncounter;
+            System.out.println("BM_GOLEM_CONTROL_FLAGS golem=" + getUUID()
+                + " passenger=" + (controller == null ? "null" : controller.getUUID() + "/" + controller.getType())
+                + " controllingPassenger=" + (controller != null)
+                + " MOVE=" + (mountedEncounter ? "enabled" : "vanilla")
+                + " LOOK=" + (mountedEncounter ? "enabled" : "vanilla")
+                + " JUMP=" + (mountedEncounter ? "enabled" : "vanilla")
+                + " isVehicle=" + isVehicle());
+        }
+    }
 
     public void traceGoalSelector(String reason) {
         if (level().isClientSide() || !Boolean.getBoolean("bm.mansion.trace")
