@@ -16,6 +16,10 @@ public final class BMAdvancements {
         "biomemakeover:ectoplasm_compost", new PlayerTrigger());
     public static final PlayerTrigger POLTERGEIST_YOURSELF = CriteriaTriggers.register(
         "biomemakeover:poltergeist_yourself", new PlayerTrigger());
+    public static final PlayerTrigger WITCH_TRADE = CriteriaTriggers.register(
+        "biomemakeover:witch_trade", new PlayerTrigger());
+    public static final PlayerTrigger ANTIDOTE = CriteriaTriggers.register(
+        "biomemakeover:antidote", new PlayerTrigger());
     private BMAdvancements() {}
     public static void initialize() {
         // Narrow server-authoritative replacement for final Taniwha's wear_armor criterion.

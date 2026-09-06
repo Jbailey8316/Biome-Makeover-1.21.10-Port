@@ -59,6 +59,10 @@ import party.lemons.biomemakeover.block.entity.AltarBlockEntity;
 import party.lemons.biomemakeover.init.BMMenus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
+import party.lemons.biomemakeover.client.screen.WitchScreen;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import party.lemons.biomemakeover.network.WitchQuestsPayload;
+import party.lemons.biomemakeover.crafting.witch.WitchQuestList;
 
 public final class BiomeMakeoverClient implements ClientModInitializer {
     private static final TagKey<Biome> SWAMPS = TagKey.create(Registries.BIOME, BiomeMakeover.id("swamps"));
@@ -123,6 +127,12 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         BlockEntityRenderers.register(BMBlockEntities.ALTAR,AltarRenderer::new);
         BlockEntityRenderers.register(BMBlockEntities.TAPESTRY,MansionTapestryRenderer::new);
         MenuScreens.register(BMMenus.ALTAR,AltarScreen::new);
+        MenuScreens.register(BMMenus.WITCH, WitchScreen::new);
+        ClientPlayNetworking.registerGlobalReceiver(WitchQuestsPayload.TYPE, (payload, context) ->
+            context.client().execute(() -> {
+                if (Minecraft.getInstance().screen instanceof WitchScreen screen && screen.getMenu().containerId == payload.menuId())
+                    screen.getMenu().setQuests(new WitchQuestList(payload.quests()));
+            }));
         AltarBlockEntity.setClientSoundStarter(altar -> Minecraft.getInstance().getSoundManager().play(
             new AltarCursingSound(altar, altar.getLevel() == null ? net.minecraft.util.RandomSource.create() : altar.getLevel().random)));
         ParticleFactoryRegistry.getInstance().register(BMParticles.LIGHTNING_SPARK,LightningSparkParticle.Provider::new);

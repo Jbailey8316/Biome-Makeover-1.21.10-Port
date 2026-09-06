@@ -11,6 +11,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.mobeffect.PossessedEffect;
+import party.lemons.biomemakeover.mobeffect.AntidoteMobEffect;
 
 public final class BMEffects {
     public static final Holder<MobEffect> SHOCKED = register("shocked",
@@ -19,6 +20,7 @@ public final class BMEffects {
             AttributeModifier.Operation.ADD_VALUE));
     public static final Holder<MobEffect> NOCTURNAL = register("nocturnal", new NocturnalEffect());
     public static final Holder<MobEffect> POSSESSED = register("possessed", new PossessedEffect());
+    public static final Holder<MobEffect> ANTIDOTE = register("antidote", new AntidoteMobEffect());
 
     private BMEffects() {}
 

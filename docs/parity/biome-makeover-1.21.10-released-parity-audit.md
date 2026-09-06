@@ -251,12 +251,18 @@ gameplay or resource changes.
 
 ### Genuine residual released systems
 
-1. **Witch quests and progression — MISSING.** The final source contains
-   `crafting/witch` quest classes/data, Witch quest and antidote mixins,
-   category/reward resources, menu/screen, persistence, and quest networking.
-   The current port has Witch Hat registration/rendering and its wear
-   advancement, but no quest loader, customer interaction, completion flow,
-   menu, persistence, or network path. Java, data, client, and current-MC
+Stage 13G implementation is now present but remains `IMPLEMENTED / PRISM
+RUNTIME REQUIRED`; the former Witch quest missing finding below is retained as
+historical audit evidence. See `stage-13g-witch-quest.md` for the current
+architecture, exact inventory, adaptations, and runtime checklist.
+
+1. **Witch quests and progression — historical MISSING finding, now
+   implemented in Stage 13G and awaiting Prism runtime acceptance.** The final
+   source contains `crafting/witch` quest classes/data, Witch quest and
+   antidote mixins, category/reward resources, menu/screen, persistence, and
+   quest networking. The current implementation restores these paths with
+   current-MC adaptations; see `stage-13g-witch-quest.md` for the active
+   status and runtime checklist. Java, data, client, and current-MC
    networking work are required, followed by Prism validation.
 2. **Released wood boats/chest boats — MISSING / currently excluded.** Final
    release registers Ancient Oak, Willow, Swamp Cypress, and Blighted Balsa

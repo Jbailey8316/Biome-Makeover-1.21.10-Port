@@ -2,6 +2,11 @@ package party.lemons.biomemakeover;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +26,13 @@ import party.lemons.biomemakeover.init.BMMenus;
 import party.lemons.biomemakeover.init.BMStructureProcessors;
 import party.lemons.biomemakeover.init.BMStructures;
 import party.lemons.biomemakeover.worldgen.mansion.MansionFeature;
+import party.lemons.biomemakeover.crafting.witch.data.QuestCategoryReloadListener;
+import party.lemons.biomemakeover.crafting.witch.data.reward.RewardTables;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import party.lemons.biomemakeover.network.CompleteWitchQuestPayload;
+import party.lemons.biomemakeover.network.WitchQuestsPayload;
+import party.lemons.biomemakeover.crafting.witch.menu.WitchMenu;
 
 public final class BiomeMakeover implements ModInitializer {
     public static final String MOD_ID = "biomemakeover";
@@ -47,6 +59,16 @@ public final class BiomeMakeover implements ModInitializer {
         BMEntities.initialize();
         BMWorldgen.initialize();
         BMWorldEvents.initialize();
+        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new QuestCategoryReloadListener());
+        ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(RewardTables.instance());
+        PayloadTypeRegistry.playC2S().register(CompleteWitchQuestPayload.TYPE, CompleteWitchQuestPayload.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(WitchQuestsPayload.TYPE, WitchQuestsPayload.STREAM_CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(CompleteWitchQuestPayload.TYPE, (payload, context) -> {
+            context.server().execute(() -> {
+                if (context.player().containerMenu instanceof WitchMenu menu && menu.containerId == context.player().containerMenu.containerId)
+                    menu.completeQuest(context.player(), payload.index());
+            });
+        });
         if (Boolean.getBoolean("bm.fence.trace")) {
             ServerLifecycleEvents.SERVER_STARTED.register(server -> BMBlocks.traceFenceTags());
         }

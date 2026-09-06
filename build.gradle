@@ -50,6 +50,7 @@ def stage10c4TemplateValidatorClasses = layout.buildDirectory.dir('classes/java/
 def stage10c4ProcessorValidatorClasses = layout.buildDirectory.dir('classes/java/stage10c4ProcessorValidator')
 def stage11a2TemplateValidatorClasses = layout.buildDirectory.dir('classes/java/stage11a2TemplateValidator')
 def stage11b2bMarkerAuditClasses = layout.buildDirectory.dir('classes/java/stage11b2bMarkerAudit')
+
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
     outputs.dir(stage3GeneratedResources)
@@ -437,6 +438,19 @@ tasks.named('check') {
 }
 
 processResources {
+    // Stage 13G released Witch quest definitions and presentation. The
+    // reference tree is authoritative for unchanged data; current Java
+    // supplies the 1.21.10 runtime hooks and menu integration.
+    from('reference/Biome-Makeover-1.20/common/src/main/resources') {
+        include 'data/biomemakeover/quest_category/**'
+        include 'data/biomemakeover/quest_reward/**'
+        include 'data/biomemakeover/advancements/biomemakeover/witch_quest.json'
+        include 'data/biomemakeover/loot_tables/entities/witch_hat.json'
+        include 'assets/biomemakeover/textures/gui/witch.png'
+        eachFile { details ->
+            details.path = details.path.replace('/loot_tables/', '/loot_table/').replace('/advancements/', '/advancement/')
+        }
+    }
     // Preserve the pre-Stage-6 source audit artifacts without packaging them as
     // released worldgen: final BM 1.20.1 has no owl_nest feature resources.
     exclude 'data/biomemakeover/worldgen/configured_feature/dark_forest/owl_nest.json'
