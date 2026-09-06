@@ -51,3 +51,18 @@ houses, decorations, processors, suspicious red sand, archaeology loot,
 barrels, structure spawns, save/reload behavior, and logs for structure,
 processor, jigsaw, loot, registry, and resource errors. `/place` is only a
 supplemental diagnostic; natural generation is required.
+
+## R1 archaeology distribution audit
+
+The released archaeology graph is one roll from `archaeology/ghost_town`.
+It has ten equally weighted top-level outcomes: three pottery sherds, iron,
+gold, Crude Fragment, two nested tables, the Ghost Town disc, and one
+leather-boots outcome. Boots therefore occur at 1/10, or 10%, per brush.
+Expected leather-boots outcomes are one per ten brushes and two per twenty;
+a small boot-heavy sample is valid released RNG. The nested horse-armor and
+junk tables contain no boot entries.
+
+The current port matches released rewards, weights, rolls, conditions, and
+processor assignment. Its only relevant data adaptations are modern nested
+loot-table `value` fields and `minecraft:iron_chain` replacing the removed
+`minecraft:chain`. No gameplay change was made for R1.

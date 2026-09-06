@@ -39,6 +39,62 @@ try {
         'assets/biomemakeover/sounds.json'
     )
     foreach ($path in $required) { Require-Jar $path }
+
+    function Read-JarJson([string]$path) {
+        Require-Jar $path
+        $reader = [IO.StreamReader]::new($entries[$path].Open())
+        try { return $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
+    }
+    function Read-SourceJson([string]$path) {
+        return Get-Content (Join-Path $Root $path) -Raw | ConvertFrom-Json
+    }
+    function Assert-OneRoll([object]$table, [string]$label) {
+        if (@($table.pools).Count -ne 1 -or $table.pools[0].rolls -ne 1 -or $table.pools[0].bonus_rolls -ne 0) {
+            throw "$label must have exactly one pool with one roll and no bonus rolls."
+        }
+    }
+    $archaeologyPaths = @(
+        'ghost_town',
+        'ghost_town_junk',
+        'ghost_town_horse_armor'
+    )
+    foreach ($name in $archaeologyPaths) {
+        $sourceTable = Read-SourceJson "src/main/resources/data/biomemakeover/loot_table/archaeology/$name.json"
+        $jarTable = Read-JarJson "data/biomemakeover/loot_table/archaeology/$name.json"
+        Assert-OneRoll $sourceTable "$name source archaeology table"
+        Assert-OneRoll $jarTable "$name packaged archaeology table"
+        if ($sourceTable.random_sequence -ne "biomemakeover:archaeology/$name" -or
+            $jarTable.random_sequence -ne "biomemakeover:archaeology/$name") { throw "$name random sequence changed." }
+    }
+    $main = Read-SourceJson 'src/main/resources/data/biomemakeover/loot_table/archaeology/ghost_town.json'
+    $mainEntries = @($main.pools[0].entries)
+    if ($mainEntries.Count -ne 10) { throw 'Ghost Town archaeology must retain ten equally weighted top-level outcomes.' }
+    foreach ($entry in $mainEntries) {
+        if (($entry.PSObject.Properties.Name -contains 'weight') -and $entry.weight -ne 1) { throw "Ghost Town archaeology item weight changed: $($entry.name)" }
+    }
+    if (@($mainEntries | Where-Object { $_.type -eq 'minecraft:loot_table' -and $_.value -eq 'biomemakeover:archaeology/ghost_town_horse_armor' }).Count -ne 1 -or
+        @($mainEntries | Where-Object { $_.type -eq 'minecraft:loot_table' -and $_.value -eq 'biomemakeover:archaeology/ghost_town_junk' }).Count -ne 1) {
+        throw 'Ghost Town archaeology nested-table assignments changed.'
+    }
+    $boots = @($mainEntries | Where-Object { $_.name -eq 'minecraft:leather_boots' })
+    if ($boots.Count -ne 1 -or $boots[0].weight -ne 1 -or $boots[0].functions[0].conditions[0].chance -ne 0.5 -or
+        $boots[0].functions[1].damage.min -ne 0.1 -or $boots[0].functions[1].damage.max -ne 1) {
+        throw 'Released leather-boots archaeology outcome changed.'
+    }
+    $junk = Read-SourceJson 'src/main/resources/data/biomemakeover/loot_table/archaeology/ghost_town_junk.json'
+    if (@($junk.pools[0].entries | Where-Object { $_.name -eq 'minecraft:iron_chain' }).Count -ne 1 -or
+        @($junk.pools[0].entries | Where-Object { $_.name -eq 'minecraft:chain' }).Count -ne 0) { throw 'Modern Ghost Town junk chain adaptation is incorrect.' }
+    $horse = Read-SourceJson 'src/main/resources/data/biomemakeover/loot_table/archaeology/ghost_town_horse_armor.json'
+    foreach ($expected in @(@('minecraft:leather_horse_armor',30), @('minecraft:iron_horse_armor',15), @('minecraft:golden_horse_armor',9), @('minecraft:diamond_horse_armor',1))) {
+        $match = @($horse.pools[0].entries | Where-Object { $_.name -eq $expected[0] })
+        if ($match.Count -ne 1 -or $match[0].weight -ne $expected[1]) { throw "Ghost Town horse-armor weight changed: $($expected[0])" }
+    }
+    foreach ($path in @('ghosttown_building','ghosttown_roads')) {
+        $processor = Read-SourceJson "src/main/resources/data/biomemakeover/worldgen/processor_list/$path.json"
+        $suspicious = @($processor.processors | Where-Object { $_.processor_type -eq 'biomemakeover:suspicious_block_replacement' })
+        if ($suspicious.Count -ne 1 -or $suspicious[0].output_suspicious -ne 'biomemakeover:suspicious_red_sand' -or
+            $suspicious[0].loot_table -ne 'biomemakeover:archaeology/ghost_town') { throw "Ghost Town archaeology assignment changed in $path." }
+    }
     if (@($entries.Keys | Where-Object { $_ -match '^data/biomemakeover/structures/ghosttown/' }).Count -ne 0) {
         throw 'Obsolete plural Ghost Town template path is packaged.'
     }
