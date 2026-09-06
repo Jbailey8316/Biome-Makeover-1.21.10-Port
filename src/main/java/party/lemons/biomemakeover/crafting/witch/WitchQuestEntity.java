@@ -15,6 +15,7 @@ public interface WitchQuestEntity {
     default void tickQuestState(net.minecraft.server.level.ServerLevel level) {}
     default void saveQuestData(net.minecraft.world.level.storage.ValueOutput output) {}
     default void loadQuestData(net.minecraft.world.level.storage.ValueInput input) {}
+    default void offerAntidote() {}
     void setCurrentCustomer(Player player);
     Player getCurrentCustomer();
     WitchQuestList getQuests();

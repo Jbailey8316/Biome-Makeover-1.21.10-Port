@@ -19,7 +19,8 @@ if ($witch -notmatch 'WitchQuestList|QuestCategories|bmInit|bmGoals|bmInteract|b
 if ($witch -notmatch 'WITCH_HATS|canInteract') { throw 'Witch Hat interaction gating is missing.' }
 if ($quest -notmatch 'Points|Items|toTag|CompoundTag') { throw 'Quest persistence fields are missing.' }
 if ($handler -notmatch 'weightedCount|RewardTables|getRewardFor') { throw 'Quest count/reward selection is missing.' }
-if ($antidote -notmatch 'ANTIDOTE|startUsingItem|aiStep') { throw 'Released Witch antidote hook is missing.' }
+if ($antidote -notmatch '@Mixin\(LivingEntity\.class\)|method = "aiStep"|WitchQuestEntity') { throw 'Current LivingEntity antidote hook is missing or not Witch-scoped.' }
+if ($witch -notmatch 'offerAntidote|ANTIDOTE|setUsingItem') { throw 'Released Witch antidote behavior is missing.' }
 if ($interaction -notmatch '@Mixin\(Mob\.class\)|method = "mobInteract"|instanceof Witch|WitchQuestEntity') { throw 'Current Mob interaction hook is missing or not Witch-scoped.' }
 if ($mobHooks -notmatch 'registerGoals|customServerAiStep|addAdditionalSaveData|readAdditionalSaveData|WitchQuestEntity') { throw 'Mob-declared Witch quest hooks are incomplete.' }
 if ($livingHooks -notmatch 'method = "die"|dropFromLootTable|instanceof Witch|WitchQuestEntity') { throw 'LivingEntity-declared Witch quest hooks are incomplete.' }
