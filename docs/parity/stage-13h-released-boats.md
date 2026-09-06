@@ -1,6 +1,6 @@
 # Stage 13H — Released Wood Boat / Chest-Boat Parity
 
-Status: IMPLEMENTED / PRISM REQUIRED (R1 texture repair pending runtime acceptance)
+Status: RUNTIME ACCEPTED / CLEANED / FROZEN
 
 The final released package contains four normal boats and four chest boats:
 Ancient Oak, Willow, Swamp Cypress, and Blighted Balsa. The released IDs,
@@ -24,4 +24,13 @@ paths and retains the released artwork and all boat behavior.
 
 Runtime acceptance must cover inventory rendering, placement, steering,
 break/drop, save/reload, chest inventory persistence, and all four wood
-families before Stage 13H can be frozen.
+families. Prism acceptance confirmed those behaviors, localized entity names,
+and the absence of boat texture warnings for all eight released entity IDs.
+
+The released IDs are:
+`ancient_oak_boat`, `ancient_oak_chest_boat`, `willow_boat`,
+`willow_chest_boat`, `swamp_cypress_boat`, `swamp_cypress_chest_boat`,
+`blighted_balsa_boat`, and `blighted_balsa_chest_boat`. Their entity names use
+the released English boat item names, including `Boat with Chest` for chest
+boats. Recipes, native Boat/ChestBoat behavior, and representative persistence
+and drops remain unchanged.
