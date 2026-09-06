@@ -32,6 +32,7 @@ import party.lemons.biomemakeover.item.GlowfishBucketItem;
 import party.lemons.biomemakeover.item.LightningBottleItem;
 import party.lemons.biomemakeover.item.StuntPowderItem;
 import party.lemons.biomemakeover.item.EctoplasmItem;
+import party.lemons.biomemakeover.item.EnchantedTotemItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.Rarity;
@@ -134,6 +135,7 @@ public final class BMItems {
     public static final Item ECTOPLASM = register("ectoplasm", EctoplasmItem::new);
     public static final Item CRUDE_FRAGMENT = register("crude_fragment");
     public static final Item CRUDE_CLADDING = register("crude_cladding");
+    public static final Item ENCHANTED_TOTEM = register("enchanted_totem", p -> new EnchantedTotemItem(p.stacksTo(1).rarity(Rarity.EPIC)));
     public static final Item REFINED_POTTERY_SHERD = register("refined_pottery_sherd");
     public static final Item WORKER_POTTERY_SHERD = register("worker_pottery_sherd");
     public static final Item WHINNY_POTTERY_SHERD = register("whinny_pottery_sherd");
@@ -207,6 +209,7 @@ public final class BMItems {
             entries.accept(CLADDED_HELMET); entries.accept(CLADDED_CHESTPLATE);
             entries.accept(CLADDED_LEGGINGS); entries.accept(CLADDED_BOOTS);
             entries.accept(CRUDE_CLADDING);
+            entries.accept(ENCHANTED_TOTEM);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

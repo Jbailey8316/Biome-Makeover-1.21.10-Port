@@ -762,6 +762,11 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob,
 
     @Override
     public void die(DamageSource source) {
+        if (phase != ControllerPhase.IDLE) {
+            exitPhase();
+            phase = ControllerPhase.IDLE;
+        }
+        active = false;
         bossBar.removeAllPlayers();
         bossBar.setVisible(false);
         super.die(source);
