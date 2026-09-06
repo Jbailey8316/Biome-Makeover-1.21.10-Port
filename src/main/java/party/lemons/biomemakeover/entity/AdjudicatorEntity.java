@@ -52,6 +52,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 import party.lemons.biomemakeover.init.BMSounds;
 import party.lemons.biomemakeover.init.BMEntities;
+import party.lemons.biomemakeover.entity.ai.NonMovingBowAttackGoal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -215,7 +216,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             if (!(getVehicle() instanceof StoneGolemEntity golem) || !golem.isAlive()) {
                 beginTeleport(selectNextPhaseForStage(random));
             } else if (getTarget() != null) {
-                golem.setTarget(getTarget());
+                if (golem.getTarget() != getTarget()) golem.setTarget(getTarget());
                 getLookControl().setLookAt(getTarget(), 30.0F, 30.0F);
             }
         }
@@ -298,7 +299,8 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         } else if (selected == ControllerPhase.STONE_GOLEM) {
             setControllerState(STATE_FIGHTING);
             setControllerInvulnerable(true);
-            addPhaseGoals(new RangedBowAttackGoal<>(this, 1.0F, 12, 30));
+            getNavigation().stop();
+            addPhaseGoals(new NonMovingBowAttackGoal<>(this, 12, 30));
             ensureStoneGolemMount();
             ItemStack bow = new ItemStack(Items.BOW);
             bow.enchant(level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
