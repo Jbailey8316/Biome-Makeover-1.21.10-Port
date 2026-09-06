@@ -209,3 +209,15 @@ spawning, substrate tags, crab behavior, food/loot/recipes, client resources,
 and sounds. It remains **IMPLEMENTED / PRISM RUNTIME REQUIRED** until fresh-
 world natural-spawn testing is accepted. Ghost Town and Mythas enhancements
 remain out of scope.
+
+## Stage 13E update
+
+The Ghost Town archaeology / structure package is already implemented in the
+current port. The scoped Stage 13E validator confirms the released jigsaw
+structure, structure set, Badlands biome tag, four template pools, 50 singular-
+path templates, local processor replacements, suspicious red sand, archaeology
+and container loot, Ghost structure spawn override, advancements, disc data,
+and packaged resources. It is **COMPLETE / PRISM RUNTIME REQUIRED** pending
+natural Ghost Town generation, brushing, container-loot, save/reload, and log
+verification. The historical Stage 10C freeze validator remains non-gating
+because it rejects later legitimate registrations.
