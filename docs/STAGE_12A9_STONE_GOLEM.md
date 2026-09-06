@@ -72,3 +72,15 @@ opposite `playerCreated` state. The port had used an unrestricted same-type
 target goal, allowing two player-created golems to select each other. The
 released predicate is restored; `HurtByTargetGoal` retaliation remains
 source-controlled.
+
+## Stage 12A.10 mounted phase
+
+The released mounted phase is layered over the independent Stone Golem. It
+creates one `stone_golem` with `EntitySpawnReason.EVENT`, keeps
+`playerCreated=false`, explicitly equips a main-hand Crossbow, assigns the
+Adjudicator encounter identity, and makes the Adjudicator ride the Golem. The
+boss receives the released Punch I bow loadout and remains invulnerable while
+mounted. The phase ends when the passenger relationship is lost, then removes
+the phase Golem and clears the boss state. Stone Golem construction, rendering,
+crossbow AI, projectile behavior, and player-created semantics remain shared
+with the frozen independent entity.

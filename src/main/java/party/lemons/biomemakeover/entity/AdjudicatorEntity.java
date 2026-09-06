@@ -51,6 +51,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 import party.lemons.biomemakeover.init.BMSounds;
+import party.lemons.biomemakeover.init.BMEntities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,8 +61,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /** Released Adjudicator entity substrate; encounter phases are restored in a later stage. */
 public final class AdjudicatorEntity extends Monster implements RangedAttackMob {
-    /** Staged availability gate; Mimic and Stone Golem remain deferred. */
+    /** Staged availability gate; all released phases are now executable. */
     private static final boolean IMPLEMENTED_PHASE_EXECUTION_GATE = true;
+    private static final String STONE_GOLEM_TRACE = "BM_ADJ_STONE_GOLEM_PHASE";
     private static final int STATE_WAITING = 0;
     private static final int STATE_TELEPORT = 1;
     private static final int STATE_FIGHTING = 2;
@@ -111,6 +113,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     private AABB roomBounds;
     private List<BlockPos> arenaPositions;
     private ControllerPhase nextPhase = ControllerPhase.IDLE;
+    private StoneGolemEntity stoneGolem;
     private final List<Goal> phaseGoals = new ArrayList<>();
     private final List<Goal> phaseTargetGoals = new ArrayList<>();
     public AdjudicatorEntity(EntityType<? extends AdjudicatorEntity> type, Level level) {
@@ -208,6 +211,13 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         } else if (active && phase == ControllerPhase.RAVAGER) {
             if (getVehicle() == null) beginTeleport(selectNextPhaseForStage(random));
             else if (getTarget() != null) getLookControl().setLookAt(getTarget(), 30.0F, 30.0F);
+        } else if (active && phase == ControllerPhase.STONE_GOLEM) {
+            if (!(getVehicle() instanceof StoneGolemEntity golem) || !golem.isAlive()) {
+                beginTeleport(selectNextPhaseForStage(random));
+            } else if (getTarget() != null) {
+                golem.setTarget(getTarget());
+                getLookControl().setLookAt(getTarget(), 30.0F, 30.0F);
+            }
         }
         bossBar.setProgress(getHealth() / getMaxHealth());
     }
@@ -285,12 +295,47 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             crossbow.enchant(level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
                 .getOrThrow(Enchantments.MULTISHOT), 3);
             setItemInHand(InteractionHand.MAIN_HAND, crossbow);
+        } else if (selected == ControllerPhase.STONE_GOLEM) {
+            setControllerState(STATE_FIGHTING);
+            setControllerInvulnerable(true);
+            addPhaseGoals(new RangedBowAttackGoal<>(this, 1.0F, 12, 30));
+            ensureStoneGolemMount();
+            ItemStack bow = new ItemStack(Items.BOW);
+            bow.enchant(level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
+                .getOrThrow(Enchantments.PUNCH), 1);
+            setItemInHand(InteractionHand.MAIN_HAND, bow);
+            if (playEntrySound) playSound(BMSounds.ADJUDICATOR_GRUNT, 1.0F, 1.0F);
         }
     }
 
     private void restorePhaseExecutionIfNeeded() {
-        if (phaseGoals.isEmpty() && (phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MELEE_ATTACK))
+        if (phaseGoals.isEmpty() && (phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MELEE_ATTACK
+            || phase == ControllerPhase.STONE_GOLEM))
             configurePhaseExecution(phase, false);
+    }
+
+    private void ensureStoneGolemMount() {
+        if (getVehicle() instanceof StoneGolemEntity existing) {
+            stoneGolem = existing;
+            return;
+        }
+        if (!(level() instanceof ServerLevel serverLevel)) return;
+        StoneGolemEntity golem = BMEntities.STONE_GOLEM.create(serverLevel, EntitySpawnReason.EVENT);
+        if (golem == null) return;
+        stoneGolem = golem;
+        AdjudicatorAlliance.assign(golem, this);
+        golem.snapTo(getX(), getY(), getZ(), getYRot(), getXRot());
+        golem.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(Items.CROSSBOW));
+        golem.setTarget(getTarget());
+        serverLevel.addFreshEntityWithPassengers(golem);
+        boolean mounted = startRiding(golem, true, true);
+        stoneTrace("BM_ADJ_STONE_GOLEM_PHASE_START boss=" + getUUID() + " golem=" + golem.getUUID()
+            + " spawn=" + golem.position() + " phase=" + phase.id());
+        stoneTrace("BM_ADJ_STONE_GOLEM_EQUIPMENT golem=" + golem.getUUID() + " mainHand=" + golem.getMainHandItem().getItem()
+            + " offHand=" + golem.getOffhandItem().getItem() + " crossbow=" + golem.isHolding(Items.CROSSBOW)
+            + " playerCreated=" + golem.isPlayerCreated());
+        stoneTrace("BM_ADJ_STONE_GOLEM_MOUNT vehicle=" + golem.getUUID() + " vehicleType=" + golem.getType()
+            + " passenger=" + getUUID() + " startRiding=" + mounted + " passengers=" + golem.getPassengers().size());
     }
 
     private void addPhaseGoals(Goal attackGoal) {
@@ -332,6 +377,14 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
             if (isPassenger()) stopRiding();
             if (vehicle instanceof Ravager ravager) ravager.discard();
             setControllerInvulnerable(false);
+        }
+        if (phase == ControllerPhase.STONE_GOLEM) {
+            Entity vehicle = getVehicle();
+            if (isPassenger()) stopRiding();
+            if (vehicle instanceof StoneGolemEntity golem) golem.discard();
+            setControllerInvulnerable(false);
+            stoneTrace("BM_ADJ_STONE_GOLEM_PHASE_END reason=controller_transition golem="
+                + (stoneGolem == null ? "none" : stoneGolem.getUUID()) + " removed=true");
         }
         if (isSummonPhase(phase) && !summonInterrupted) {
             int count = summonCount(phase);
@@ -589,7 +642,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     }
 
     private static boolean isImplementedPhase(ControllerPhase phase) {
-        return phase != ControllerPhase.STONE_GOLEM;
+        return true;
     }
 
     private int arenaMonsterCount() {
@@ -618,6 +671,10 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
 
     public boolean isTargetInArena(LivingEntity target) {
         return target != null && target.isAlive() && roomBounds != null && roomBounds.contains(target.position());
+    }
+
+    private void stoneTrace(String message) {
+        if (Boolean.getBoolean("bm.mansion.trace")) System.out.println(STONE_GOLEM_TRACE + " " + message);
     }
 
     public void setControllerActive(boolean value) { active = value; }
