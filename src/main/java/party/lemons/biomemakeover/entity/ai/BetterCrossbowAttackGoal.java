@@ -55,11 +55,14 @@ public final class BetterCrossbowAttackGoal<T extends Mob & CrossbowAttackMob> e
     @Override public void start() {
         mob.setAggressive(true);
         lastContinueResult = null;
+        if (mob instanceof StoneGolemEntity golem) golem.traceGoalSelector("start");
         trace("BM_GOLEM_CROSSBOW_GOAL_START target=" + targetDescription() + " mainHand=" + mob.getMainHandItem().getItem()
             + " playerCreated=" + (mob instanceof StoneGolemEntity golem && golem.isPlayerCreated())
             + " passengers=" + mob.getPassengers().size());
     }
     @Override public void stop() {
+        trace("BM_GOLEM_CROSSBOW_STOP_CAUSE caller=" + callerDescription());
+        if (mob instanceof StoneGolemEntity golem) golem.traceGoalSelector("before_stop");
         boolean continuationBeforeStop = canContinueToUse();
         mob.setAggressive(false); seeTime = 0; state = CrossbowState.UNCHARGED;
         mob.setTarget(null);
@@ -104,6 +107,13 @@ public final class BetterCrossbowAttackGoal<T extends Mob & CrossbowAttackMob> e
     private String targetDescription() { return mob.getTarget() == null ? "null" : mob.getTarget().getUUID() + "/" + mob.getTarget().getType(); }
     private void trace(String message) {
         if (mob instanceof StoneGolemEntity && Boolean.getBoolean("bm.mansion.trace")) System.out.println(message + " golem=" + mob.getUUID());
+    }
+    private String callerDescription() {
+        for (StackTraceElement frame : Thread.currentThread().getStackTrace()) {
+            if (frame.getClassName().contains("GoalSelector") || frame.getClassName().contains("WrappedGoal"))
+                return frame.getClassName() + "." + frame.getMethodName();
+        }
+        return "unknown";
     }
     private enum CrossbowState { UNCHARGED, CHARGING, CHARGED, READY }
 }
