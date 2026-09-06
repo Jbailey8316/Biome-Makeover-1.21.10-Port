@@ -4,8 +4,8 @@ $ErrorActionPreference = 'Stop'
 $goal = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/ai/BetterCrossbowAttackGoal.java') -Raw
 $golem = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/StoneGolemEntity.java') -Raw
 $boss = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/AdjudicatorEntity.java') -Raw
-foreach ($needle in @('boolean targetPresent', 'boolean targetAlive', 'boolean weaponValid', 'BM_GOLEM_CROSSBOW_CONTINUE', 'BM_GOLEM_CROSSBOW_STOP_CAUSE', 'return result')) {
-    if ($goal -notlike "*$needle*") { throw "R5 continuation diagnostic missing: $needle" }
+foreach ($needle in @('boolean targetPresent', 'boolean targetAlive', 'boolean weaponValid', 'return result')) {
+    if ($goal -notlike "*$needle*") { throw "R5 continuation anchor missing: $needle" }
 }
 if ($golem -notlike '*goalSelector.addGoal(1, new BetterCrossbowAttackGoal<>(this, 1.0D, 24.0F))*') { throw 'Stone Golem goal registration changed' }
 if ($goal -notlike '*setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK))*') { throw 'Stone Golem goal flags changed' }

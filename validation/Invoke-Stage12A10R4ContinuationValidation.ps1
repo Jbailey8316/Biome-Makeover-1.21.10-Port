@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 $goal = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/ai/BetterCrossbowAttackGoal.java') -Raw
 $boss = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/AdjudicatorEntity.java') -Raw
 $golem = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/StoneGolemEntity.java') -Raw
-foreach ($needle in @('boolean targetPresent', 'boolean targetAlive', 'boolean weaponValid', 'BM_GOLEM_CROSSBOW_CONTINUE', 'return result', 'BM_GOLEM_CROSSBOW_GOAL_START', 'BM_GOLEM_CROSSBOW_GOAL_STOP', 'mob.performRangedAttack(target, 1.0F)')) {
+foreach ($needle in @('boolean targetPresent', 'boolean targetAlive', 'boolean weaponValid', 'return result', 'mob.performRangedAttack(target, 1.0F)')) {
     if ($goal -notlike "*$needle*") { throw "Continuation lifecycle anchor missing: $needle" }
 }
 if ($golem -notlike '*goalSelector.addGoal(1, new BetterCrossbowAttackGoal<>(this, 1.0D, 24.0F))*') {

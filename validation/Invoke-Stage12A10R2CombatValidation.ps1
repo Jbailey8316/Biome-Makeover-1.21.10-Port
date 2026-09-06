@@ -7,7 +7,6 @@ $bow = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/en
 $crossbow = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/ai/BetterCrossbowAttackGoal.java') -Raw
 foreach ($needle in @(
     'phase == ControllerPhase.STONE_GOLEM',
-    'BM_ADJ_MOUNTED_BOW_FIRE',
     'NonMovingBowAttackGoal<>(this, 12, 30)',
     'getNavigation().stop()',
     'startRiding(golem, true, true)',
@@ -16,10 +15,10 @@ foreach ($needle in @(
     'Enchantments.PUNCH')) {
     if ($boss -notlike "*$needle*") { throw "Mounted Adjudicator combat anchor missing: $needle" }
 }
-foreach ($needle in @('BM_ADJ_GOLEM_COMBAT_STATE', 'BetterCrossbowAttackGoal', 'isHolding(Items.CROSSBOW)', 'performRangedAttack(target, 1.0F)', 'getNavigation().moveTo')) {
+foreach ($needle in @('BetterCrossbowAttackGoal', 'isHolding(Items.CROSSBOW)', 'performRangedAttack(target, 1.0F)', 'getNavigation().moveTo')) {
     if ($golem -notlike "*$needle*" -and $crossbow -notlike "*$needle*") { throw "Boss Golem combat anchor missing: $needle" }
 }
-foreach ($needle in @('BM_ADJ_MOUNTED_BOW_STATE', 'actor.performRangedAttack(target, BowItem.getPowerForTime(useTicks))', 'setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK))')) {
+foreach ($needle in @('actor.performRangedAttack(target, BowItem.getPowerForTime(useTicks))', 'setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK))')) {
     if ($bow -notlike "*$needle*") { throw "Mounted bow goal anchor missing: $needle" }
 }
 if ($boss -match 'phase == ControllerPhase\.MIMIC;\s*boolean weaponValid') { throw 'Mounted phase missing from ranged phase guard' }

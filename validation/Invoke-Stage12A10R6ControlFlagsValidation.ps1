@@ -4,13 +4,13 @@ $ErrorActionPreference = 'Stop'
 $golem = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/StoneGolemEntity.java') -Raw
 $goal = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/ai/BetterCrossbowAttackGoal.java') -Raw
 $boss = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/AdjudicatorEntity.java') -Raw
-foreach ($needle in @('updateControlFlags()', 'getControllingPassenger()', 'AdjudicatorAlliance.allied(this, controller)', 'goalSelector.enableControlFlag(Goal.Flag.MOVE)', 'goalSelector.enableControlFlag(Goal.Flag.LOOK)', 'goalSelector.enableControlFlag(Goal.Flag.JUMP)', 'BM_GOLEM_CONTROL_FLAGS')) {
+foreach ($needle in @('updateControlFlags()', 'getControllingPassenger()', 'AdjudicatorAlliance.allied(this, controller)', 'goalSelector.enableControlFlag(Goal.Flag.MOVE)', 'goalSelector.enableControlFlag(Goal.Flag.LOOK)', 'goalSelector.enableControlFlag(Goal.Flag.JUMP)')) {
     if ($golem -notlike "*$needle*") { throw "Stone Golem control-flag compatibility anchor missing: $needle" }
 }
 if ($golem -notlike '*goalSelector.addGoal(1, new BetterCrossbowAttackGoal<>(this, 1.0D, 24.0F)*') {
     throw 'Stone Golem crossbow goal registration changed'
 }
-foreach ($needle in @('setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK))', 'return result', 'BM_GOLEM_CROSSBOW_STOP_CAUSE')) {
+foreach ($needle in @('setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK))', 'return result')) {
     if ($goal -notlike "*$needle*") { throw "Crossbow goal contract missing: $needle" }
 }
 if ($boss -match 'goalSelector\.enableControlFlag|disableControlFlag') { throw 'Global/controller control-flag patch detected' }

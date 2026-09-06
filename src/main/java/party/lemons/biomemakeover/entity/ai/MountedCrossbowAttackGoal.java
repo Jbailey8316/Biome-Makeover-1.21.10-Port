@@ -35,7 +35,7 @@ public final class MountedCrossbowAttackGoal<T extends Monster & CrossbowAttackM
     private boolean hasAliveTarget() { return actor.getTarget() != null && actor.getTarget().isAlive(); }
     private boolean isHoldingCrossbow() { return actor.isHolding(Items.CROSSBOW); }
 
-    @Override public void start() { actor.setAggressive(true); trace("START target=" + targetDescription()); }
+    @Override public void start() { actor.setAggressive(true); }
     @Override public void stop() {
         actor.setAggressive(false);
         actor.setTarget(null);
@@ -46,7 +46,6 @@ public final class MountedCrossbowAttackGoal<T extends Monster & CrossbowAttackM
             actor.setChargingCrossbow(false);
             actor.getUseItem().set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
         }
-        trace("STOP target=" + targetDescription());
     }
 
     @Override public void tick() {
@@ -63,7 +62,6 @@ public final class MountedCrossbowAttackGoal<T extends Monster & CrossbowAttackM
                 actor.startUsingItem(ProjectileUtil.getWeaponHoldingHand(actor, Items.CROSSBOW));
                 state = CrossbowState.CHARGING;
                 actor.setChargingCrossbow(true);
-                trace("CHARGING target=" + targetDescription() + " distance=" + distance + " visible=" + visible);
             }
         } else if (state == CrossbowState.CHARGING) {
             if (!actor.isUsingItem()) state = CrossbowState.UNCHARGED;
@@ -72,7 +70,6 @@ public final class MountedCrossbowAttackGoal<T extends Monster & CrossbowAttackM
                 state = CrossbowState.CHARGED;
                 chargedTicksLeft = 2 + actor.getRandom().nextInt(10);
                 actor.setChargingCrossbow(false);
-                trace("CHARGED target=" + targetDescription());
             }
         } else if (state == CrossbowState.CHARGED) {
             if (--chargedTicksLeft <= 0) state = CrossbowState.READY_TO_ATTACK;
@@ -81,17 +78,8 @@ public final class MountedCrossbowAttackGoal<T extends Monster & CrossbowAttackM
             actor.getItemInHand(ProjectileUtil.getWeaponHoldingHand(actor, Items.CROSSBOW))
                 .set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
             state = CrossbowState.UNCHARGED;
-            trace("FIRE target=" + targetDescription() + " distance=" + distance);
         }
     }
 
-    private String targetDescription() {
-        LivingEntity target = actor.getTarget();
-        return target == null ? "null" : target.getUUID() + "/" + target.getType();
-    }
-    private void trace(String message) {
-        if (Boolean.getBoolean("bm.mansion.trace"))
-            System.out.println("BM_ADJ_RAVAGER_BOW_STATE boss=" + actor.getUUID() + " " + message);
-    }
     private enum CrossbowState { UNCHARGED, CHARGING, CHARGED, READY_TO_ATTACK }
 }

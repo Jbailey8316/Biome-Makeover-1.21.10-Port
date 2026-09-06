@@ -68,7 +68,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class AdjudicatorEntity extends Monster implements RangedAttackMob, CrossbowAttackMob {
     /** Staged availability gate; all released phases are now executable. */
     private static final boolean IMPLEMENTED_PHASE_EXECUTION_GATE = true;
-    private static final String STONE_GOLEM_TRACE = "BM_ADJ_STONE_GOLEM_PHASE";
     private static final int STATE_WAITING = 0;
     private static final int STATE_TELEPORT = 1;
     private static final int STATE_FIGHTING = 2;
@@ -336,13 +335,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob,
         golem.setTarget(getTarget());
         serverLevel.addFreshEntityWithPassengers(golem);
         boolean mounted = startRiding(golem, true, true);
-        stoneTrace("BM_ADJ_STONE_GOLEM_PHASE_START boss=" + getUUID() + " golem=" + golem.getUUID()
-            + " spawn=" + golem.position() + " phase=" + phase.id());
-        stoneTrace("BM_ADJ_STONE_GOLEM_EQUIPMENT golem=" + golem.getUUID() + " mainHand=" + golem.getMainHandItem().getItem()
-            + " offHand=" + golem.getOffhandItem().getItem() + " crossbow=" + golem.isHolding(Items.CROSSBOW)
-            + " playerCreated=" + golem.isPlayerCreated());
-        stoneTrace("BM_ADJ_STONE_GOLEM_MOUNT vehicle=" + golem.getUUID() + " vehicleType=" + golem.getType()
-            + " passenger=" + getUUID() + " startRiding=" + mounted + " passengers=" + golem.getPassengers().size());
     }
 
     private void addPhaseGoals(Goal attackGoal) {
@@ -390,8 +382,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob,
             if (isPassenger()) stopRiding();
             if (vehicle instanceof StoneGolemEntity golem) golem.discard();
             setControllerInvulnerable(false);
-            stoneTrace("BM_ADJ_STONE_GOLEM_PHASE_END reason=controller_transition golem="
-                + (stoneGolem == null ? "none" : stoneGolem.getUUID()) + " removed=true");
         }
         if (isSummonPhase(phase) && !summonInterrupted) {
             int count = summonCount(phase);
@@ -672,9 +662,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob,
             || phase == ControllerPhase.STONE_GOLEM;
         boolean weaponValid = getMainHandItem().is(Items.BOW);
         if (!bowPhase || !weaponValid) return;
-        if (phase == ControllerPhase.STONE_GOLEM)
-            mountedBowTrace("BM_ADJ_MOUNTED_BOW_FIRE target=" + target.getUUID() + " mainHand=" + getMainHandItem().getItem()
-                + " passenger=" + isPassenger());
         if (getMainHandItem().getItem() instanceof CrossbowItem) {
             performCrossbowAttack(this, 2.0F);
             return;
@@ -695,14 +682,6 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob,
 
     public boolean isTargetInArena(LivingEntity target) {
         return target != null && target.isAlive() && roomBounds != null && roomBounds.contains(target.position());
-    }
-
-    private void stoneTrace(String message) {
-        if (Boolean.getBoolean("bm.mansion.trace")) System.out.println(STONE_GOLEM_TRACE + " " + message);
-    }
-
-    private void mountedBowTrace(String message) {
-        if (Boolean.getBoolean("bm.mansion.trace")) System.out.println("BM_ADJ_MOUNTED_BOW_STATE " + message);
     }
 
     public void setControllerActive(boolean value) { active = value; }

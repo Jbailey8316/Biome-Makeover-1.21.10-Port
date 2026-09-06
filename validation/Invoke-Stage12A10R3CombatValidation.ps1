@@ -7,10 +7,10 @@ $ravagerGoal = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemak
 foreach ($needle in @('implements RangedAttackMob, CrossbowAttackMob', 'new MountedCrossbowAttackGoal<>(this, 25.0F)', 'performCrossbowAttack(this, 2.0F)', 'phase == ControllerPhase.STONE_GOLEM', 'getProjectile(ItemStack weapon)')) {
     if ($boss -notlike "*$needle*") { throw "Mounted combat architecture missing: $needle" }
 }
-foreach ($needle in @('BM_GOLEM_CROSSBOW_GOAL_START', 'BM_GOLEM_CROSSBOW_GOAL_TICK', 'BM_GOLEM_CROSSBOW_GOAL_STOP', 'mob.setTarget(null)', 'mob.performRangedAttack(target, 1.0F)')) {
+foreach ($needle in @('mob.setTarget(null)', 'mob.performRangedAttack(target, 1.0F)')) {
     if ($golemGoal -notlike "*$needle*") { throw "Stone Golem goal lifecycle anchor missing: $needle" }
 }
-foreach ($needle in @('setFlags(EnumSet.of(Flag.LOOK))', 'CrossbowItem.getChargeDuration', 'actor.performCrossbowAttack(actor, 1.0F)', 'BM_ADJ_RAVAGER_BOW_STATE')) {
+foreach ($needle in @('setFlags(EnumSet.of(Flag.LOOK))', 'CrossbowItem.getChargeDuration', 'actor.performCrossbowAttack(actor, 1.0F)')) {
     if ($ravagerGoal -notlike "*$needle*") { throw "Mounted Ravager crossbow anchor missing: $needle" }
 }
 if ($boss -match 'every\s+N\s+ticks|performRangedAttack\(getTarget\(') { throw 'Manual phase-controller firing fallback detected' }

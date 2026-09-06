@@ -44,8 +44,6 @@ import party.lemons.biomemakeover.init.BMSounds;
 import party.lemons.biomemakeover.entity.ai.BetterCrossbowAttackGoal;
 
 import java.util.UUID;
-import java.util.Collection;
-import java.lang.reflect.Field;
 import java.util.function.Predicate;
 
 /** Released independent Stone Golem; the Adjudicator mount phase is separate and gated. */
@@ -56,10 +54,6 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
         SynchedEntityData.defineId(StoneGolemEntity.class, EntityDataSerializers.BOOLEAN);
     private int angerTime;
     private UUID angryAt;
-    private int combatTraceTicker;
-    private LivingEntity combatTraceTarget;
-    private boolean combatTraceGoal;
-    private boolean controlTraceMounted;
 
     public StoneGolemEntity(EntityType<? extends StoneGolemEntity> type, Level level) { super(type, level); }
 
@@ -72,61 +66,6 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
             goalSelector.enableControlFlag(Goal.Flag.MOVE);
             goalSelector.enableControlFlag(Goal.Flag.LOOK);
             goalSelector.enableControlFlag(Goal.Flag.JUMP);
-        }
-        if (mountedEncounter != controlTraceMounted && Boolean.getBoolean("bm.mansion.trace")) {
-            controlTraceMounted = mountedEncounter;
-            System.out.println("BM_GOLEM_CONTROL_FLAGS golem=" + getUUID()
-                + " passenger=" + (controller == null ? "null" : controller.getUUID() + "/" + controller.getType())
-                + " controllingPassenger=" + (controller != null)
-                + " MOVE=" + (mountedEncounter ? "enabled" : "vanilla")
-                + " LOOK=" + (mountedEncounter ? "enabled" : "vanilla")
-                + " JUMP=" + (mountedEncounter ? "enabled" : "vanilla")
-                + " isVehicle=" + isVehicle());
-        }
-    }
-
-    public void traceGoalSelector(String reason) {
-        if (level().isClientSide() || !Boolean.getBoolean("bm.mansion.trace")
-            || AdjudicatorAlliance.encounterId(this) == null) return;
-        try {
-            for (Field field : goalSelector.getClass().getDeclaredFields()) {
-                field.setAccessible(true);
-                Object value = field.get(goalSelector);
-                if (value instanceof Collection<?> collection) {
-                    for (Object wrapped : collection) {
-                        String text = String.valueOf(wrapped);
-                        if (text.contains("BetterCrossbowAttackGoal") || text.contains("LookAtPlayerGoal"))
-                            System.out.println("BM_GOLEM_GOAL_SELECTOR_STATE golem=" + getUUID() + " reason=" + reason
-                                + " wrapped=" + text);
-                    }
-                }
-            }
-        } catch (ReflectiveOperationException | SecurityException ignored) {
-            System.out.println("BM_GOLEM_GOAL_SELECTOR_STATE golem=" + getUUID() + " reason=" + reason + " unavailable=true");
-        }
-    }
-
-    @Override public void tick() {
-        super.tick();
-        if (!level().isClientSide() && Boolean.getBoolean("bm.mansion.trace")
-            && AdjudicatorAlliance.encounterId(this) != null && ++combatTraceTicker >= 20) {
-            combatTraceTicker = 0;
-            LivingEntity target = getTarget();
-            boolean goalEligible = target != null && target.isAlive() && isHolding(Items.CROSSBOW);
-            if (target != combatTraceTarget || goalEligible != combatTraceGoal) {
-                combatTraceTarget = target;
-                combatTraceGoal = goalEligible;
-                System.out.println("BM_ADJ_GOLEM_COMBAT_STATE golem=" + getUUID()
-                    + " target=" + (target == null ? "null" : target.getUUID() + "/" + target.getType())
-                    + " targetAlive=" + (target != null && target.isAlive())
-                    + " crossbow=" + isHolding(Items.CROSSBOW)
-                    + " goalCanUse=" + goalEligible
-                    + " navigationDone=" + getNavigation().isDone()
-                    + " distance=" + (target == null ? -1.0D : distanceToSqr(target))
-                    + " charging=" + isChargingCrossbow()
-                    + " passengerCount=" + getPassengers().size()
-                    + " playerCreated=" + isPlayerCreated());
-            }
         }
     }
 
