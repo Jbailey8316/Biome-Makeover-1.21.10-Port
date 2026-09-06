@@ -12,6 +12,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.ItemStack;
+import party.lemons.biomemakeover.entity.StoneGolemEntity;
 import java.util.EnumSet;
 
 /** Released Stone Golem crossbow controller, adapted to current mappings. */
@@ -24,6 +25,8 @@ public final class BetterCrossbowAttackGoal<T extends Mob & CrossbowAttackMob> e
     private int seeTime;
     private int attackDelay;
     private int pathDelay;
+    private boolean traceStarted;
+    private CrossbowState traceState = CrossbowState.UNCHARGED;
 
     public BetterCrossbowAttackGoal(T mob, double speed, float range) {
         this.mob = mob;
@@ -34,9 +37,17 @@ public final class BetterCrossbowAttackGoal<T extends Mob & CrossbowAttackMob> e
     @Override public boolean canUse() { return validTarget() && mob.isHolding(Items.CROSSBOW); }
     @Override public boolean canContinueToUse() { return validTarget() && (canUse() || !mob.getNavigation().isDone()) && mob.isHolding(Items.CROSSBOW); }
     private boolean validTarget() { return mob.getTarget() != null && mob.getTarget().isAlive(); }
+    @Override public void start() {
+        mob.setAggressive(true);
+        trace("BM_GOLEM_CROSSBOW_GOAL_START target=" + targetDescription() + " mainHand=" + mob.getMainHandItem().getItem()
+            + " playerCreated=" + (mob instanceof StoneGolemEntity golem && golem.isPlayerCreated())
+            + " passengers=" + mob.getPassengers().size());
+    }
     @Override public void stop() {
         mob.setAggressive(false); seeTime = 0; state = CrossbowState.UNCHARGED;
+        mob.setTarget(null);
         if (mob.isUsingItem()) { mob.stopUsingItem(); mob.setChargingCrossbow(false); mob.getUseItem().set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY); }
+        trace("BM_GOLEM_CROSSBOW_GOAL_STOP target=" + targetDescription() + " crossbow=" + mob.isHolding(Items.CROSSBOW));
     }
     @Override public boolean requiresUpdateEveryTick() { return true; }
     @Override public void tick() {
@@ -65,6 +76,16 @@ public final class BetterCrossbowAttackGoal<T extends Mob & CrossbowAttackMob> e
             mob.getItemInHand(ProjectileUtil.getWeaponHoldingHand(mob, Items.CROSSBOW)).set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
             state = CrossbowState.UNCHARGED;
         }
+        if (state != traceState) {
+            traceState = state;
+            trace("BM_GOLEM_CROSSBOW_GOAL_TICK state=" + state + " target=" + targetDescription()
+                + " distance=" + distance + " visible=" + visible + " navigationDone=" + mob.getNavigation().isDone()
+                + " passengerCount=" + mob.getPassengers().size());
+        }
+    }
+    private String targetDescription() { return mob.getTarget() == null ? "null" : mob.getTarget().getUUID() + "/" + mob.getTarget().getType(); }
+    private void trace(String message) {
+        if (mob instanceof StoneGolemEntity && Boolean.getBoolean("bm.mansion.trace")) System.out.println(message + " golem=" + mob.getUUID());
     }
     private enum CrossbowState { UNCHARGED, CHARGING, CHARGED, READY }
 }

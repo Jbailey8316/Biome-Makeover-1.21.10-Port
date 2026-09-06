@@ -16,8 +16,7 @@ foreach ($required in @(
 )) {
     if ($source -notlike "*$required*") { throw "Missing Stage 12A.6 contract: $required" }
 }
-foreach ($deferred in @('StoneGolemEntity')) {
-    if ($source -like "*$deferred*") { throw "Deferred phase leaked into Stage 12A.6: $deferred" }
-}
+# Later Stone Golem implementation is outside this historical validator's
+# ownership boundary.
 if ($source -match 'EnchantedTotem|adjudicator_tapestry') { throw 'Reward code leaked into Stage 12A.6' }
 Write-Output 'STAGE 12A.6 ADJUDICATOR FANG VALIDATION PASSED (EvokerFangs geometry/timing and gated controller integration)'

@@ -20,7 +20,7 @@ foreach ($required in @(
 foreach ($temporary in @('BM_ADJUDICATOR_CADENCE_PROOF','BM_ADJUDICATOR_SUMMON_ELIGIBILITY_PROOF','BM_STAGE12A7_PHASE_TEST_GATE','BM_STAGE12A7_PHASE_TEST_SUBSET')) {
     if ($source -like "*$temporary*") { throw "Temporary Stage 12A.7 marker remains: $temporary" }
 }
-foreach ($deferred in @('StoneGolemEntity', 'EnchantedTotem', 'adjudicator_tapestry')) {
+foreach ($deferred in @('EnchantedTotem', 'adjudicator_tapestry')) {
     if ($source -like "*$deferred*") { throw "Deferred system leaked into Stage 12A.7-R1: $deferred" }
 }
 Write-Output 'STAGE 12A.7-R1 ADJUDICATOR CADENCE VALIDATION PASSED (released timing, Monster limit, and normal staged gate)'

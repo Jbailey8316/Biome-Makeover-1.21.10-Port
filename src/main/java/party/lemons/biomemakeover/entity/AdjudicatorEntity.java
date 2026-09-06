@@ -33,6 +33,7 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.RangedAttackMob;
+import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -49,10 +50,13 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.enchantment.Enchantments;
 import party.lemons.biomemakeover.init.BMSounds;
 import party.lemons.biomemakeover.init.BMEntities;
 import party.lemons.biomemakeover.entity.ai.NonMovingBowAttackGoal;
+import party.lemons.biomemakeover.entity.ai.MountedCrossbowAttackGoal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +65,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** Released Adjudicator entity substrate; encounter phases are restored in a later stage. */
-public final class AdjudicatorEntity extends Monster implements RangedAttackMob {
+public final class AdjudicatorEntity extends Monster implements RangedAttackMob, CrossbowAttackMob {
     /** Staged availability gate; all released phases are now executable. */
     private static final boolean IMPLEMENTED_PHASE_EXECUTION_GATE = true;
     private static final String STONE_GOLEM_TRACE = "BM_ADJ_STONE_GOLEM_PHASE";
@@ -282,6 +286,7 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         } else if (selected == ControllerPhase.RAVAGER) {
             setControllerState(STATE_FIGHTING);
             setControllerInvulnerable(true);
+            addPhaseGoals(new MountedCrossbowAttackGoal<>(this, 25.0F));
             if (!(level() instanceof ServerLevel serverLevel)) return;
             Ravager ravager = EntityType.RAVAGER.create(serverLevel, EntitySpawnReason.EVENT);
             if (ravager != null) {
@@ -608,6 +613,15 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
     public void setControllerState(int value) { entityData.set(STATE, value); }
     public void setChargingCrossbow(boolean value) { entityData.set(CHARGING, value); }
     public void setControllerInvulnerable(boolean value) { entityData.set(INVULNERABLE, value); }
+    @Override public void onCrossbowAttackPerformed() { }
+    @Override public boolean canFireProjectileWeapon(ProjectileWeaponItem weapon) { return weapon == Items.CROSSBOW; }
+    @Override public ItemStack getProjectile(ItemStack weapon) {
+        if (weapon.getItem() instanceof ProjectileWeaponItem projectileWeapon) {
+            ItemStack held = ProjectileWeaponItem.getHeldProjectile(this, projectileWeapon.getSupportedHeldProjectiles());
+            return held.isEmpty() ? new ItemStack(Items.ARROW) : held;
+        }
+        return ItemStack.EMPTY;
+    }
 
     /** Released summon eligibility: fewer than four living arena Monsters. */
     public boolean summonPhaseEligible() {
@@ -661,6 +675,10 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
         if (phase == ControllerPhase.STONE_GOLEM)
             mountedBowTrace("BM_ADJ_MOUNTED_BOW_FIRE target=" + target.getUUID() + " mainHand=" + getMainHandItem().getItem()
                 + " passenger=" + isPassenger());
+        if (getMainHandItem().getItem() instanceof CrossbowItem) {
+            performCrossbowAttack(this, 2.0F);
+            return;
+        }
         ItemStack arrows = Items.ARROW.getDefaultInstance();
         AbstractArrow arrow = ProjectileUtil.getMobArrow(this, arrows, pullProgress, getMainHandItem());
         double dx = target.getX() - getX();
