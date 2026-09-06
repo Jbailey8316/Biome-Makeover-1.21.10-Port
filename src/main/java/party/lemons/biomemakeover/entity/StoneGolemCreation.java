@@ -26,10 +26,10 @@ public final class StoneGolemCreation {
         BlockPattern.BlockPatternMatch match = STANDING.find(level, pos);
         if (match == null) return false;
         BlockPos pumpkin = match.getBlock(1, 0, 0).getPos();
-        BlockPos spawn = pumpkin.below(2);
+        BlockPos spawn = match.getBlock(1, 2, 0).getPos();
         StoneGolemEntity golem = BMEntities.STONE_GOLEM.create(level, EntitySpawnReason.MOB_SUMMONED);
         if (golem == null) return false;
-        golem.setPos(spawn.getX() + .5D, spawn.getY(), spawn.getZ() + .5D);
+        golem.setPos(spawn.getX() + .5D, spawn.getY() + .05D, spawn.getZ() + .5D);
         golem.setPlayerCreated(true);
         for (int y = 0; y < 3; y++) for (int x = 0; x < 3; x++) {
             BlockPos block = match.getBlock(x, y, 0).getPos();
@@ -38,7 +38,10 @@ public final class StoneGolemCreation {
         ((net.minecraft.server.level.ServerLevel) level).addFreshEntityWithPassengers(golem);
         level.levelEvent(2001, pumpkin, 0);
         if (Boolean.getBoolean("bm.mansion.trace")) {
-            System.out.println("BM_STONE_GOLEM_PARITY_PROOF PLAYER_CREATION uuid=" + golem.getUUID() + " pattern=cladded_stone triggerPos=" + pumpkin);
+            System.out.println("BM_STONE_GOLEM_PARITY_PROOF PATTERN_MATCH triggerPos=" + pumpkin + " orientation=standing");
+            System.out.println("BM_STONE_GOLEM_PARITY_PROOF ENTITY_CREATE uuid=" + golem.getUUID() + " reason=MOB_SUMMONED playerCreated=" + golem.isPlayerCreated() + " health=" + golem.getHealth() + " spawnReferenceCell=" + spawn + " spawn=" + golem.position());
+            System.out.println("BM_STONE_GOLEM_PARITY_PROOF ENTITY_ADD uuid=" + golem.getUUID() + " success=true");
+            System.out.println("BM_STONE_GOLEM_PARITY_PROOF CREATION_COMPLETE uuid=" + golem.getUUID() + " blocksConsumed=4");
         }
         return true;
     }

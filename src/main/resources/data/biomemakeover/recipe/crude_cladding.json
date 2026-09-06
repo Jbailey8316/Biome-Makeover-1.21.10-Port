@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": ["minecraft:terracotta"],
+  "result": {"id": "biomemakeover:crude_cladding", "count": 4}
+}

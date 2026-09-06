@@ -38,6 +38,20 @@ combat phases, rewards, or Mythas trial systems were changed. The temporary
 `BM_STONE_GOLEM_PARITY_PROOF` marker is retained for Prism entity/creation
 testing and is intended for removal after acceptance.
 
+## Stage 12A.9-R3 audit and repair
+
+The released standing pattern is `~^~ / ### / ~#~`: one carved pumpkin, four
+`cladded_stone` cells, and four air cells. The source-equivalent spawn anchor is
+the bottom-center matched cell `(1, 2, 0)`, centered with a `+0.05` Y offset.
+The current port uses a dedicated modern held-item layer so the released
+crossbow transform is applied once in the correct render coordinate space.
+The released `getProjectile` path supplies the held projectile or a vanilla
+arrow fallback, enabling the current crossbow projectile API.
+
+The current port contains the released recipe chain: one terracotta produces
+four `crude_cladding`, and one `crude_cladding` plus four `smooth_stone`
+produces four `cladded_stone`. The Stone Golem boss phase remains blocked.
+
 ## Stage 12A.9-R2 audit and repair
 
 The released common tab exposed `cladded_stone` as a block item and

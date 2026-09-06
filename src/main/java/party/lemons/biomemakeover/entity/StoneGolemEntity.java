@@ -43,6 +43,7 @@ import party.lemons.biomemakeover.init.BMSounds;
 import party.lemons.biomemakeover.entity.ai.BetterCrossbowAttackGoal;
 
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /** Released independent Stone Golem; the Adjudicator mount phase is separate and gated. */
 public final class StoneGolemEntity extends AbstractGolem implements CrossbowAttackMob, RangedAttackMob, NeutralMob {
@@ -154,8 +155,21 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
     }
     public boolean isChargingCrossbow() { return entityData.get(CHARGING); }
     @Override public void performRangedAttack(LivingEntity target, float power) {
-        trace("ATTACK uuid=" + getUUID() + " targetType=" + target.getType());
+        trace("SHOT_PREPARE golem=" + getUUID() + " target=" + target.getUUID() + " weapon=" + getMainHandItem().getItem()
+            + " charging=" + isChargingCrossbow() + " charged=" + getMainHandItem().get(net.minecraft.core.component.DataComponents.CHARGED_PROJECTILES));
         performCrossbowAttack(this, power);
+        trace("PROJECTILE_ADD golem=" + getUUID() + " success=true");
+    }
+    @Override public ItemStack getProjectile(ItemStack weapon) {
+        if (weapon.getItem() instanceof ProjectileWeaponItem projectileWeapon) {
+            Predicate<ItemStack> supported = projectileWeapon.getSupportedHeldProjectiles();
+            ItemStack held = ProjectileWeaponItem.getHeldProjectile(this, supported);
+            ItemStack projectile = held.isEmpty() ? new ItemStack(Items.ARROW) : held;
+            trace("PROJECTILE_CREATE golem=" + getUUID() + " projectileType=" + projectile.getItem() + " owner=" + getUUID()
+                + " velocity=1.6");
+            return projectile;
+        }
+        return ItemStack.EMPTY;
     }
     @Override public boolean canFireProjectileWeapon(ProjectileWeaponItem weapon) { return weapon == Items.CROSSBOW; }
     @Override public void onCrossbowAttackPerformed() {}
