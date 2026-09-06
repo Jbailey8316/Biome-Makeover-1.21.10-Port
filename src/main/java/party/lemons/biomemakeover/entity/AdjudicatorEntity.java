@@ -369,7 +369,8 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob,
         phaseGoals.clear();
         phaseTargetGoals.clear();
         if (phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MELEE_ATTACK
-            || phase == ControllerPhase.MIMIC || phase == ControllerPhase.RAVAGER)
+            || phase == ControllerPhase.MIMIC || phase == ControllerPhase.RAVAGER
+            || phase == ControllerPhase.STONE_GOLEM)
             setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
         if (phase == ControllerPhase.RAVAGER) {
             Entity vehicle = getVehicle();
