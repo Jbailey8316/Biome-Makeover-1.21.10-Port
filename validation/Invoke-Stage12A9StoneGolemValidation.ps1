@@ -8,7 +8,7 @@ $client = Get-Content (Join-Path $Root 'src/client/java/party/lemons/biomemakeov
 $model = Get-Content (Join-Path $Root 'src/client/java/party/lemons/biomemakeover/client/model/StoneGolemModel.java') -Raw
 $layers = Get-Content (Join-Path $Root 'src/client/java/party/lemons/biomemakeover/client/model/BMModelLayers.java') -Raw
 foreach ($needle in @('STONE_GOLEM', 'MobCategory.MISC', 'sized(1.6F, 2.5F)', 'clientTrackingRange(12)', 'STONE_GOLEM_SPAWN_EGG')) { if ($entities -notlike "*$needle*") { throw "Stone Golem registration missing $needle" } }
-foreach ($needle in @('class StoneGolemEntity', 'AbstractGolem', 'CrossbowAttackMob', 'MAX_HEALTH, 60.0D', 'FOLLOW_RANGE, 24.0D', 'PLAYER_CREATED', 'CHARGING', 'BetterCrossbowAttackGoal', 'populateDefaultEquipmentSlots', 'EntitySpawnReason.MOB_SUMMONED', 'BM_STONE_GOLEM_PARITY_PROOF')) { if ($entity -notlike "*$needle*") { throw "Stone Golem entity contract missing $needle" } }
+foreach ($needle in @('class StoneGolemEntity', 'AbstractGolem', 'CrossbowAttackMob', 'MAX_HEALTH, 60.0D', 'FOLLOW_RANGE, 24.0D', 'PLAYER_CREATED', 'CHARGING', 'BetterCrossbowAttackGoal', 'populateDefaultEquipmentSlots', 'EntitySpawnReason.MOB_SUMMONED')) { if ($entity -notlike "*$needle*") { throw "Stone Golem entity contract missing $needle" } }
 foreach ($needle in @('~^~', '###', '~#~', 'Blocks.CARVED_PUMPKIN', 'BMBlocks.CLADDED_STONE', 'STONE_GOLEM', 'addFreshEntityWithPassengers')) { if ($creation -notlike "*$needle*") { throw "Stone Golem creation contract missing $needle" } }
 if ($client -notlike '*StoneGolemRenderer*' -or $client -notlike '*BMEntities.STONE_GOLEM*') { throw 'Stone Golem renderer registration missing' }
 if ($layers -notlike '*STONE_GOLEM*') { throw 'Stone Golem model layer missing' }

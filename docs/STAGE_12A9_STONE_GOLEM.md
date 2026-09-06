@@ -34,9 +34,8 @@ constructs the entity before consuming the matched blocks.
 ## Scope boundary
 
 No Mansion templates, structure NBT, arena data, Adjudicator controller,
-combat phases, rewards, or Mythas trial systems were changed. The temporary
-`BM_STONE_GOLEM_PARITY_PROOF` marker is retained for Prism entity/creation
-testing and is intended for removal after acceptance.
+combat phases, rewards, or Mythas trial systems were changed. Temporary
+Stone Golem runtime proof logging was removed after runtime acceptance.
 
 ## Stage 12A.9-R3 audit and repair
 

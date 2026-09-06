@@ -37,12 +37,6 @@ public final class StoneGolemCreation {
         }
         ((net.minecraft.server.level.ServerLevel) level).addFreshEntityWithPassengers(golem);
         level.levelEvent(2001, pumpkin, 0);
-        if (Boolean.getBoolean("bm.mansion.trace")) {
-            System.out.println("BM_STONE_GOLEM_PARITY_PROOF PATTERN_MATCH triggerPos=" + pumpkin + " orientation=standing");
-            System.out.println("BM_STONE_GOLEM_PARITY_PROOF ENTITY_CREATE uuid=" + golem.getUUID() + " reason=MOB_SUMMONED playerCreated=" + golem.isPlayerCreated() + " health=" + golem.getHealth() + " spawnReferenceCell=" + spawn + " spawn=" + golem.position());
-            System.out.println("BM_STONE_GOLEM_PARITY_PROOF ENTITY_ADD uuid=" + golem.getUUID() + " success=true");
-            System.out.println("BM_STONE_GOLEM_PARITY_PROOF CREATION_COMPLETE uuid=" + golem.getUUID() + " blocksConsumed=4");
-        }
         return true;
     }
 }

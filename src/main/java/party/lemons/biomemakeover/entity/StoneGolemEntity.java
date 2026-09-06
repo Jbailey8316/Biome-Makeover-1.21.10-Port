@@ -47,7 +47,6 @@ import java.util.function.Predicate;
 
 /** Released independent Stone Golem; the Adjudicator mount phase is separate and gated. */
 public final class StoneGolemEntity extends AbstractGolem implements CrossbowAttackMob, RangedAttackMob, NeutralMob {
-    private static final String TRACE = "BM_STONE_GOLEM_PARITY_PROOF";
     private static final EntityDataAccessor<Boolean> CHARGING =
         SynchedEntityData.defineId(StoneGolemEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> PLAYER_CREATED =
@@ -90,7 +89,6 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
             setPlayerCreated(true);
         else populateDefaultEquipmentSlots(level.getRandom(), difficulty);
         SpawnGroupData result = super.finalizeSpawn(level, difficulty, reason, data);
-        trace("ENTITY_SPAWN uuid=" + getUUID() + " reason=" + reason + " playerCreated=" + isPlayerCreated() + " health=" + getHealth());
         return result;
     }
 
@@ -128,11 +126,7 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
         return EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity) && !isPlayerCreated();
     }
     @Override public void setTarget(@Nullable LivingEntity target) {
-        LivingEntity previous = getTarget();
         super.setTarget(target);
-        if (target != null && target != previous)
-            trace("TARGET_ACQUIRE uuid=" + getUUID() + " playerCreated=" + isPlayerCreated()
-                + " targetType=" + target.getType() + " targetUuid=" + target.getUUID() + " reason=goal");
     }
     @Override public boolean canAttack(LivingEntity target) {
         if (isPlayerCreated() && (target instanceof Player || target instanceof net.minecraft.world.entity.npc.AbstractVillager)) return false;
@@ -149,24 +143,17 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
     @Override public void startPersistentAngerTimer() { angerTime = 20 * (20 + random.nextInt(20)); }
     @Override public void setChargingCrossbow(boolean charging) {
         if (isChargingCrossbow() != charging)
-            trace("CROSSBOW_STATE uuid=" + getUUID() + " state=" + (charging ? "charging" : "idle")
-                + " mainHand=" + getMainHandItem().getItem());
         entityData.set(CHARGING, charging);
     }
     public boolean isChargingCrossbow() { return entityData.get(CHARGING); }
     @Override public void performRangedAttack(LivingEntity target, float power) {
-        trace("SHOT_PREPARE golem=" + getUUID() + " target=" + target.getUUID() + " weapon=" + getMainHandItem().getItem()
-            + " charging=" + isChargingCrossbow() + " charged=" + getMainHandItem().get(net.minecraft.core.component.DataComponents.CHARGED_PROJECTILES));
         performCrossbowAttack(this, power);
-        trace("PROJECTILE_ADD golem=" + getUUID() + " success=true");
     }
     @Override public ItemStack getProjectile(ItemStack weapon) {
         if (weapon.getItem() instanceof ProjectileWeaponItem projectileWeapon) {
             Predicate<ItemStack> supported = projectileWeapon.getSupportedHeldProjectiles();
             ItemStack held = ProjectileWeaponItem.getHeldProjectile(this, supported);
             ItemStack projectile = held.isEmpty() ? new ItemStack(Items.ARROW) : held;
-            trace("PROJECTILE_CREATE golem=" + getUUID() + " projectileType=" + projectile.getItem() + " owner=" + getUUID()
-                + " velocity=1.6");
             return projectile;
         }
         return ItemStack.EMPTY;
@@ -185,14 +172,12 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
         out.putBoolean("PlayerCreated", isPlayerCreated());
         out.putInt("AngerTime", angerTime);
         if (angryAt != null) out.putString("AngryAt", angryAt.toString());
-        trace("SAVE_LOAD event=save uuid=" + getUUID() + " playerCreated=" + isPlayerCreated() + " health=" + getHealth());
     }
     @Override protected void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput in) {
         super.readAdditionalSaveData(in);
         setPlayerCreated(in.getBooleanOr("PlayerCreated", false));
         angerTime = in.getIntOr("AngerTime", 0);
         in.getString("AngryAt").ifPresent(value -> { try { angryAt = UUID.fromString(value); } catch (IllegalArgumentException ignored) {} });
-        trace("SAVE_LOAD event=load uuid=" + getUUID() + " playerCreated=" + isPlayerCreated() + " health=" + getHealth());
     }
     public static AttributeSupplier.Builder createAttributes() {
         // 1.21.10 target goals require this inherited lookup; released BM did
@@ -200,7 +185,4 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
         return createLivingAttributes().add(Attributes.MAX_HEALTH, 60.0D).add(Attributes.FOLLOW_RANGE, 24.0D);
     }
 
-    private void trace(String message) {
-        if (Boolean.getBoolean("bm.mansion.trace")) System.out.println(TRACE + " " + message);
-    }
 }
