@@ -53,8 +53,35 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
         SynchedEntityData.defineId(StoneGolemEntity.class, EntityDataSerializers.BOOLEAN);
     private int angerTime;
     private UUID angryAt;
+    private int combatTraceTicker;
+    private LivingEntity combatTraceTarget;
+    private boolean combatTraceGoal;
 
     public StoneGolemEntity(EntityType<? extends StoneGolemEntity> type, Level level) { super(type, level); }
+
+    @Override public void tick() {
+        super.tick();
+        if (!level().isClientSide() && Boolean.getBoolean("bm.mansion.trace")
+            && AdjudicatorAlliance.encounterId(this) != null && ++combatTraceTicker >= 20) {
+            combatTraceTicker = 0;
+            LivingEntity target = getTarget();
+            boolean goalEligible = target != null && target.isAlive() && isHolding(Items.CROSSBOW);
+            if (target != combatTraceTarget || goalEligible != combatTraceGoal) {
+                combatTraceTarget = target;
+                combatTraceGoal = goalEligible;
+                System.out.println("BM_ADJ_GOLEM_COMBAT_STATE golem=" + getUUID()
+                    + " target=" + (target == null ? "null" : target.getUUID() + "/" + target.getType())
+                    + " targetAlive=" + (target != null && target.isAlive())
+                    + " crossbow=" + isHolding(Items.CROSSBOW)
+                    + " goalCanUse=" + goalEligible
+                    + " navigationDone=" + getNavigation().isDone()
+                    + " distance=" + (target == null ? -1.0D : distanceToSqr(target))
+                    + " charging=" + isChargingCrossbow()
+                    + " passengerCount=" + getPassengers().size()
+                    + " playerCreated=" + isPlayerCreated());
+            }
+        }
+    }
 
     @Override protected void registerGoals() {
         goalSelector.addGoal(1, new BetterCrossbowAttackGoal<>(this, 1.0D, 24.0F));

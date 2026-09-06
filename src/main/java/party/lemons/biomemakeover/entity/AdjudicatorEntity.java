@@ -654,9 +654,13 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
 
     @Override
     public void performRangedAttack(LivingEntity target, float pullProgress) {
-        boolean bowPhase = phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MIMIC;
+        boolean bowPhase = phase == ControllerPhase.BOW_ATTACK || phase == ControllerPhase.MIMIC
+            || phase == ControllerPhase.STONE_GOLEM;
         boolean weaponValid = getMainHandItem().is(Items.BOW);
         if (!bowPhase || !weaponValid) return;
+        if (phase == ControllerPhase.STONE_GOLEM)
+            mountedBowTrace("BM_ADJ_MOUNTED_BOW_FIRE target=" + target.getUUID() + " mainHand=" + getMainHandItem().getItem()
+                + " passenger=" + isPassenger());
         ItemStack arrows = Items.ARROW.getDefaultInstance();
         AbstractArrow arrow = ProjectileUtil.getMobArrow(this, arrows, pullProgress, getMainHandItem());
         double dx = target.getX() - getX();
@@ -677,6 +681,10 @@ public final class AdjudicatorEntity extends Monster implements RangedAttackMob 
 
     private void stoneTrace(String message) {
         if (Boolean.getBoolean("bm.mansion.trace")) System.out.println(STONE_GOLEM_TRACE + " " + message);
+    }
+
+    private void mountedBowTrace(String message) {
+        if (Boolean.getBoolean("bm.mansion.trace")) System.out.println("BM_ADJ_MOUNTED_BOW_STATE " + message);
     }
 
     public void setControllerActive(boolean value) { active = value; }
