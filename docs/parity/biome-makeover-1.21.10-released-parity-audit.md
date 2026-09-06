@@ -37,6 +37,12 @@ Released advancement, subtitle, item, block, entity, effect, enchantment,
 tooltip, creative-group, and item-component English keys were restored without
 changing IDs, criteria, recipes, components, or gameplay.
 
+Stage 13A-R1 additionally closes the dedicated `SignItem` and
+`HangingSignItem` namespace: the four current wood families now have explicit
+item translations, including `item.biomemakeover.ancient_oak_sign` and
+`item.biomemakeover.ancient_oak_hanging_sign`. Generic block items continue to
+use the current block-description-prefix behavior and are validated separately.
+
 ## Current frozen systems
 
 These are not remaining work for released parity unless a regression is found:

@@ -22,8 +22,6 @@ $entitiesSource = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biome
 
 $itemIds = Get-Matches $itemsSource 'register\("([a-z0-9_]+)"'
 $itemIds += Get-Matches $entitiesSource 'registerSpawnEgg\("([a-z0-9_]+)"'
-$blockDescriptionItems = @('ancient_oak_sign', 'ancient_oak_hanging_sign', 'swamp_cypress_sign', 'swamp_cypress_hanging_sign', 'willow_sign', 'willow_hanging_sign')
-$itemIds = @($itemIds | Where-Object { $_ -notin $blockDescriptionItems })
 $blockIds = Get-Matches $blocksSource 'register\("([a-z0-9_]+)"'
 $blockIds = @($blockIds | Where-Object { $_ -notmatch '_$' })
 $entityIds = Get-Matches $entitiesSource 'registerEntity\(\s*"([a-z0-9_]+)"'
@@ -51,7 +49,7 @@ if ($lang.'item.biomemakeover.enchanted_totem' -ne 'Enchanted Totem') {
 
 $exceptionList = @(
     'Vanilla-derived item/block/entity names are intentionally supplied by Minecraft and are not BM keys.',
-    'Sign and hanging-sign BlockItems use Minecraft 1.21.10 block-description prefixes and intentionally inherit the corresponding block translation.',
+    'Generic BlockItems using Minecraft 1.21.10 block-description prefixes intentionally inherit the corresponding block translation; dedicated SignItem and HangingSignItem forms are checked under their item keys.',
     'No-item implementation blocks and dynamically generated family members are validated through their reachable item/block family resources rather than synthetic helper-prefix matches.'
     'Internal registry keys, tags, loot tables, predicates, and recipe IDs are not display names unless referenced by a user-facing Component.'
 )
