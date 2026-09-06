@@ -11,6 +11,10 @@ import party.lemons.biomemakeover.network.WitchQuestsPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 public interface WitchQuestEntity {
+    default void configureQuestGoals() {}
+    default void tickQuestState(net.minecraft.server.level.ServerLevel level) {}
+    default void saveQuestData(net.minecraft.world.level.storage.ValueOutput output) {}
+    default void loadQuestData(net.minecraft.world.level.storage.ValueInput input) {}
     void setCurrentCustomer(Player player);
     Player getCurrentCustomer();
     WitchQuestList getQuests();
