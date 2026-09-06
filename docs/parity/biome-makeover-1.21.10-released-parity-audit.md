@@ -309,3 +309,19 @@ boundaries, plus runtime validation of any future boat implementation.
    the explicit Toad/Tadpole and Blightbat decisions.
 
 Mythas enhancements remain deferred and do not count against released parity.
+
+## Stage 13I boundary closure
+
+Stage 13I directly reconciled the final-release Badlands and Dark Forest
+source boundaries against current Java wiring, the reference-resource build
+pipeline, and the packaged JAR. Both slices are complete for released parity;
+their remaining label is source-boundary verification only. Badlands-owned
+Scuttler, Cowboy, Tumbleweed, cactus/pay dirt features, tags, and resources
+are present. Dark-Forest-owned Ancient Oak, ecology entities/plants,
+Mesmerite/Illunite, Black Thistle, and the feature chain are present.
+
+Ghost Town, Mansion, Adjudicator, Witch Quest, Poltergeist/soul, Beach,
+Mushroom Fields, and boats remain shared/frozen systems rather than reopened
+biome work. Toad/Tadpole and Blightbat remain released disabled/orphan
+boundaries. No genuine Badlands or Dark Forest released feature was found
+missing, so Stage 13I made no functional change.
