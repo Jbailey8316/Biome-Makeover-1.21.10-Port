@@ -632,6 +632,7 @@ public final class BMBlocks {
         FlammableBlockRegistry.getDefaultInstance().add(WILLOWING_BRANCHES, 15, 100);
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.BUILDING_BLOCKS).register(entries -> {
             entries.accept(MESMERITE); entries.accept(MESMERITE_STAIRS); entries.accept(MESMERITE_SLAB); entries.accept(MESMERITE_WALL);
+            entries.accept(CLADDED_STONE);
             entries.accept(POLISHED_MESMERITE); entries.accept(POLISHED_MESMERITE_STAIRS); entries.accept(POLISHED_MESMERITE_SLAB); entries.accept(POLISHED_MESMERITE_WALL);
             entries.accept(ANCIENT_OAK_LOG); entries.accept(STRIPPED_ANCIENT_OAK_LOG); entries.accept(ANCIENT_OAK_WOOD); entries.accept(STRIPPED_ANCIENT_OAK_WOOD);
             entries.accept(ANCIENT_OAK_PLANKS); entries.accept(ANCIENT_OAK_STAIRS); entries.accept(ANCIENT_OAK_SLAB); entries.accept(ANCIENT_OAK_FENCE);

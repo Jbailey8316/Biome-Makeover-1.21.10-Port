@@ -37,3 +37,21 @@ No Mansion templates, structure NBT, arena data, Adjudicator controller,
 combat phases, rewards, or Mythas trial systems were changed. The temporary
 `BM_STONE_GOLEM_PARITY_PROOF` marker is retained for Prism entity/creation
 testing and is intended for removal after acceptance.
+
+## Stage 12A.9-R2 audit and repair
+
+The released common tab exposed `cladded_stone` as a block item and
+`crude_cladding` as an item. The port now appends them to its corresponding
+Building Blocks and Natural Blocks tabs; the released shapeless recipe remains
+one crude cladding plus four smooth stone for four cladded stone.
+
+The released renderer used a custom held-item layer that attached the item to
+the armed model, rotated it -90 degrees on X and 180 degrees on Y, and applied
+the released hand offset. The modern `translateToHand` hook now retains that
+transform for the standard 1.21.10 item layer.
+
+The released Stone Golem target selector targets only a Stone Golem with the
+opposite `playerCreated` state. The port had used an unrestricted same-type
+target goal, allowing two player-created golems to select each other. The
+released predicate is restored; `HurtByTargetGoal` retaliation remains
+source-controlled.

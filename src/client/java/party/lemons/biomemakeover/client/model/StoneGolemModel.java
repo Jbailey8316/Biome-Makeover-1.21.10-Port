@@ -5,6 +5,7 @@ import net.minecraft.client.model.AnimationUtils;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import com.mojang.math.Axis;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.monster.AbstractIllager;
@@ -63,6 +64,11 @@ public final class StoneGolemModel extends EntityModel<StoneGolemRenderState> im
 
     @Override public void translateToHand(net.minecraft.client.renderer.entity.state.EntityRenderState state, HumanoidArm arm, com.mojang.blaze3d.vertex.PoseStack pose) {
         (arm == HumanoidArm.LEFT ? armLeft : armRight).translateAndRotate(pose);
+        // Released StoneGolemItemLayer transform, retained at the modern
+        // ItemInHandLayer hand hook so the crossbow is held in front of the arms.
+        pose.mulPose(Axis.XP.rotationDegrees(-90.0F));
+        pose.mulPose(Axis.YP.rotationDegrees(180.0F));
+        pose.translate((arm == HumanoidArm.LEFT ? -0.7F : 0.7F) / 16.0F, 0.125D, -1.75D);
     }
 
     @Override public ModelPart getHead() { return head; }

@@ -206,6 +206,7 @@ public final class BMItems {
             entries.accept(RED_ROSE_MUSIC_DISK);
             entries.accept(CLADDED_HELMET); entries.accept(CLADDED_CHESTPLATE);
             entries.accept(CLADDED_LEGGINGS); entries.accept(CLADDED_BOOTS);
+            entries.accept(CRUDE_CLADDING);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

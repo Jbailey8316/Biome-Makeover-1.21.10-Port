@@ -62,10 +62,13 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
         goalSelector.addGoal(3, new LookAtPlayerGoal(this, Mob.class, 5.0F));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, net.minecraft.world.entity.npc.AbstractVillager.class, false));
-        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, StoneGolemEntity.class, true));
-        targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
-        targetSelector.addGoal(5, new NearestAttackableTargetGoal<>(this, Player.class, true));
-        targetSelector.addGoal(6, new NearestAttackableTargetGoal<>(this, Mob.class, true));
+        targetSelector.addGoal(3, new NearestAttackableTargetGoal<StoneGolemEntity>(this, StoneGolemEntity.class, 10, true, false,
+            (target, level) -> target instanceof StoneGolemEntity other && isPlayerCreated() != other.isPlayerCreated()));
+        targetSelector.addGoal(4, new NearestAttackableTargetGoal<IronGolem>(this, IronGolem.class, 10, true, false,
+            (target, level) -> !isPlayerCreated()));
+        targetSelector.addGoal(5, new NearestAttackableTargetGoal<Player>(this, Player.class, 10, true, false, this::isAngryAt));
+        targetSelector.addGoal(6, new NearestAttackableTargetGoal<Mob>(this, Mob.class, 5, false, false,
+            (target, level) -> target instanceof Monster && !(target instanceof Creeper)));
         targetSelector.addGoal(7, new ResetUniversalAngerTargetGoal<>(this, false));
     }
 
@@ -123,6 +126,13 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
     public boolean isAngryAt(LivingEntity entity) {
         return EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(entity) && !isPlayerCreated();
     }
+    @Override public void setTarget(@Nullable LivingEntity target) {
+        LivingEntity previous = getTarget();
+        super.setTarget(target);
+        if (target != null && target != previous)
+            trace("TARGET_ACQUIRE uuid=" + getUUID() + " playerCreated=" + isPlayerCreated()
+                + " targetType=" + target.getType() + " targetUuid=" + target.getUUID() + " reason=goal");
+    }
     @Override public boolean canAttack(LivingEntity target) {
         if (isPlayerCreated() && (target instanceof Player || target instanceof net.minecraft.world.entity.npc.AbstractVillager)) return false;
         if (!isPlayerCreated() && target instanceof Monster) return false;
@@ -136,7 +146,12 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
     @Override public UUID getPersistentAngerTarget() { return angryAt; }
     @Override public void setPersistentAngerTarget(@Nullable UUID id) { angryAt = id; }
     @Override public void startPersistentAngerTimer() { angerTime = 20 * (20 + random.nextInt(20)); }
-    @Override public void setChargingCrossbow(boolean charging) { entityData.set(CHARGING, charging); }
+    @Override public void setChargingCrossbow(boolean charging) {
+        if (isChargingCrossbow() != charging)
+            trace("CROSSBOW_STATE uuid=" + getUUID() + " state=" + (charging ? "charging" : "idle")
+                + " mainHand=" + getMainHandItem().getItem());
+        entityData.set(CHARGING, charging);
+    }
     public boolean isChargingCrossbow() { return entityData.get(CHARGING); }
     @Override public void performRangedAttack(LivingEntity target, float power) {
         trace("ATTACK uuid=" + getUUID() + " targetType=" + target.getType());
