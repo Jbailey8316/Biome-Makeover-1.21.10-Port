@@ -446,6 +446,7 @@ processResources {
         include 'data/biomemakeover/quest_reward/**'
         include 'data/biomemakeover/advancements/biomemakeover/witch_quest.json'
         include 'data/biomemakeover/loot_tables/entities/witch_hat.json'
+        exclude 'data/biomemakeover/loot_tables/entities/witch_hat.json'
         include 'assets/biomemakeover/textures/gui/witch.png'
         eachFile { details ->
             details.path = details.path.replace('/loot_tables/', '/loot_table/').replace('/advancements/', '/advancement/')

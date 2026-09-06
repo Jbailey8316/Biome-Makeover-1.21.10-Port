@@ -130,8 +130,10 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         MenuScreens.register(BMMenus.WITCH, WitchScreen::new);
         ClientPlayNetworking.registerGlobalReceiver(WitchQuestsPayload.TYPE, (payload, context) ->
             context.client().execute(() -> {
-                if (Minecraft.getInstance().screen instanceof WitchScreen screen && screen.getMenu().containerId == payload.menuId())
+                if (Minecraft.getInstance().screen instanceof WitchScreen screen && screen.getMenu().containerId == payload.menuId()) {
                     screen.getMenu().setQuests(new WitchQuestList(payload.quests()));
+                    screen.updateQuests();
+                }
             }));
         AltarBlockEntity.setClientSoundStarter(altar -> Minecraft.getInstance().getSoundManager().play(
             new AltarCursingSound(altar, altar.getLevel() == null ? net.minecraft.util.RandomSource.create() : altar.getLevel().random)));

@@ -6,6 +6,16 @@ if (!(Test-Path $jarPath)) { throw 'Build the Stage 13G artifact first.' }
 $entries = @(jar tf $jarPath)
 function Need([string]$entry) { if ($entry -notin $entries) { throw "Missing packaged Stage 13G entry: $entry" } }
 function Source([string]$path) { $p=Join-Path $Root $path; if (!(Test-Path $p)) { throw "Missing Stage 13G source: $path" }; Get-Content $p -Raw }
+function JarText([string]$entry) {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($jarPath)
+    try {
+        $item = $archive.GetEntry($entry)
+        if ($null -eq $item) { throw "Missing packaged Stage 13G entry: $entry" }
+        $reader = [System.IO.StreamReader]::new($item.Open())
+        try { return $reader.ReadToEnd() } finally { $reader.Dispose() }
+    } finally { $archive.Dispose() }
+}
 $witch = Source 'src/main/java/party/lemons/biomemakeover/mixin/WitchMixin_Quests.java'
 $quest = Source 'src/main/java/party/lemons/biomemakeover/crafting/witch/WitchQuest.java'
 $handler = Source 'src/main/java/party/lemons/biomemakeover/crafting/witch/WitchQuestHandler.java'
@@ -34,12 +44,20 @@ Need 'data/biomemakeover/loot_table/entities/witch_hat.json'
 Need 'assets/biomemakeover/textures/gui/witch.png'
 Need 'party/lemons/biomemakeover/mixin/WitchMixin_Quests.class'
 Need 'party/lemons/biomemakeover/crafting/witch/menu/WitchMenu.class'
+Need 'party/lemons/biomemakeover/client/screen/WitchScreen.class'
 Need 'party/lemons/biomemakeover/network/WitchQuestsPayload.class'
 Need 'party/lemons/biomemakeover/network/CompleteWitchQuestPayload.class'
 Need 'party/lemons/biomemakeover/mixin/WitchMixin_MobHooks.class'
 Need 'party/lemons/biomemakeover/mixin/WitchMixin_LivingHooks.class'
 if ($witch -match 'setTarget\(') { throw 'Quest hook must not refresh Witch target each tick.' }
 if ($witch -match 'performRangedAttack|spawn.*Projectile') { throw 'Witch quest scope contains unauthorized combat fallback.' }
+$loot = Get-Content (Join-Path $Root 'src/main/resources/data/biomemakeover/loot_table/entities/witch_hat.json') -Raw
+if ($loot -match 'random_chance_with_looting' -or $loot -notmatch 'random_chance_with_enchanted_bonus|unenchanted_chance|per_level_above_first') { throw 'Witch Hat loot table does not use the current Looting-compatible condition.' }
+if ($loot -notmatch 'unenchanted_chance[^0-9]*0\.05|base[^0-9]*0\.10|per_level_above_first[^0-9]*0\.05') { throw 'Witch Hat 5% base plus 5% per Looting level semantics are not preserved.' }
+$packagedLoot = JarText 'data/biomemakeover/loot_table/entities/witch_hat.json'
+try { $null = $packagedLoot | ConvertFrom-Json } catch { throw 'Packaged Witch Hat loot table is not valid JSON.' }
+if ($packagedLoot -match 'random_chance_with_looting' -or $packagedLoot -notmatch 'random_chance_with_enchanted_bonus|unenchanted_chance|per_level_above_first') { throw 'Packaged Witch Hat loot table does not use the current Looting-compatible condition.' }
+if ($packagedLoot -notmatch 'unenchanted_chance[^0-9]*0\.05|base[^0-9]*0\.10|per_level_above_first[^0-9]*0\.05') { throw 'Packaged Witch Hat loot table does not preserve 5% base plus 5% per Looting level semantics.' }
 $mixins = Source 'src/main/resources/biomemakeover.mixins.json'
 if ($mixins -notmatch 'WitchMixin_Quests|WitchMixin_Interaction') { throw 'Witch quest mixins are not declared.' }
 Write-Output 'STAGE 13G WITCH QUEST VALIDATION PASSED: 10 categories, 4 reward tables, Witch Hat gating, persistence, antidote hook, menu, payloads, reload listeners, advancement, and packaged resources verified.'
