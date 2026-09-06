@@ -9,6 +9,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.entity.vehicle.ChestBoat;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -109,6 +111,19 @@ public final class BMEntities {
             .sized(.825F, .5F).clientTrackingRange(12));
     public static final Item HELMIT_CRAB_SPAWN_EGG = registerSpawnEgg("helmit_crab_spawn_egg", HELMIT_CRAB);
 
+    // Current Minecraft represents each boat wood variant with its own entity
+    // type.  This is the narrow 1.21.10 equivalent of the released Taniwha
+    // BoatType registrations; the external BM IDs and observable behavior are
+    // unchanged.
+    public static final EntityType<Boat> ANCIENT_OAK_BOAT = registerBoat("ancient_oak_boat", false);
+    public static final EntityType<ChestBoat> ANCIENT_OAK_CHEST_BOAT = registerBoat("ancient_oak_chest_boat", true);
+    public static final EntityType<Boat> WILLOW_BOAT = registerBoat("willow_boat", false);
+    public static final EntityType<ChestBoat> WILLOW_CHEST_BOAT = registerBoat("willow_chest_boat", true);
+    public static final EntityType<Boat> SWAMP_CYPRESS_BOAT = registerBoat("swamp_cypress_boat", false);
+    public static final EntityType<ChestBoat> SWAMP_CYPRESS_CHEST_BOAT = registerBoat("swamp_cypress_chest_boat", true);
+    public static final EntityType<Boat> BLIGHTED_BALSA_BOAT = registerBoat("blighted_balsa_boat", false);
+    public static final EntityType<ChestBoat> BLIGHTED_BALSA_CHEST_BOAT = registerBoat("blighted_balsa_chest_boat", true);
+
     private BMEntities() {
     }
 
@@ -126,6 +141,23 @@ public final class BMEntities {
         ResourceKey<Item> key = ResourceKey.create(Registries.ITEM, id);
         Item item = new SpawnEggItem(new Item.Properties().setId(key).spawnEgg(type));
         return Registry.register(BuiltInRegistries.ITEM, key, item);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends net.minecraft.world.entity.Entity> EntityType<T> registerBoat(String name, boolean chest) {
+        ResourceLocation id = BiomeMakeover.id(name);
+        ResourceKey<EntityType<?>> key = ResourceKey.create(Registries.ENTITY_TYPE, id);
+        EntityType.Builder<?> builder = chest
+            ? EntityType.Builder.of((type, level) -> new ChestBoat((EntityType<? extends ChestBoat>) (EntityType<?>) type, level,
+                () -> boatItem(name)), MobCategory.MISC)
+            : EntityType.Builder.of((type, level) -> new Boat((EntityType<? extends Boat>) (EntityType<?>) type, level,
+                () -> boatItem(name)), MobCategory.MISC);
+        return (EntityType<T>) Registry.register(BuiltInRegistries.ENTITY_TYPE, key,
+            builder.sized(1.375F, 0.5625F).clientTrackingRange(10).updateInterval(5).build(key));
+    }
+
+    private static Item boatItem(String entityName) {
+        return BuiltInRegistries.ITEM.getValue(BiomeMakeover.id(entityName));
     }
 
     public static void initialize() {

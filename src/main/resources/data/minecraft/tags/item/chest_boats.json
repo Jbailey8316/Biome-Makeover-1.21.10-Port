@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "biomemakeover:blighted_balsa_chest_boat",
+    "biomemakeover:willow_chest_boat",
+    "biomemakeover:swamp_cypress_chest_boat",
+    "biomemakeover:ancient_oak_chest_boat"
+  ]
+}

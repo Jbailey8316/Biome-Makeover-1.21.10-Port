@@ -50,6 +50,21 @@ def stage10c4TemplateValidatorClasses = layout.buildDirectory.dir('classes/java/
 def stage10c4ProcessorValidatorClasses = layout.buildDirectory.dir('classes/java/stage10c4ProcessorValidator')
 def stage11a2TemplateValidatorClasses = layout.buildDirectory.dir('classes/java/stage11a2TemplateValidator')
 def stage11b2bMarkerAuditClasses = layout.buildDirectory.dir('classes/java/stage11b2bMarkerAudit')
+def stage13hGeneratedResources = layout.buildDirectory.dir('generated/stage13hResources')
+
+tasks.register('generateStage13HItemDefinitions') {
+    outputs.dir(stage13hGeneratedResources)
+    doLast {
+        def ids = ['ancient_oak_boat', 'ancient_oak_chest_boat', 'willow_boat', 'willow_chest_boat',
+                   'swamp_cypress_boat', 'swamp_cypress_chest_boat', 'blighted_balsa_boat', 'blighted_balsa_chest_boat']
+        def output = stage13hGeneratedResources.get().dir('assets/biomemakeover/items').asFile
+        output.mkdirs()
+        ids.each { id ->
+            new File(output, "${id}.json").text = JsonOutput.prettyPrint(JsonOutput.toJson(
+                [model: [type: 'minecraft:model', model: "biomemakeover:item/${id}"]])) + System.lineSeparator()
+        }
+    }
+}
 
 tasks.register('generateStage3ItemDefinitions') {
     inputs.file('validation/foundations/stage_3_mushroom_fields_contract.json')
@@ -463,6 +478,7 @@ processResources {
     dependsOn tasks.named('generateStage8ItemDefinitions')
     dependsOn tasks.named('generateStage10AItemResources')
     dependsOn tasks.named('generateStage13DItemDefinitions')
+    dependsOn tasks.named('generateStage13HItemDefinitions')
     from(stage3GeneratedResources)
     from(stage4GeneratedResources)
     from(stage5GeneratedResources)
@@ -470,6 +486,22 @@ processResources {
     from(stage8GeneratedResources)
     from(stage10aGeneratedResources)
     from(layout.buildDirectory.dir('generated/stage13dResources'))
+    from(stage13hGeneratedResources)
+    // Stage 13H: released wood boat/chest-boat assets and recipes. These are
+    // unchanged client/data resources; the current port supplies the native
+    // 1.21.10 entity/item registrations and render-layer adapters.
+    from('reference/Biome-Makeover-1.20/common/src/main/resources') {
+        include 'assets/biomemakeover/textures/entity/boat/ancient_oak*.png'
+        include 'assets/biomemakeover/textures/entity/boat/willow*.png'
+        include 'assets/biomemakeover/textures/entity/boat/swamp_cypress*.png'
+        include 'assets/biomemakeover/textures/entity/boat/blighted_balsa*.png'
+        include 'assets/biomemakeover/textures/item/blighted_balsa_boat.png', 'assets/biomemakeover/textures/item/blighted_balsa_chestboat.png'
+        include 'data/biomemakeover/recipes/wood/ancient_oak/*_boat.json'
+        include 'data/minecraft/tags/items/boats.json'
+        eachFile { details ->
+            details.path = details.path.replace('/recipes/', '/recipe/').replace('/tags/items/', '/tags/item/')
+        }
+    }
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') {
         expand version: project.version
@@ -528,8 +560,6 @@ processResources {
         include 'assets/biomemakeover/models/item/mycelium_*.json'
         include 'assets/biomemakeover/models/item/tall_*_mushroom.json'
         include 'assets/biomemakeover/models/item/blighted_balsa*.json'
-        exclude 'assets/biomemakeover/models/item/blighted_balsa_boat.json'
-        exclude 'assets/biomemakeover/models/item/blighted_balsa_chest_boat.json'
         include 'assets/biomemakeover/models/item/*blighted_balsa*.json'
         include 'assets/biomemakeover/models/item/blighted_cobblestone*.json'
         include 'assets/biomemakeover/models/item/blighted_stone_bricks*.json'
@@ -717,8 +747,6 @@ processResources {
         include 'assets/biomemakeover/models/block/tinted_crop.json'
         include 'assets/biomemakeover/models/block/decoration/reed_thatch/**/*.json', 'assets/biomemakeover/models/block/decoration/dried_peat_bricks/**/*.json', 'assets/biomemakeover/models/block/decoration/mossy_dried_peat_bricks/**/*.json', 'assets/biomemakeover/models/block/decoration/cracked_dried_peat_bricks/**/*.json'
         include 'assets/biomemakeover/models/item/*willow*.json', 'assets/biomemakeover/models/item/*swamp_cypress*.json'
-        exclude 'assets/biomemakeover/models/item/*_boat.json'
-        exclude 'assets/biomemakeover/models/item/*_chest_boat.json'
         include 'assets/biomemakeover/models/item/*peat*.json'
         include 'assets/biomemakeover/models/item/buttonbush.json', 'assets/biomemakeover/models/item/marigold.json', 'assets/biomemakeover/models/item/cattail.json', 'assets/biomemakeover/models/item/reed*.json', 'assets/biomemakeover/models/item/small_lily_pad.json', 'assets/biomemakeover/models/item/water_lily.json'
         include 'assets/biomemakeover/models/item/lightning_bug_bottle.json', 'assets/biomemakeover/models/item/lightning_bottle.json'
@@ -744,8 +772,6 @@ processResources {
         include 'data/biomemakeover/loot_tables/blocks/lightning_bug_bottle.json'
         include 'data/biomemakeover/loot_tables/entities/decayed.json', 'data/biomemakeover/loot_tables/entities/dragonfly.json', 'data/biomemakeover/loot_tables/entities/lightning_bug*.json'
         include 'data/biomemakeover/recipes/wood/willow/**/*.json', 'data/biomemakeover/recipes/wood/swamp_cypress/**/*.json'
-        exclude 'data/biomemakeover/recipes/wood/**/*_boat.json'
-        exclude 'data/biomemakeover/recipes/wood/**/*_chest_boat.json'
         include 'data/biomemakeover/recipes/decoration/dried_peat_bricks/**/*.json', 'data/biomemakeover/recipes/decoration/mossy_dried_peat_bricks/**/*.json', 'data/biomemakeover/recipes/decoration/cracked_dried_peat_bricks/**/*.json', 'data/biomemakeover/recipes/decoration/reed_thatch/**/*.json'
         include 'data/biomemakeover/recipes/dried_peat.json', 'data/biomemakeover/recipes/dried_peat_from_mossy.json', 'data/biomemakeover/recipes/mossy_peat.json'
         include 'data/biomemakeover/recipes/dye/magenta_buds_from_water_lily.json', 'data/biomemakeover/recipes/dye/magenta_dye_from_magenta_bud.json', 'data/biomemakeover/recipes/dye/orange_dye_from_marigold.json'
@@ -905,8 +931,6 @@ processResources {
             // but their owning content is intentionally deferred or belongs to
             // Stage 5. Do not leave recipes pointing at absent registry entries.
             [
-                'wood/blighted_balsa/blighted_balsa_boat.json',
-                'wood/blighted_balsa/blighted_balsa_chest_boat.json',
                 'decoration/terracotta_bricks/white_dye_from_buttonbush.json'
             ].each { new File(recipeRoot, it).delete() }
             fileTree(recipeRoot).matching { include '**/*.json' }.files.each { recipeFile ->

@@ -139,6 +139,14 @@ public final class BMItems {
     public static final Item CRUDE_FRAGMENT = register("crude_fragment");
     public static final Item CRUDE_CLADDING = register("crude_cladding");
     public static final Item ENCHANTED_TOTEM = register("enchanted_totem", p -> new EnchantedTotemItem(p.stacksTo(1).rarity(Rarity.EPIC)));
+    public static final Item ANCIENT_OAK_BOAT = register("ancient_oak_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.ANCIENT_OAK_BOAT, p.stacksTo(1)));
+    public static final Item ANCIENT_OAK_CHEST_BOAT = register("ancient_oak_chest_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.ANCIENT_OAK_CHEST_BOAT, p.stacksTo(1)));
+    public static final Item WILLOW_BOAT = register("willow_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.WILLOW_BOAT, p.stacksTo(1)));
+    public static final Item WILLOW_CHEST_BOAT = register("willow_chest_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.WILLOW_CHEST_BOAT, p.stacksTo(1)));
+    public static final Item SWAMP_CYPRESS_BOAT = register("swamp_cypress_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.SWAMP_CYPRESS_BOAT, p.stacksTo(1)));
+    public static final Item SWAMP_CYPRESS_CHEST_BOAT = register("swamp_cypress_chest_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.SWAMP_CYPRESS_CHEST_BOAT, p.stacksTo(1)));
+    public static final Item BLIGHTED_BALSA_BOAT = register("blighted_balsa_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.BLIGHTED_BALSA_BOAT, p.stacksTo(1)));
+    public static final Item BLIGHTED_BALSA_CHEST_BOAT = register("blighted_balsa_chest_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.BLIGHTED_BALSA_CHEST_BOAT, p.stacksTo(1)));
     public static final Item REFINED_POTTERY_SHERD = register("refined_pottery_sherd");
     public static final Item WORKER_POTTERY_SHERD = register("worker_pottery_sherd");
     public static final Item WHINNY_POTTERY_SHERD = register("whinny_pottery_sherd");
@@ -214,6 +222,10 @@ public final class BMItems {
             entries.accept(CLADDED_LEGGINGS); entries.accept(CLADDED_BOOTS);
             entries.accept(CRUDE_CLADDING);
             entries.accept(ENCHANTED_TOTEM);
+            entries.accept(ANCIENT_OAK_BOAT); entries.accept(ANCIENT_OAK_CHEST_BOAT);
+            entries.accept(WILLOW_BOAT); entries.accept(WILLOW_CHEST_BOAT);
+            entries.accept(SWAMP_CYPRESS_BOAT); entries.accept(SWAMP_CYPRESS_CHEST_BOAT);
+            entries.accept(BLIGHTED_BALSA_BOAT); entries.accept(BLIGHTED_BALSA_CHEST_BOAT);
         });
         LightningBottleItem.registerDispenserBehavior(LIGHTNING_BOTTLE);
     }

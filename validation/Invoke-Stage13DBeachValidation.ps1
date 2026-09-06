@@ -54,8 +54,7 @@ foreach ($relative in @(
   'data/biomemakeover/recipes/cooking/cooked_crab_campfire.json')) { Require-Reference $relative }
 
 if ($java -match 'ghosttown|GhostTown|beach_boat|BeachBoat') { throw 'Stage 13D contains out-of-scope Beach/Ghost Town leakage.' }
-if ($items -match 'blighted_balsa_(boat|chest_boat)') { throw 'Blighted Balsa boats remain deferred.' }
 $mansion = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'validation/Invoke-Stage11AMansionInventory.ps1') -Root $Root
 if (($mansion -join "`n") -notmatch 'templates=168.*active_unique=165.*orphan=3') { throw 'Mansion inventory drift detected.' }
 Write-Output 'STAGE 13D BEACH VALIDATION PASSED: Helmit Crab registration/spawn/client path, packaged crab food/loot/resources, and empty-safe shell persistence verified.'
-Write-Output 'Beach tag and crab-spawnable block tag are reference-backed; Mushroom Fields, Ghost Town, Dark Forest, Badlands, boats, and Mansion remain out of scope.'
+Write-Output 'Beach tag and crab-spawnable block tag are reference-backed; Mushroom Fields, Ghost Town, Dark Forest, Badlands, and Mansion remain out of scope. Stage 13H boats are validated separately.'

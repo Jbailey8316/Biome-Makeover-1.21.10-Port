@@ -50,7 +50,6 @@ if ($worldgen -match 'BLACK_THISTLE|black_thistle') { throw 'Black Thistle must 
 # worldgen initializer. The Mushroom Fields checks above remain scoped to the
 # mushroom feature constants and placement calls.
 $items = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw
-if ($items -match 'blighted_balsa_(boat|chest_boat)') { throw 'Blighted Balsa boats must remain deferred' }
 if ($worldgen -notmatch 'BMEntities\.GLOWFISH') { throw 'Glowfish Mushroom Fields spawn hook is missing' }
 $tag = Join-Path $Root 'src/main/resources/data/biomemakeover/tags/worldgen/biome/mushroom_fields.json'
 if (!(Test-Path $tag) -and 'data/biomemakeover/tags/worldgen/biome/mushroom_fields.json' -notin $jarEntries) { throw 'Mushroom Fields biome tag is missing' }
@@ -58,4 +57,4 @@ if (Test-Path $tag) { Get-Content $tag -Raw | ConvertFrom-Json | Out-Null }
 $missing = @($configured | Where-Object { "data/biomemakeover/worldgen/configured_feature/mushroom_fields/$_.json" -notin $jarEntries }).Count
 $missingPlaced = @($placed | Where-Object { "data/biomemakeover/worldgen/placed_feature/mushroom_fields/$_.json" -notin $jarEntries }).Count
 Write-Output "STAGE 13C MUSHROOM FIELDS VALIDATION PASSED: configured=$($configured.Count) placed=$($placed.Count) missing=$missing missingPlaced=$missingPlaced"
-Write-Output 'Black Thistle excluded; Beach/Helmit Crab excluded; Blighted Balsa boats deferred.'
+Write-Output 'Black Thistle and Beach/Helmit Crab remain excluded; Stage 13H boat registrations are validated separately.'
