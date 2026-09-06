@@ -221,3 +221,85 @@ and packaged resources. It is **COMPLETE / PRISM RUNTIME REQUIRED** pending
 natural Ghost Town generation, brushing, container-loot, save/reload, and log
 verification. The historical Stage 10C freeze validator remains non-gating
 because it rejects later legitimate registrations.
+
+## Stage 13F final residual audit
+
+This section supersedes the earlier residual recommendations after direct
+comparison of the final released source, current Java/resource wiring,
+`build.gradle`, and the packaged 1.21.10 JAR. Earlier sections remain
+historical evidence and are not rewritten destructively. Stage 13F made no
+gameplay or resource changes.
+
+### Removed from the implementation backlog
+
+- Mushroom Fields: configured/placed features, biome injection, Blighted
+  Balsa, glowshrooms, Glowfish, data, and client resources are complete and
+  runtime accepted in Stage 13C.
+- Beach/Helmit Crab: entity, spawning, tags, food/drop chain, recipes, loot,
+  renderer, sounds, and shell persistence are complete and runtime accepted
+  in Stage 13D/13D-R1.
+- Ghost Town: structure set, four pools, 50 templates (1 center, 7 roads,
+  27 houses, 15 decorations), processors, suspicious red sand, archaeology,
+  containers, advancement, and packaged resources are complete and runtime
+  accepted in Stage 13E/13E-R1.
+- Poltergeist/soul, Altar/curses/menu, Lightning Bug bottle, Tapestry, and
+  directional Mansion marker handling are present. The latter is a
+  current-Minecraft compatibility representation: Mansion consumes marker
+  NBT directly instead of using the released standalone marker menu path.
+- Mansion, Adjudicator, Mimic, Stone Golem, localization, recipes, alliance,
+  Swamp, and the accepted Owl/Rootling/Moth scopes remain frozen.
+
+### Genuine residual released systems
+
+1. **Witch quests and progression — MISSING.** The final source contains
+   `crafting/witch` quest classes/data, Witch quest and antidote mixins,
+   category/reward resources, menu/screen, persistence, and quest networking.
+   The current port has Witch Hat registration/rendering and its wear
+   advancement, but no quest loader, customer interaction, completion flow,
+   menu, persistence, or network path. Java, data, client, and current-MC
+   networking work are required, followed by Prism validation.
+2. **Released wood boats/chest boats — MISSING / currently excluded.** Final
+   release registers Ancient Oak, Willow, Swamp Cypress, and Blighted Balsa
+   boat pairs through `BMBoats`, with item/entity resources and recipes. The
+   current port has no corresponding registrations and `build.gradle`
+   explicitly excludes the boat family. This requires shared current-MC boat
+   registration plus resource/recipe closure and runtime use testing.
+
+### Released but intentionally unreachable boundaries
+
+- **Toad/Tadpole — RELEASED ORPHAN / UNUSED IN NORMAL SPAWN.** Final release
+  registers both entities, attributes, renderers, hidden eggs, Tadpole bucket,
+  and Toad reproduction, but comments out Toad natural spawning. The current
+  port intentionally excludes this disabled package. It is not a natural
+  spawning gap and should remain a documented scope decision unless the
+  disabled package is explicitly reopened.
+- **Blightbat — RELEASED ORPHAN / UNUSED.** Final release registers it but
+  comments out its Mushroom Fields spawn and hides its egg. Its omission from
+  the current active port is not an active natural-gameplay gap.
+
+No separate released painting family, custom configuration family, or
+unaccounted shared particle/sound/network family was found. Current
+Poltergeist particles/sounds, Altar behavior, and directional marker handling
+are source-equivalent current-Minecraft adaptations rather than missing
+systems.
+
+### Runtime and source-boundary backlog
+
+Already accepted runtime coverage includes Mushroom Fields, Beach, Ghost Town,
+Mansion/Adjudicator/Mimic/Stone Golem, Poltergeist/soul, Altar, Swamp core,
+and accepted Owl/Rootling/Moth scopes. Remaining verification-only work is
+limited to Badlands Scuttler/Cowboy boundaries and Dark Forest feature-density
+boundaries, plus runtime validation of any future boat implementation.
+
+### Ordered closure plan
+
+1. **Stage 13G — Witch Quest / Progression Released Parity Restoration**
+   (Java/data/client/network; runtime required).
+2. **Stage 13H — Released Wood Boat / Chest-Boat Parity Restoration**
+   (registration/resources/recipes; runtime required).
+3. **Stage 13I — Badlands and Dark Forest Source-Boundary Closure Audit**
+   (verification-focused; implement only a directly proven gap).
+4. **Stage 13J — Final Released Resource and Orphan Closure Report**, including
+   the explicit Toad/Tadpole and Blightbat decisions.
+
+Mythas enhancements remain deferred and do not count against released parity.
