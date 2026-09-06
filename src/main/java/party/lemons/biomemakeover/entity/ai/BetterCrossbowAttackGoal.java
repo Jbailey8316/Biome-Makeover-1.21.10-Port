@@ -27,6 +27,7 @@ public final class BetterCrossbowAttackGoal<T extends Mob & CrossbowAttackMob> e
     private int pathDelay;
     private boolean traceStarted;
     private CrossbowState traceState = CrossbowState.UNCHARGED;
+    private Boolean lastContinueResult;
 
     public BetterCrossbowAttackGoal(T mob, double speed, float range) {
         this.mob = mob;
@@ -35,19 +36,36 @@ public final class BetterCrossbowAttackGoal<T extends Mob & CrossbowAttackMob> e
         setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
     @Override public boolean canUse() { return validTarget() && mob.isHolding(Items.CROSSBOW); }
-    @Override public boolean canContinueToUse() { return validTarget() && (canUse() || !mob.getNavigation().isDone()) && mob.isHolding(Items.CROSSBOW); }
+    @Override public boolean canContinueToUse() {
+        boolean targetPresent = mob.getTarget() != null;
+        boolean targetAlive = targetPresent && mob.getTarget().isAlive();
+        boolean weaponValid = mob.isHolding(Items.CROSSBOW);
+        boolean result = targetAlive && weaponValid;
+        if (lastContinueResult == null || lastContinueResult != result) {
+            lastContinueResult = result;
+            trace("BM_GOLEM_CROSSBOW_CONTINUE result=" + result + " targetPresent=" + targetPresent
+                + " targetAlive=" + targetAlive + " weaponValid=" + weaponValid
+                + " navigationDone=" + mob.getNavigation().isDone() + " charging="
+                + (mob instanceof StoneGolemEntity golem && golem.isChargingCrossbow())
+                + " passengerCount=" + mob.getPassengers().size());
+        }
+        return result;
+    }
     private boolean validTarget() { return mob.getTarget() != null && mob.getTarget().isAlive(); }
     @Override public void start() {
         mob.setAggressive(true);
+        lastContinueResult = null;
         trace("BM_GOLEM_CROSSBOW_GOAL_START target=" + targetDescription() + " mainHand=" + mob.getMainHandItem().getItem()
             + " playerCreated=" + (mob instanceof StoneGolemEntity golem && golem.isPlayerCreated())
             + " passengers=" + mob.getPassengers().size());
     }
     @Override public void stop() {
+        boolean continuationBeforeStop = canContinueToUse();
         mob.setAggressive(false); seeTime = 0; state = CrossbowState.UNCHARGED;
         mob.setTarget(null);
         if (mob.isUsingItem()) { mob.stopUsingItem(); mob.setChargingCrossbow(false); mob.getUseItem().set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY); }
-        trace("BM_GOLEM_CROSSBOW_GOAL_STOP target=" + targetDescription() + " crossbow=" + mob.isHolding(Items.CROSSBOW));
+        trace("BM_GOLEM_CROSSBOW_GOAL_STOP target=" + targetDescription() + " crossbow=" + mob.isHolding(Items.CROSSBOW)
+            + " continuationBeforeStop=" + continuationBeforeStop);
     }
     @Override public boolean requiresUpdateEveryTick() { return true; }
     @Override public void tick() {
