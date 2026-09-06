@@ -165,7 +165,11 @@ public final class StoneGolemEntity extends AbstractGolem implements CrossbowAtt
         in.getString("AngryAt").ifPresent(value -> { try { angryAt = UUID.fromString(value); } catch (IllegalArgumentException ignored) {} });
         trace("SAVE_LOAD event=load uuid=" + getUUID() + " playerCreated=" + isPlayerCreated() + " health=" + getHealth());
     }
-    public static AttributeSupplier.Builder createAttributes() { return createLivingAttributes().add(Attributes.MAX_HEALTH, 60.0D); }
+    public static AttributeSupplier.Builder createAttributes() {
+        // 1.21.10 target goals require this inherited lookup; released BM did
+        // not expose it because its older golem helper supplied the range.
+        return createLivingAttributes().add(Attributes.MAX_HEALTH, 60.0D).add(Attributes.FOLLOW_RANGE, 24.0D);
+    }
 
     private void trace(String message) {
         if (Boolean.getBoolean("bm.mansion.trace")) System.out.println(TRACE + " " + message);

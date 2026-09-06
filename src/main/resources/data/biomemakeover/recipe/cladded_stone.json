@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "biomemakeover:crude_cladding",
+    "minecraft:smooth_stone",
+    "minecraft:smooth_stone",
+    "minecraft:smooth_stone",
+    "minecraft:smooth_stone"
+  ],
+  "result": {"id": "biomemakeover:cladded_stone", "count": 4}
+}

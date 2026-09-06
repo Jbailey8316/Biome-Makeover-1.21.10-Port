@@ -69,6 +69,8 @@ public final class BMSounds {
     public static final SoundEvent ADJUDICATOR_NO = register("adjudicator_no");
     public static final SoundEvent STONE_GOLEM_HURT = register("stone_golem_hurt");
     public static final SoundEvent STONE_GOLEM_DEATH = register("stone_golem_death");
+    public static final SoundEvent STONE_GOLEM_TURN = register("stone_golem_turn");
+    public static final SoundEvent STONE_GOLEM_STOP = register("stone_golem_stop");
 
     private BMSounds() {}
 
