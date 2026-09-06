@@ -251,19 +251,19 @@ gameplay or resource changes.
 
 ### Genuine residual released systems
 
-Stage 13G implementation is now present but remains `IMPLEMENTED / PRISM
-RUNTIME REQUIRED`; the former Witch quest missing finding below is retained as
-historical audit evidence. See `stage-13g-witch-quest.md` for the current
-architecture, exact inventory, adaptations, and runtime checklist.
+Stage 13G is now `RUNTIME ACCEPTED / CLEANED / FROZEN`; the former Witch quest
+missing finding below is retained as historical audit evidence. See
+`stage-13g-witch-quest.md` for the final architecture, exact inventory,
+adaptations, and accepted runtime coverage.
 
 1. **Witch quests and progression — historical MISSING finding, now
-   implemented in Stage 13G and awaiting Prism runtime acceptance.** The final
+   implemented and runtime accepted in Stage 13G.** The final
    source contains `crafting/witch` quest classes/data, Witch quest and
    antidote mixins, category/reward resources, menu/screen, persistence, and
    quest networking. The current implementation restores these paths with
    current-MC adaptations; see `stage-13g-witch-quest.md` for the active
    status and runtime checklist. Java, data, client, and current-MC
-   networking work are required, followed by Prism validation.
+   networking work were completed, followed by Prism validation.
 2. **Released wood boats/chest boats — MISSING / currently excluded.** Final
    release registers Ancient Oak, Willow, Swamp Cypress, and Blighted Balsa
    boat pairs through `BMBoats`, with item/entity resources and recipes. The
@@ -300,7 +300,7 @@ boundaries, plus runtime validation of any future boat implementation.
 ### Ordered closure plan
 
 1. **Stage 13G — Witch Quest / Progression Released Parity Restoration**
-   (Java/data/client/network; runtime required).
+   (complete/frozen; runtime accepted).
 2. **Stage 13H — Released Wood Boat / Chest-Boat Parity Restoration**
    (registration/resources/recipes; runtime required).
 3. **Stage 13I — Badlands and Dark Forest Source-Boundary Closure Audit**

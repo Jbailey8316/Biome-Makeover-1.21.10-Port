@@ -1,6 +1,6 @@
 # Stage 13G — Witch quest/progression parity
 
-Status: IMPLEMENTED / PRISM RUNTIME REQUIRED.
+Status: RUNTIME ACCEPTED / CLEANED / FROZEN.
 
 The implementation follows the final released 1.20.1 architecture: ten
 reloadable quest categories (`common`, `dark_forest`, `flower`, `jungle`,
@@ -30,6 +30,17 @@ loot table is invoked from the current `dropFromLootTable` hook. The released
 antidote Witch hook and its potion dependencies are also restored because they
 are part of the final Witch mixin behavior and are required by the reward
 tables.
+
+The released 512x256 `witch.png` is byte-identical to the reference asset.
+Its current-version compatibility repair is limited to using
+`RenderPipelines.GUI_TEXTURED` for the panel, button, and rarity-marker blits.
+The current payload/menu path carries the server-authoritative quest list and
+refreshes the released screen rows after receipt. The Witch Hat loot condition
+uses the current 1.21.10 schema while preserving the released probability.
+
+Prism runtime accepted constructor-time population of three quests, Witch-owned
+persistence, synchronization, the released GUI, completion, rewards, and
+save/reload behavior. No temporary Stage 13G diagnostics remain.
 
 ## Prism checklist
 
