@@ -3,8 +3,6 @@ package party.lemons.biomemakeover.mixin;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -28,7 +26,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import party.lemons.biomemakeover.crafting.witch.*;
 import party.lemons.biomemakeover.crafting.witch.data.QuestCategories;
 import party.lemons.biomemakeover.entity.ai.WitchLookAtCustomerGoal;
@@ -51,13 +48,6 @@ public abstract class WitchMixin_Quests extends Raider implements WitchQuestEnti
         targetSelector.addGoal(3, attackPlayersGoal);
         goalSelector.addGoal(1, new WitchStopFollowingCustomerGoal((Witch)(Object)this));
         goalSelector.addGoal(1, new WitchLookAtCustomerGoal((Witch)(Object)this));
-    }
-    @Inject(method = "mobInteract", at = @At("HEAD"), cancellable = true)
-    private void bmInteract(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
-        if (isAlive() && !hasCustomer() && canInteract(player)) {
-            if (!level().isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) { bmDespawnShield = 12000; setCurrentCustomer(player); sendQuests(serverPlayer, getDisplayName()); }
-            cir.setReturnValue(level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
-        }
     }
     @Inject(method = "customServerAiStep", at = @At("TAIL")) private void bmServerAiStep(ServerLevel level, CallbackInfo ci) {
         if (bmDespawnShield > 0) bmDespawnShield--;
