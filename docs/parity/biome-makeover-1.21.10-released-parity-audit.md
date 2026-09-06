@@ -95,9 +95,10 @@ frozen stages rather than repeating historical filename counts.
 These are meaningful released families with some current implementation but an
 unclosed released behavior boundary:
 
-1. Mushroom Fields makeover: generic wild-mushroom coverage exists, but the
-   complete released vegetation, Blighted Balsa, glowshroom masonry, and biome
-   integration are not complete.
+1. Mushroom Fields makeover: COMPLETE / PRISM RUNTIME REQUIRED. The released
+   configured and placed feature chain is supplied by the existing build.gradle
+   reference-resource pipeline; fresh Mushroom Fields generation remains to be
+   verified.
 2. Badlands final closure: Ghost Town archaeology/structure/loot remains
    separate from the restored Badlands core; some spawn and fresh-chunk checks
    remain runtime-open.
@@ -117,8 +118,6 @@ The following released families are not implemented as complete released
 systems in the current port and must not be inferred from similarly named
 resources:
 
-- Complete Mushroom Fields wood, glowshroom, masonry, and associated worldgen
-  families.
 - Complete Beach/Helmit Crab released ecology, food/drop chain, spawning,
   renderer, sounds, and loot where not covered by a frozen stage.
 - Ghost Town archaeology structure, processors, suspicious-block behavior,
@@ -176,6 +175,11 @@ historical and non-gating; no historical document was destructively rewritten.
    assets only when a released registration/execution path is proven.
 
 ## Recommended next stage
+
+Stage 13C verification supersedes the older recommendation below: Mushroom
+Fields is now implementation-complete through the existing reference-resource
+pipeline and requires fresh-world runtime verification only. Beach/Helmit Crab
+is the next substantive released restoration package.
 
 **STAGE 13B — MUSHROOM FIELDS RELEASED PARITY RESTORATION**
 

@@ -7,16 +7,16 @@ Port baseline: `de6f735759d68e28228d73282b061573e1e253e7`
 
 ## Decision
 
-Mushroom Fields is **PARTIAL**, not complete/frozen. The current port contains
-the principal Java registrations and many block/entity classes, but its
-Mushroom Fields worldgen data chain is absent: all 15 released configured
-features and all 12 released placed features are missing from
-`src/main/resources`. `BMWorldgen` still registers and injects those placed
-feature keys, so the current source does not provide a complete resolvable
-released package.
+Mushroom Fields is **COMPLETE / PRISM RUNTIME REQUIRED** for this restoration
+stage. The 15 released configured features and 12 placed features are supplied
+by the existing `build.gradle` reference-resource pipeline, which remaps the
+released 1.20.1 paths to the current singular 1.21.10 data paths. The current
+Java registrations and `BMWorldgen` injection therefore resolve in the built
+artifact.
 
-This is a source/data audit only. No gameplay or resource implementation was
-performed in Stage 13B.
+Stage 13C made no gameplay implementation change. It added a focused validator
+and corrected the Stage 13B source-tree-only finding; the fresh artifact now
+proves the released Mushroom Fields data is packaged.
 
 ## Released Mushroom Fields inventory
 
@@ -48,10 +48,10 @@ documented deferred released IDs.
 
 | Feature group | Status | Evidence |
 |---|---|---|
-| Mushroom Fields biome tag/injection | PARTIAL | `BMWorldgen` injects the released key set, but the referenced data resources are absent. |
-| Configured features | MISSING from current resources | Released contract contains 15; current `data/biomemakeover/worldgen/configured_feature/mushroom_fields/` contains none. |
-| Placed features | MISSING from current resources | Released contract contains 12; current `data/biomemakeover/worldgen/placed_feature/mushroom_fields/` contains none. |
-| Custom feature/trunk-placer Java types | CURRENT-MC COMPATIBILITY ADAPTATION / PARTIAL | `BMFeatures`, `HugeGlowshroomFeature`, `OrangeGlowshroomFeature`, and `BalsaTrunkPlacer` exist, but the data chain is not connected completely. |
+| Mushroom Fields biome tag/injection | COMPLETE / PRISM RUNTIME REQUIRED | `BMWorldgen` injects the released key set; the build pipeline supplies the referenced data. |
+| Configured features | COMPLETE / PRISM RUNTIME REQUIRED | Released contract contains 15; all 15 are present in the built artifact via `build.gradle`. |
+| Placed features | COMPLETE / PRISM RUNTIME REQUIRED | Released contract contains 12; all 12 are present in the built artifact via `build.gradle`. |
+| Custom feature/trunk-placer Java types | CURRENT-MC COMPATIBILITY ADAPTATION | `BMFeatures`, custom feature classes, and `BalsaTrunkPlacer` are connected through the current registry/API path. |
 | Glowshroom/mycelium/tall-mushroom blocks | PARTIAL | Current registrations/classes exist; released Mushroom Fields generation and the complete client/data surface are not present. |
 | Blighted Balsa family | PARTIAL | Current block/item family and tree-grower hooks exist; released Mushroom Fields feature data and full resource closure are absent. |
 | Mushroom masonry families | PARTIAL | Current dynamic registrations exist; released Mushroom Fields data/resource closure is not complete. |
@@ -75,17 +75,17 @@ surface after the missing data resources are restored.
 ## Stage 13A reconciliation
 
 Stage 13A recommended Mushroom Fields because the current parity matrix
-classified the family as remaining work. That high-level classification was
-correct. Its older implication that Mushroom Fields was represented only by a
-small generic fragment is stale: current `BMBlocks`, `BMItems`, `BMEntities`,
-`BMFeatures`, `BMWorldgen`, and mushroom classes do contain substantial
-restored implementation.
+classified the family as remaining work. The recommendation was based on
+source-tree inspection and was incomplete: the existing `build.gradle` already
+included the released Mushroom Fields resource set from the pinned reference.
+The old implication that Mushroom Fields was represented only by a small
+generic fragment is also stale; current registrations and classes are
+substantial.
 
-Conversely, the historical Stage 3 restoration record says the complete
-configured/placed chain was restored, but the current source audit finds none
-of the 15 configured or 12 placed Mushroom Fields JSON resources. That record
-is retained as historical evidence and is not rewritten; its “complete chain”
-claim is superseded by the current-tree audit.
+The historical Stage 3 restoration record was correct about the packaged
+chain, although its implementation record predates the current singular
+resource layout. It is retained as historical evidence and is clarified here
+by the current artifact inspection.
 
 ## Beach inventory
 
@@ -113,8 +113,6 @@ proven unresolved released worldgen/data chain.
 
 ### Partial
 
-- Mushroom Fields worldgen, biome integration, block-family data/resources,
-  and Glowfish/resource closure.
 - Badlands final Ghost Town/archaeology and remaining fresh-chunk checks.
 - Dark Forest final biome/ecology/resource checks outside accepted slices.
 - Remaining shared released data surfaces where direct comparison still finds
@@ -123,8 +121,6 @@ proven unresolved released worldgen/data chain.
 ### Missing
 
 - Complete Beach/Helmit Crab package.
-- The Mushroom Fields configured/placed JSON chain and the associated absent
-  resource/data families listed above.
 - Ghost Town archaeology closure where not covered by an accepted stage.
 - Any separately confirmed released interaction/data family absent from the
   current execution path; these require feature-specific audits, not bulk
@@ -156,9 +152,9 @@ proven unresolved released worldgen/data chain.
 
 ## Ordered work
 
-1. **STAGE 13C — MUSHROOM FIELDS RELEASED WORLDGEN/DATA PARITY RESTORATION**:
-   restore the released configured/placed chain and close its dependent
-   client/data/resources, then test fresh Mushroom Fields chunks.
+1. **STAGE 13C — MUSHROOM FIELDS FRESH-WORLD RUNTIME VERIFICATION**:
+   validate natural generation and the released dependent data/client surface
+   in fresh Mushroom Fields chunks.
 2. **STAGE 13D — BEACH / HELMIT CRAB RELEASED PARITY RESTORATION**:
    restore the crab ecology, food/drop/data/client surface, then test fresh
    beach chunks.
