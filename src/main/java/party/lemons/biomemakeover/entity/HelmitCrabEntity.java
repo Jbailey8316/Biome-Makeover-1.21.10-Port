@@ -83,8 +83,8 @@ public final class HelmitCrabEntity extends Animal {
         return result;
     }
     @Override protected void customServerAiStep(ServerLevel level) { super.customServerAiStep(level); if (isHiding() && ++hideTime > 250 && random.nextInt(100) == 0) setHiding(false); }
-    @Override protected void addAdditionalSaveData(ValueOutput out) { super.addAdditionalSaveData(out); out.store("Shell", ItemStack.CODEC, getShellItemStack()); out.putBoolean("Hiding", isHiding()); out.putInt("HideTime", hideTime); }
-    @Override protected void readAdditionalSaveData(ValueInput in) { super.readAdditionalSaveData(in); in.read("Shell", ItemStack.CODEC).ifPresent(this::setShellItem); entityData.set(HIDING, in.getBooleanOr("Hiding", false)); hideTime = in.getIntOr("HideTime", 0); }
+    @Override protected void addAdditionalSaveData(ValueOutput out) { super.addAdditionalSaveData(out); out.store("Shell", ItemStack.OPTIONAL_CODEC, getShellItemStack()); out.putBoolean("Hiding", isHiding()); out.putInt("HideTime", hideTime); }
+    @Override protected void readAdditionalSaveData(ValueInput in) { super.readAdditionalSaveData(in); in.read("Shell", ItemStack.OPTIONAL_CODEC).ifPresent(this::setShellItem); entityData.set(HIDING, in.getBooleanOr("Hiding", false)); hideTime = in.getIntOr("HideTime", 0); }
     @Override public boolean isFood(ItemStack stack) { return stack.is(ItemTags.FISHES); }
     @Nullable @Override public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob mate) { return BMEntities.HELMIT_CRAB.create(level, EntitySpawnReason.BREEDING); }
     @Override public InteractionResult mobInteract(Player player, InteractionHand hand) {

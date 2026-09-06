@@ -10,6 +10,7 @@ function Require-Entry([string]$entry) { if ($entry -notin $entries) { throw "Mi
 function Require-Reference([string]$relative) { if (!(Test-Path (Join-Path $reference $relative))) { throw "Missing released reference resource: $relative" } }
 
 $java = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/init/BMEntities.java') -Raw
+$crab = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/HelmitCrabEntity.java') -Raw
 $worldgen = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/init/BMWorldgen.java') -Raw
 $items = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/init/BMItems.java') -Raw
 $client = Get-Content (Join-Path $Root 'src/client/java/party/lemons/biomemakeover/client/BiomeMakeoverClient.java') -Raw
@@ -19,6 +20,9 @@ if ($java -notmatch [regex]::Escape('SpawnPlacements.register(HELMIT_CRAB')) { t
 if ($worldgen -notmatch 'BiomeMakeover.id\("beaches"\)' -or $worldgen -notmatch 'BMEntities.HELMIT_CRAB') { throw 'Beach biome spawn integration missing.' }
 if ($items -notmatch 'RAW_CRAB' -or $items -notmatch 'COOKED_CRAB' -or $items -notmatch 'CRAB_CHOWDER') { throw 'Crab food registrations missing.' }
 if ($client -notmatch 'BMEntities.HELMIT_CRAB.*HelmitCrabRenderer|HelmitCrabRenderer.*BMEntities.HELMIT_CRAB') { throw 'Helmit Crab renderer registration missing.' }
+if ($crab -notmatch 'out\.store\("Shell",\s*ItemStack\.OPTIONAL_CODEC') { throw 'Helmit Crab shell persistence does not use the empty-safe ItemStack codec.' }
+if ($crab -notmatch 'in\.read\("Shell",\s*ItemStack\.OPTIONAL_CODEC') { throw 'Helmit Crab shell persistence read path does not use the empty-safe ItemStack codec.' }
+if ($crab -match 'Shell",\s*ItemStack\.CODEC') { throw 'Helmit Crab shell persistence still encodes shell state with the non-empty ItemStack codec.' }
 
 $required = @(
   'data/biomemakeover/tags/worldgen/biome/beaches.json',
@@ -53,5 +57,5 @@ if ($java -match 'ghosttown|GhostTown|beach_boat|BeachBoat') { throw 'Stage 13D 
 if ($items -match 'blighted_balsa_(boat|chest_boat)') { throw 'Blighted Balsa boats remain deferred.' }
 $mansion = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'validation/Invoke-Stage11AMansionInventory.ps1') -Root $Root
 if (($mansion -join "`n") -notmatch 'templates=168.*active_unique=165.*orphan=3') { throw 'Mansion inventory drift detected.' }
-Write-Output 'STAGE 13D BEACH VALIDATION PASSED: Helmit Crab registration/spawn/client path and packaged crab food/loot/resources verified.'
+Write-Output 'STAGE 13D BEACH VALIDATION PASSED: Helmit Crab registration/spawn/client path, packaged crab food/loot/resources, and empty-safe shell persistence verified.'
 Write-Output 'Beach tag and crab-spawnable block tag are reference-backed; Mushroom Fields, Ghost Town, Dark Forest, Badlands, boats, and Mansion remain out of scope.'
