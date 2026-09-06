@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import party.lemons.biomemakeover.crafting.witch.*;
+import party.lemons.biomemakeover.BiomeMakeover;
 import party.lemons.biomemakeover.crafting.witch.data.QuestCategories;
 import party.lemons.biomemakeover.entity.ai.WitchLookAtCustomerGoal;
 import party.lemons.biomemakeover.entity.ai.WitchStopFollowingCustomerGoal;
@@ -43,8 +44,14 @@ public abstract class WitchMixin_Quests extends Raider implements WitchQuestEnti
     private Player bmCustomer;
     private int bmReplenishTime;
     private int bmDespawnShield;
+    private boolean bmAiTraceLogged;
     protected WitchMixin_Quests(EntityType<? extends Raider> type, Level level) { super(type, level); }
-    @Inject(method = "<init>", at = @At("TAIL")) private void bmInit(EntityType<? extends Witch> type, Level level, CallbackInfo ci) { bmQuests = new WitchQuestList(); bmReplenishTime = getRandom().nextInt(24000); }
+    @Inject(method = "<init>", at = @At("TAIL")) private void bmInit(EntityType<? extends Witch> type, Level level, CallbackInfo ci) {
+        bmQuests = new WitchQuestList();
+        bmQuests.populate(getRandom());
+        bmReplenishTime = getRandom().nextInt(24000);
+        BiomeMakeover.LOGGER.info("[BM_WITCH_QUEST_TRACE] CONSTRUCT witchId={} witchUuid={} initialized=true questCount={} categoriesAvailable={} replenishTime={}", getId(), getUUID(), bmQuests.size(), QuestCategories.hasQuests(), bmReplenishTime);
+    }
     @Override public void configureQuestGoals() {
         targetSelector.removeGoal(attackPlayersGoal);
         attackPlayersGoal = new NearestAttackableWitchTargetGoal<>(this, Player.class, 10, true, false,
@@ -52,11 +59,21 @@ public abstract class WitchMixin_Quests extends Raider implements WitchQuestEnti
         targetSelector.addGoal(3, attackPlayersGoal);
         goalSelector.addGoal(1, new WitchStopFollowingCustomerGoal((Witch)(Object)this));
         goalSelector.addGoal(1, new WitchLookAtCustomerGoal((Witch)(Object)this));
+        BiomeMakeover.LOGGER.info("[BM_WITCH_QUEST_TRACE] REGISTER_GOALS witchId={} questCount={}", getId(), getQuests().size());
     }
     @Override public void tickQuestState(net.minecraft.server.level.ServerLevel level) {
+        if (!bmAiTraceLogged) {
+            bmAiTraceLogged = true;
+            BiomeMakeover.LOGGER.info("[BM_WITCH_QUEST_TRACE] SERVER_AI_FIRST witchId={} questCount={} categoriesAvailable={} replenishTime={}", getId(), getQuests().size(), QuestCategories.hasQuests(), bmReplenishTime);
+        }
         if (bmDespawnShield > 0) bmDespawnShield--;
         if (bmReplenishTime > 0) bmReplenishTime--;
-        else if (QuestCategories.hasQuests()) { while (getQuests().size() < 3) getQuests().add(WitchQuestHandler.createQuest(getRandom())); bmReplenishTime = 21000 + getRandom().nextInt(3000); }
+        else if (QuestCategories.hasQuests()) {
+            int before = getQuests().size();
+            while (getQuests().size() < 3) getQuests().add(WitchQuestHandler.createQuest(getRandom()));
+            BiomeMakeover.LOGGER.info("[BM_WITCH_QUEST_TRACE] GENERATE_ATTEMPT witchId={} reason=replenishment categoriesAvailable=true questCountBefore={} questCountAfter={}", getId(), before, getQuests().size());
+            bmReplenishTime = 21000 + getRandom().nextInt(3000);
+        }
     }
     @Override public boolean canInteract(Player player) { return getTarget() == null && !hasActiveRaid() && player.getItemBySlot(EquipmentSlot.HEAD).is(BMItems.WITCH_HATS) && QuestCategories.hasQuests(); }
     @Override public boolean canAttack(LivingEntity target) { return target instanceof Player player && canInteract(player) ? false : super.canAttack(target); }

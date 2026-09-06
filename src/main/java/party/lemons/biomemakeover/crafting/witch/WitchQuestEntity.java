@@ -26,9 +26,15 @@ public interface WitchQuestEntity {
     default boolean hasCustomer() { return getCurrentCustomer() != null; }
     default void sendQuests(ServerPlayer player, Component title) {
         player.openMenu(new SimpleMenuProvider((id, inv, ignored) -> new WitchMenu(id, inv, this), title));
+        if (this instanceof net.minecraft.world.entity.Entity entity) {
+            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_WITCH_GUI_TRACE] SERVER_OPEN witchId={} witchUuid={} menuId={} quests={}", entity.getId(), entity.getUUID(), player.containerMenu.containerId, getQuests().size());
+        }
         ServerPlayNetworking.send(player, new WitchQuestsPayload(player.containerMenu.containerId, getQuests().toTag()));
     }
     default void sendQuestUpdate(ServerPlayer player) {
+        if (this instanceof net.minecraft.world.entity.Entity entity) {
+            party.lemons.biomemakeover.BiomeMakeover.LOGGER.info("[BM_WITCH_GUI_TRACE] SERVER_UPDATE witchId={} witchUuid={} menuId={} quests={}", entity.getId(), entity.getUUID(), player.containerMenu.containerId, getQuests().size());
+        }
         ServerPlayNetworking.send(player, new WitchQuestsPayload(player.containerMenu.containerId, getQuests().toTag()));
     }
 }

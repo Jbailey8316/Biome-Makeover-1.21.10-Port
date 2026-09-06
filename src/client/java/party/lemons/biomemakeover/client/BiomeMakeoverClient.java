@@ -128,13 +128,18 @@ public final class BiomeMakeoverClient implements ClientModInitializer {
         BlockEntityRenderers.register(BMBlockEntities.TAPESTRY,MansionTapestryRenderer::new);
         MenuScreens.register(BMMenus.ALTAR,AltarScreen::new);
         MenuScreens.register(BMMenus.WITCH, WitchScreen::new);
-        ClientPlayNetworking.registerGlobalReceiver(WitchQuestsPayload.TYPE, (payload, context) ->
+        ClientPlayNetworking.registerGlobalReceiver(WitchQuestsPayload.TYPE, (payload, context) -> {
+            BiomeMakeover.LOGGER.info("[BM_WITCH_GUI_TRACE] CLIENT_PAYLOAD menuId={} questCount={} screen={}", payload.menuId(), new WitchQuestList(payload.quests()).size(), context.client().screen == null ? "null" : context.client().screen.getClass().getName());
             context.client().execute(() -> {
                 if (Minecraft.getInstance().screen instanceof WitchScreen screen && screen.getMenu().containerId == payload.menuId()) {
                     screen.getMenu().setQuests(new WitchQuestList(payload.quests()));
                     screen.updateQuests();
+                    BiomeMakeover.LOGGER.info("[BM_WITCH_GUI_TRACE] CLIENT_PAYLOAD_APPLIED menuId={} questCount={} buttons={}", payload.menuId(), screen.getMenu().getQuests().size(), screen.getButtonCount());
+                } else {
+                    BiomeMakeover.LOGGER.info("[BM_WITCH_GUI_TRACE] CLIENT_PAYLOAD_REJECTED menuId={} currentScreen={} currentMenuId={}", payload.menuId(), Minecraft.getInstance().screen == null ? "null" : Minecraft.getInstance().screen.getClass().getName(), Minecraft.getInstance().screen instanceof WitchScreen screen ? screen.getMenu().containerId : -1);
                 }
-            }));
+            });
+        });
         AltarBlockEntity.setClientSoundStarter(altar -> Minecraft.getInstance().getSoundManager().play(
             new AltarCursingSound(altar, altar.getLevel() == null ? net.minecraft.util.RandomSource.create() : altar.getLevel().random)));
         ParticleFactoryRegistry.getInstance().register(BMParticles.LIGHTNING_SPARK,LightningSparkParticle.Provider::new);

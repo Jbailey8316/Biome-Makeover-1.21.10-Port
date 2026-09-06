@@ -58,6 +58,7 @@ public final class RewardTables extends SimplePreparableReloadListener<Map<Resou
             Table table = new Table(weights.get("common").getAsInt(), weights.get("uncommon").getAsInt(), weights.get("rare").getAsInt(), weights.get("epic").getAsInt(), object.getAsJsonArray("rewards"));
             for (QuestRarity rarity : QuestRarity.values()) if (table.weight(rarity) > 0) TABLES.get(rarity).add(table);
         }
+        BiomeMakeover.LOGGER.info("[BM_WITCH_QUEST_TRACE] RELOAD_REWARDS tablesLoaded={} ids={} rarityTables={}", data.size(), data.keySet(), TABLES);
     }
     private record Table(int common, int uncommon, int rare, int epic, com.google.gson.JsonArray rewards) {
         int weight(QuestRarity rarity) { return switch (rarity) { case COMMON -> common; case UNCOMMON -> uncommon; case RARE -> rare; case EPIC -> epic; }; }
