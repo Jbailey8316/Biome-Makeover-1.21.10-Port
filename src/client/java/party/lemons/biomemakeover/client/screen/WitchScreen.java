@@ -3,6 +3,7 @@ package party.lemons.biomemakeover.client.screen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +25,6 @@ public final class WitchScreen extends AbstractContainerScreen<WitchMenu> {
     private static final Component QUESTS_TEXT = Component.translatable("witch.quests");
     private final QuestButton[] questButtons = new QuestButton[3];
     private final Inventory inventory;
-    private boolean firstRenderLogged;
 
     public WitchScreen(WitchMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -43,7 +43,6 @@ public final class WitchScreen extends AbstractContainerScreen<WitchMenu> {
     @Override protected void init() {
         super.init();
         updateQuests();
-        BiomeMakeover.LOGGER.info("[BM_WITCH_GUI_TRACE] SCREEN_INIT class={} size={}x{} image={}x{} origin={},{} witch={} questCount={} buttons={}", getClass().getName(), width, height, imageWidth, imageHeight, leftPos, topPos, menu.getWitch().getClass().getName(), menu.getQuests().size(), getButtonCount());
     }
 
     public int getButtonCount() {
@@ -64,7 +63,6 @@ public final class WitchScreen extends AbstractContainerScreen<WitchMenu> {
             final int index = i;
             questButtons[i] = addRenderableWidget(new QuestButton(x, y + i * 26, quests.get(i), b -> clickQuest(index, quests.get(index))));
         }
-        BiomeMakeover.LOGGER.info("[BM_WITCH_GUI_TRACE] SCREEN_UPDATE questCount={} buttons={} origin={},{}", quests.size(), getButtonCount(), x, y);
     }
 
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -74,14 +72,10 @@ public final class WitchScreen extends AbstractContainerScreen<WitchMenu> {
     }
 
     @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 512, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 512, 256);
     }
 
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        if (!firstRenderLogged) {
-            firstRenderLogged = true;
-            BiomeMakeover.LOGGER.info("[BM_WITCH_GUI_TRACE] SCREEN_RENDER questCount={} buttons={} origin={},{} texture={}", menu.getQuests().size(), getButtonCount(), leftPos, topPos, TEXTURE);
-        }
         renderBackground(graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
@@ -98,8 +92,8 @@ public final class WitchScreen extends AbstractContainerScreen<WitchMenu> {
         }
         @Override protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
             int textureRow = quest.hasItems(Minecraft.getInstance().player.getInventory()) ? (isHoveredOrFocused() ? 4 : 3) : 1;
-            graphics.blit(TEXTURE, getX(), getY(), 174, textureRow * 26, width, height, 512, 256);
-            graphics.blit(TEXTURE, getX() + 4, getY() + 11, 278, 7 + rarity.ordinal() * 5, 5, 5, 512, 256);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, getX(), getY(), 174, textureRow * 26, width, height, 512, 256);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, getX() + 4, getY() + 11, 278, 7 + rarity.ordinal() * 5, 5, 5, 512, 256);
             int itemX = getX() + 11;
             for (ItemStack stack : quest.getRequiredItems()) {
                 graphics.renderItem(stack, itemX, getY() + 5);

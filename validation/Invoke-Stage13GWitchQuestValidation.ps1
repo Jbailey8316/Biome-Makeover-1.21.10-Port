@@ -56,7 +56,7 @@ $loot = Get-Content (Join-Path $Root 'src/main/resources/data/biomemakeover/loot
 if ($loot -match 'random_chance_with_looting' -or $loot -notmatch 'random_chance_with_enchanted_bonus|unenchanted_chance|per_level_above_first') { throw 'Witch Hat loot table does not use the current Looting-compatible condition.' }
 if ($loot -notmatch 'unenchanted_chance[^0-9]*0\.05|base[^0-9]*0\.10|per_level_above_first[^0-9]*0\.05') { throw 'Witch Hat 5% base plus 5% per Looting level semantics are not preserved.' }
 $screen = Source 'src/client/java/party/lemons/biomemakeover/client/screen/WitchScreen.java'
-if ($screen -notmatch 'updateQuests|SCREEN_INIT|SCREEN_RENDER|QuestButton|renderLabels|renderBg') { throw 'Released Witch quest screen rendering/data-refresh path is incomplete.' }
+if ($screen -notmatch 'updateQuests|QuestButton|renderLabels|renderBg|RenderPipelines\.GUI_TEXTURED') { throw 'Released Witch quest screen rendering/data-refresh path is incomplete.' }
 $client = Source 'src/client/java/party/lemons/biomemakeover/client/BiomeMakeoverClient.java'
 if ($client -notmatch 'WitchQuestsPayload\.TYPE|setQuests\(new WitchQuestList|updateQuests\(\)') { throw 'Client Witch quest payload refresh path is missing.' }
 $packagedLoot = JarText 'data/biomemakeover/loot_table/entities/witch_hat.json'
