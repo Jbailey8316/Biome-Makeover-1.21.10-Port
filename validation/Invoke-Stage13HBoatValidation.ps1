@@ -20,6 +20,19 @@ foreach ($id in $ids) {
     $key = "item.biomemakeover.$id"
     if (-not $lang.PSObject.Properties.Name.Contains($key)) { throw "Missing boat translation: $key" }
 }
+Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$archive = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path $Jar))
+try {
+    $langEntry = $archive.GetEntry('assets/biomemakeover/lang/en_us.json')
+    if ($null -eq $langEntry) { throw 'Missing packaged BM English language file' }
+    $reader = New-Object System.IO.StreamReader($langEntry.Open())
+    try { $packagedLang = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
+} finally { $archive.Dispose() }
+foreach ($id in $ids) {
+    $key = "entity.biomemakeover.$id"
+    if (-not $packagedLang.PSObject.Properties.Name.Contains($key)) { throw "Missing packaged boat entity translation: $key" }
+}
 $woods = @('ancient_oak','willow','swamp_cypress','blighted_balsa')
 foreach ($wood in $woods) {
     foreach ($path in @("assets/biomemakeover/textures/entity/boat/$wood.png", "assets/biomemakeover/textures/entity/boat/${wood}_chest.png")) {
