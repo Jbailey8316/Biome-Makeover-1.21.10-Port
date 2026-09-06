@@ -48,9 +48,13 @@ crossbow transform is applied once in the correct render coordinate space.
 The released `getProjectile` path supplies the held projectile or a vanilla
 arrow fallback, enabling the current crossbow projectile API.
 
-The current port contains the released recipe chain: one terracotta produces
-four `crude_cladding`, and one `crude_cladding` plus four `smooth_stone`
-produces four `cladded_stone`. The Stone Golem boss phase remains blocked.
+The current port contains the released recipe chain: four `crude_fragment`
+produce one `crude_cladding`, and one `crude_cladding` plus four `smooth_stone`
+produces four `cladded_stone`. The released recipe audit confirms the
+first recipe is the 2x2 four-`crude_fragment` shaped recipe producing one
+`crude_cladding`; no terracotta recipe is present in released BM. The port now
+uses recipe-book unlock advancements keyed to acquiring `crude_fragment` and
+`crude_cladding`, respectively. The Stone Golem boss phase remains blocked.
 
 ## Stage 12A.9-R2 audit and repair
 

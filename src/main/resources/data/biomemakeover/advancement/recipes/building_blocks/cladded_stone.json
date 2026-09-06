@@ -1,0 +1,11 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_ingredient": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {"items": [{"items": "biomemakeover:crude_cladding"}]}
+    }
+  },
+  "requirements": [["has_ingredient"]],
+  "rewards": {"recipes": ["biomemakeover:cladded_stone"]}
+}

@@ -26,6 +26,9 @@ $recipe = Join-Path $Root 'src/main/resources/data/biomemakeover/recipe/cladded_
 if (-not (Test-Path $recipe)) { throw 'Cladded Stone recipe missing' }
 $crudeRecipe = Join-Path $Root 'src/main/resources/data/biomemakeover/recipe/crude_cladding.json'
 if (-not (Test-Path $crudeRecipe)) { throw 'Crude Cladding recipe missing' }
+$crudeAdv = Join-Path $Root 'src/main/resources/data/biomemakeover/advancement/recipes/building_blocks/crude_cladding.json'
+$claddedAdv = Join-Path $Root 'src/main/resources/data/biomemakeover/advancement/recipes/building_blocks/cladded_stone.json'
+foreach ($path in @($crudeAdv,$claddedAdv)) { if (-not (Test-Path $path)) { throw "Recipe unlock advancement missing: $path" } }
 $eggItem = Join-Path $Root 'src/main/resources/assets/biomemakeover/items/stone_golem_spawn_egg.json'
 $eggModel = Join-Path $Root 'src/main/resources/assets/biomemakeover/models/item/stone_golem_spawn_egg.json'
 $eggTexture = Join-Path $Root 'src/main/resources/assets/biomemakeover/textures/item/stone_golem_spawn_egg.png'
@@ -33,7 +36,11 @@ foreach ($path in @($eggItem,$eggModel,$eggTexture)) { if (-not (Test-Path $path
 $recipeData = Get-Content $recipe -Raw | ConvertFrom-Json
 if ($recipeData.type -ne 'minecraft:crafting_shapeless' -or $recipeData.result.id -ne 'biomemakeover:cladded_stone' -or $recipeData.result.count -ne 4) { throw 'Cladded Stone recipe differs from released contract' }
 $crudeData = Get-Content $crudeRecipe -Raw | ConvertFrom-Json
-if ($crudeData.type -ne 'minecraft:crafting_shapeless' -or $crudeData.result.id -ne 'biomemakeover:crude_cladding' -or $crudeData.result.count -ne 4 -or (($crudeData.ingredients -join ',') -notmatch 'minecraft:terracotta')) { throw 'Crude Cladding recipe differs from released contract' }
+if ($crudeData.type -ne 'minecraft:crafting_shaped' -or $crudeData.result.id -ne 'biomemakeover:crude_cladding' -or $crudeData.result.count -ne 1 -or (($crudeData.pattern -join ',') -ne '##,##') -or $crudeData.key.'#' -ne 'biomemakeover:crude_fragment') { throw 'Crude Cladding recipe differs from released contract' }
+$crudeAdvData = Get-Content $crudeAdv -Raw | ConvertFrom-Json
+$claddedAdvData = Get-Content $claddedAdv -Raw | ConvertFrom-Json
+if ($crudeAdvData.rewards.recipes -notcontains 'biomemakeover:crude_cladding' -or $claddedAdvData.rewards.recipes -notcontains 'biomemakeover:cladded_stone') { throw 'Recipe unlock rewards missing or incorrect' }
+if (($crudeAdvData.criteria.has_ingredient.conditions.items.items -ne 'biomemakeover:crude_fragment') -or ($claddedAdvData.criteria.has_ingredient.conditions.items.items -ne 'biomemakeover:crude_cladding')) { throw 'Recipe unlock criteria missing or incorrect' }
 if ($creation -notmatch 'match\.getBlock\(1, 2, 0\)' -or $creation -notmatch 'spawn\.getY\(\) \+ \.05D') { throw 'Source-equivalent bottom-center spawn anchor missing' }
 if ($entity -notmatch 'public ItemStack getProjectile\(ItemStack weapon\)' -or $entity -notmatch 'new ItemStack\(Items\.ARROW\)') { throw 'Released crossbow projectile supply missing' }
 $allBoss = Get-Content (Join-Path $Root 'src/main/java/party/lemons/biomemakeover/entity/AdjudicatorEntity.java') -Raw
