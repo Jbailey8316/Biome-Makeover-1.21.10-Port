@@ -26,6 +26,12 @@ foreach ($wood in $woods) {
         if (-not (jar tf $Jar | Select-String -SimpleMatch $path)) { throw "Missing packaged entity texture: $path" }
     }
 }
+foreach ($wood in $woods) {
+    foreach ($layer in @("boat/$wood", "boat/${wood}_chest")) {
+        $layerExpression = [regex]::Escape("BiomeMakeover.id(`"$layer`")")
+        if ($client -notmatch $layerExpression) { throw "Renderer layer does not map to released boat texture path: $layer" }
+    }
+}
 foreach ($id in $ids) {
     $recipe = "data/biomemakeover/recipe/wood/$($id -replace '_chest_boat$','' -replace '_boat$','')/$id.json"
     if (-not (jar tf $Jar | Select-String -SimpleMatch $recipe)) { throw "Missing packaged recipe: $recipe" }

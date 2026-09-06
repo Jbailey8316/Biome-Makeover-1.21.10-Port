@@ -1,6 +1,6 @@
 # Stage 13H — Released Wood Boat / Chest-Boat Parity
 
-Status: IMPLEMENTED / PRISM RUNTIME REQUIRED
+Status: IMPLEMENTED / PRISM REQUIRED (R1 texture repair pending runtime acceptance)
 
 The final released package contains four normal boats and four chest boats:
 Ancient Oak, Willow, Swamp Cypress, and Blighted Balsa. The released IDs,
@@ -14,6 +14,13 @@ released `textures/entity/boat/<wood>` and `<wood>_chest` textures.
 The current `chest_boats` tag is a 1.21.10 compatibility representation of
 the released chest-boat family. No custom boat movement, inventory, or drop
 logic is introduced.
+
+Stage 13H-R1 audit: the released entity textures are packaged at
+`textures/entity/boat/<wood>.png` and `<wood>_chest.png`. The native 1.21.10
+BoatRenderer derives its lookup from the model-layer model path, so renderer
+layer IDs must use `boat/<wood>` and `boat/<wood>_chest`; flat IDs incorrectly
+request `textures/entity/<id>.png`. R1 changes only these model-layer resource
+paths and retains the released artwork and all boat behavior.
 
 Runtime acceptance must cover inventory rendering, placement, steering,
 break/drop, save/reload, chest inventory persistence, and all four wood

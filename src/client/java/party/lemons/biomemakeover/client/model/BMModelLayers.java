@@ -22,14 +22,17 @@ public final class BMModelLayers {
     public static final ModelLayerLocation ADJUDICATOR = new ModelLayerLocation(BiomeMakeover.id("adjudicator"), "main");
     public static final ModelLayerLocation STONE_GOLEM = new ModelLayerLocation(BiomeMakeover.id("stone_golem"), "main");
     public static final ModelLayerLocation HELMIT_CRAB = new ModelLayerLocation(BiomeMakeover.id("helmit_crab"), "main");
-    public static final ModelLayerLocation ANCIENT_OAK_BOAT = new ModelLayerLocation(BiomeMakeover.id("ancient_oak_boat"), "main");
-    public static final ModelLayerLocation ANCIENT_OAK_CHEST_BOAT = new ModelLayerLocation(BiomeMakeover.id("ancient_oak_chest_boat"), "main");
-    public static final ModelLayerLocation WILLOW_BOAT = new ModelLayerLocation(BiomeMakeover.id("willow_boat"), "main");
-    public static final ModelLayerLocation WILLOW_CHEST_BOAT = new ModelLayerLocation(BiomeMakeover.id("willow_chest_boat"), "main");
-    public static final ModelLayerLocation SWAMP_CYPRESS_BOAT = new ModelLayerLocation(BiomeMakeover.id("swamp_cypress_boat"), "main");
-    public static final ModelLayerLocation SWAMP_CYPRESS_CHEST_BOAT = new ModelLayerLocation(BiomeMakeover.id("swamp_cypress_chest_boat"), "main");
-    public static final ModelLayerLocation BLIGHTED_BALSA_BOAT = new ModelLayerLocation(BiomeMakeover.id("blighted_balsa_boat"), "main");
-    public static final ModelLayerLocation BLIGHTED_BALSA_CHEST_BOAT = new ModelLayerLocation(BiomeMakeover.id("blighted_balsa_chest_boat"), "main");
+    // BoatRenderer derives textures/entity/<model-path>.png from the model
+    // layer location. Keep the current layer paths aligned with the released
+    // textures/entity/boat/<wood>.png and <wood>_chest.png resources.
+    public static final ModelLayerLocation ANCIENT_OAK_BOAT = new ModelLayerLocation(BiomeMakeover.id("boat/ancient_oak"), "main");
+    public static final ModelLayerLocation ANCIENT_OAK_CHEST_BOAT = new ModelLayerLocation(BiomeMakeover.id("boat/ancient_oak_chest"), "main");
+    public static final ModelLayerLocation WILLOW_BOAT = new ModelLayerLocation(BiomeMakeover.id("boat/willow"), "main");
+    public static final ModelLayerLocation WILLOW_CHEST_BOAT = new ModelLayerLocation(BiomeMakeover.id("boat/willow_chest"), "main");
+    public static final ModelLayerLocation SWAMP_CYPRESS_BOAT = new ModelLayerLocation(BiomeMakeover.id("boat/swamp_cypress"), "main");
+    public static final ModelLayerLocation SWAMP_CYPRESS_CHEST_BOAT = new ModelLayerLocation(BiomeMakeover.id("boat/swamp_cypress_chest"), "main");
+    public static final ModelLayerLocation BLIGHTED_BALSA_BOAT = new ModelLayerLocation(BiomeMakeover.id("boat/blighted_balsa"), "main");
+    public static final ModelLayerLocation BLIGHTED_BALSA_CHEST_BOAT = new ModelLayerLocation(BiomeMakeover.id("boat/blighted_balsa_chest"), "main");
 
     private BMModelLayers() {}
 
