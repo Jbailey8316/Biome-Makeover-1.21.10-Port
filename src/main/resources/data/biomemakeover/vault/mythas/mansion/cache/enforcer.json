@@ -1,0 +1,9 @@
+{
+  "loot_table": "biomemakeover:mansion/cache/enforcer",
+  "activation_range": 4.0,
+  "deactivation_range": 4.5,
+  "key_item": {
+    "id": "biomemakeover:enforcer_trial_key",
+    "count": 1
+  }
+}

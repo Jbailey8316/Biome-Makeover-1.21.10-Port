@@ -1,9 +1,8 @@
-# Stage 14B.2 — Mythas Mansion Trial Spawner Configurations
+# Stage 14B.3 — Mythas Manor Caches and Fragment Progression
 
-Status: implemented standalone Trial Spawner configurations; Mansion
-integration and all progression behavior remain deferred. This stage adds no
-Mansion templates, NBT, caches, fragments, recipes, boss gating, or rewards
-beyond the corresponding Trial Key ejected by each standalone spawner.
+Status: implemented standalone native Vault cache contracts, guaranteed
+fragment rewards, and the inert Mansion Emerald Key recipe. Mansion
+integration, cache placement, boss gating, and final rewards remain deferred.
 
 This document is an enhancement design, not released Biome Makeover parity.
 The released-parity baseline remains frozen at 168 Mansion templates, 165
@@ -142,6 +141,49 @@ Mansion-local participant ledger is still required to decide who receives a
 Manor Vault Key. The Vault remains responsible for final per-player repeat
 prevention.
 
+## 2.1 Implemented Manor Cache contracts
+
+Unlike Trial Spawner configurations, current 1.21.10 `VaultConfig` is not a
+datapack registry. It is embedded in each `VaultBlockEntity` under the
+`config` field and decoded with the native `VaultConfig.CODEC`. The three
+versioned JSON files under `data/biomemakeover/vault/mythas/mansion/cache/`
+are canonical, packaged config payloads for future Mansion template/overlay
+placement and admin testing; they are not a second custom Vault
+implementation or an automatically discovered registry. Each uses the
+current fields `loot_table`, `activation_range`, `deactivation_range`, and
+`key_item`.
+
+| Cache | Canonical ID | Key | Loot table | Activation / deactivation |
+| --- | --- | --- | --- | --- |
+| Patrol Manor Cache | `biomemakeover:mythas/mansion/cache/patrol` | `biomemakeover:patrol_trial_key` | `biomemakeover:mansion/cache/patrol` | 4.0 / 4.5 |
+| Enforcer Manor Cache | `biomemakeover:mythas/mansion/cache/enforcer` | `biomemakeover:enforcer_trial_key` | `biomemakeover:mansion/cache/enforcer` | 4.0 / 4.5 |
+| Captain Manor Cache | `biomemakeover:mythas/mansion/cache/captain` | `biomemakeover:captain_trial_key` | `biomemakeover:mansion/cache/captain` | 4.0 / 4.5 |
+
+Each loot table has one roll and one matching Fragment entry, so a successful
+native Vault claim guarantees exactly one corresponding Fragment. The
+canonical cache contracts contain no ominous variant and no secondary loot.
+
+Vanilla `VaultServerData` stores rewarded player UUIDs in an ordered set and
+persists it through the block entity codec. The set has a hard maximum of 128
+players; when a 129th player is added, the oldest entry is evicted. Therefore
+the native guarantee is once per player while that physical cache retains the
+player in its 128-entry history, not permanent unlimited once-per-player
+protection. Separate physical Vault blocks have separate block entities and
+separate histories, even when their configs are identical. Successful
+matching-key insertion consumes one key; rejected or already-rewarded
+attempts do not consume a key.
+
+Standalone admin setup uses the actual embedded current-version contract:
+
+```text
+/setblock ~ ~ ~ minecraft:vault
+/data merge block ~ ~ ~ {config:{loot_table:"biomemakeover:mansion/cache/patrol",activation_range:4.0d,deactivation_range:4.5d,key_item:{id:"biomemakeover:patrol_trial_key",count:1}}}
+```
+
+Replace `patrol` in the loot table and key item with `enforcer` or `captain`
+for the other caches. The `/data merge` command is required because current
+vanilla does not provide a datapack registry selector for VaultConfig.
+
 ## 3. Locked progression graph
 
 ```text
@@ -194,6 +236,12 @@ lost. If fragments remain ordinary transferable items, the key is a physical
 group gate and can be used by one player to activate the local encounter.
 The Emerald Key is consumed on successful activation; failed or wrong-gate
 uses do not consume it.
+
+Stage 14B.3 implements the exact shapeless recipe
+`patrol_fragment + enforcer_fragment + captain_fragment -> mansion_emerald_key`.
+The recipe is data-present while Mythas is disabled, but it introduces no
+natural Fragment source and the resulting Emerald Key is inert until the
+later Stage 14B.5 gate implementation.
 
 ## 4. Locked multiplayer and item contract
 

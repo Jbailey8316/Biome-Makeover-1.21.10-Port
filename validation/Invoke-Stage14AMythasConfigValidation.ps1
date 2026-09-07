@@ -42,7 +42,10 @@ $unexpectedMythasResources = Get-ChildItem (Join-Path $Root 'src/main/resources'
     $path = $_.FullName.Replace('\','/')
     $path -match 'mythas|trial_wing|manor_cache' -and
         $path -notmatch '/data/biomemakeover/trial_spawner/mythas/mansion/' -and
-        $path -notmatch '/data/biomemakeover/loot_table/spawners/mansion/'
+        $path -notmatch '/data/biomemakeover/loot_table/spawners/mansion/' -and
+        $path -notmatch '/data/biomemakeover/loot_table/mansion/cache/' -and
+        $path -notmatch '/data/biomemakeover/vault/mythas/mansion/cache/' -and
+        $path -notmatch '/data/biomemakeover/recipe/mansion_emerald_key.json'
 }
 if ($unexpectedMythasResources) { throw 'Unexpected Mythas gameplay resources found in Stage 14A' }
 

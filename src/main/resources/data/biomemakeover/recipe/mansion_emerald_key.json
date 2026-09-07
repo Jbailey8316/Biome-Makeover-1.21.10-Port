@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "biomemakeover:patrol_fragment",
+    "biomemakeover:enforcer_fragment",
+    "biomemakeover:captain_fragment"
+  ],
+  "result": {
+    "id": "biomemakeover:mansion_emerald_key",
+    "count": 1
+  }
+}
