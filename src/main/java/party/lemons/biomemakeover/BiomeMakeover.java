@@ -33,6 +33,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import party.lemons.biomemakeover.network.CompleteWitchQuestPayload;
 import party.lemons.biomemakeover.network.WitchQuestsPayload;
 import party.lemons.biomemakeover.crafting.witch.menu.WitchMenu;
+import party.lemons.biomemakeover.config.MythasConfig;
 
 public final class BiomeMakeover implements ModInitializer {
     public static final String MOD_ID = "biomemakeover";
@@ -44,6 +45,7 @@ public final class BiomeMakeover implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        MythasConfig.load();
         BMBlocks.initialize();
         BMBlockEntities.initialize();
         BMMenus.initialize();
