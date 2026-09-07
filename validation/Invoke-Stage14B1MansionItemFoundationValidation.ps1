@@ -43,7 +43,10 @@ foreach ($id in $ids) {
        }
 }
 $dataFiles = Get-ChildItem (Join-Path $Root 'src/main/resources/data') -Recurse -File -ErrorAction SilentlyContinue
-foreach ($file in $dataFiles) { if ((Get-Content $file.FullName -Raw) -match 'patrol_trial_key|enforcer_trial_key|captain_trial_key|patrol_fragment|enforcer_fragment|captain_fragment|mansion_emerald_key|manor_vault_key') { throw "Unauthorized natural/data acquisition path: $($file.FullName)" } }
+foreach ($file in $dataFiles) {
+    $authorizedTrialReward = $file.FullName -match 'data[\\/]biomemakeover[\\/]trial_spawner[\\/]mythas[\\/]mansion[\\/]' -or $file.FullName -match 'data[\\/]biomemakeover[\\/]loot_table[\\/]spawners[\\/]mansion[\\/]'
+    if (!$authorizedTrialReward -and (Get-Content $file.FullName -Raw) -match 'patrol_trial_key|enforcer_trial_key|captain_trial_key|patrol_fragment|enforcer_fragment|captain_fragment|mansion_emerald_key|manor_vault_key') { throw "Unauthorized natural/data acquisition path: $($file.FullName)" }
+}
 foreach ($forbidden in @('TrialWingBlock','ManorCache','MansionEmeraldKey','TrialSpawnerConfig','VaultBlockEntity')) {
     $matches = Get-ChildItem (Join-Path $Root 'src/main/java') -Recurse -Filter '*.java' | Where-Object { $_.FullName -notmatch 'BMItems.java$' } | Select-String -SimpleMatch $forbidden
     if ($matches) { throw "Unauthorized Stage 14B gameplay implementation: $forbidden" }

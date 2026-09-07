@@ -38,7 +38,13 @@ $allSource = (Get-ChildItem (Join-Path $Root 'src/main/java') -Recurse -Filter '
 foreach ($forbidden in @('TrialWingBlock','TrialSpawnerConfig','ManorCache','MansionEmeraldKey','dynamicLightningBugs')) {
     if ($forbidden -ne 'dynamicLightningBugs' -and $allSource -match [regex]::Escape($forbidden)) { throw "Stage 14A must not implement Mythas gameplay: $forbidden" }
 }
-if ((Get-ChildItem (Join-Path $Root 'src/main/resources') -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match 'mythas|trial_wing|manor_cache' })) { throw 'Unexpected Mythas gameplay resources found in Stage 14A' }
+$unexpectedMythasResources = Get-ChildItem (Join-Path $Root 'src/main/resources') -Recurse -File -ErrorAction SilentlyContinue | Where-Object {
+    $path = $_.FullName.Replace('\','/')
+    $path -match 'mythas|trial_wing|manor_cache' -and
+        $path -notmatch '/data/biomemakeover/trial_spawner/mythas/mansion/' -and
+        $path -notmatch '/data/biomemakeover/loot_table/spawners/mansion/'
+}
+if ($unexpectedMythasResources) { throw 'Unexpected Mythas gameplay resources found in Stage 14A' }
 
 $tags = @(
     'biome-makeover-1.21.10-released-parity-complete',

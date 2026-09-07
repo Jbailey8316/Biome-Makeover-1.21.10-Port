@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "biomemakeover:patrol_trial_key"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "biomemakeover:spawners/mansion/patrol_key"
+}

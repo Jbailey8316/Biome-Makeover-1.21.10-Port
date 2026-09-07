@@ -1,0 +1,32 @@
+{
+  "spawn_range": 4,
+  "total_mobs": 6.0,
+  "simultaneous_mobs": 2.0,
+  "total_mobs_added_per_player": 2.0,
+  "simultaneous_mobs_added_per_player": 1.0,
+  "ticks_between_spawn": 20,
+  "spawn_potentials": [
+    {
+      "data": {
+        "entity": {
+          "id": "minecraft:pillager"
+        }
+      },
+      "weight": 4
+    },
+    {
+      "data": {
+        "entity": {
+          "id": "minecraft:vindicator"
+        }
+      },
+      "weight": 1
+    }
+  ],
+  "loot_tables_to_eject": [
+    {
+      "data": "biomemakeover:spawners/mansion/patrol_key",
+      "weight": 1
+    }
+  ]
+}

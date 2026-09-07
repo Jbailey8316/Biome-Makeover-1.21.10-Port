@@ -1,0 +1,40 @@
+{
+  "spawn_range": 4,
+  "total_mobs": 10.0,
+  "simultaneous_mobs": 3.0,
+  "total_mobs_added_per_player": 1.5,
+  "simultaneous_mobs_added_per_player": 0.5,
+  "ticks_between_spawn": 20,
+  "spawn_potentials": [
+    {
+      "data": {
+        "entity": {
+          "id": "minecraft:evoker"
+        }
+      },
+      "weight": 2
+    },
+    {
+      "data": {
+        "entity": {
+          "id": "minecraft:vindicator"
+        }
+      },
+      "weight": 5
+    },
+    {
+      "data": {
+        "entity": {
+          "id": "minecraft:pillager"
+        }
+      },
+      "weight": 3
+    }
+  ],
+  "loot_tables_to_eject": [
+    {
+      "data": "biomemakeover:spawners/mansion/captain_key",
+      "weight": 1
+    }
+  ]
+}

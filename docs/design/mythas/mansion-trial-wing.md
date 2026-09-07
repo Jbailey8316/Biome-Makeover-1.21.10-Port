@@ -1,7 +1,9 @@
-# Stage 14B.0 — Mythas Mansion Trial Wing Architecture Audit
+# Stage 14B.2 — Mythas Mansion Trial Spawner Configurations
 
-Status: design and source audit only. No Mythas gameplay, registrations,
-templates, NBT, or configuration were added by this stage.
+Status: implemented standalone Trial Spawner configurations; Mansion
+integration and all progression behavior remain deferred. This stage adds no
+Mansion templates, NBT, caches, fragments, recipes, boss gating, or rewards
+beyond the corresponding Trial Key ejected by each standalone spawner.
 
 This document is an enhancement design, not released Biome Makeover parity.
 The released-parity baseline remains frozen at 168 Mansion templates, 165
@@ -52,11 +54,15 @@ count changes, completion, cooldown, and serialization.
 
 The vanilla configuration examples are data resources under
 `data/minecraft/trial_spawner/...`, with weighted `spawn_potentials` entries
-and entity data. This makes three custom configs practical without a custom
-spawner block entity. A Mythas config can select Pillagers, Vindicators,
-Evokers, and other existing entity types and can point completion ejection at
-custom loot tables. Exact numbers and reward tables are intentionally not
-locked in this audit.
+and entity data. The Mythas configurations use the same current registry
+directory under `data/biomemakeover/trial_spawner/...`; their registry IDs are
+`biomemakeover:mythas/mansion/patrol`,
+`biomemakeover:mythas/mansion/enforcer`, and
+`biomemakeover:mythas/mansion/captain`. The direct config JSON is the current
+1.21.10 format; there is no separate nested `normal_config` object in the
+registry resource. A placed Trial Spawner can select a normal or ominous
+registry configuration through its block-entity data, but these Mythas
+resources intentionally provide no ominous configuration.
 
 ### Recommendation
 
@@ -68,12 +74,32 @@ Do not subclass `TrialSpawnerBlockEntity` unless a later implementation
 proves that config/bootstrap injection cannot express the required behavior.
 
 The vanilla spawner's reward ejection is a physical completion event; it is
-not by itself a reliable per-player key distributor. If one trial key is
-needed for every qualifying participant, a narrow server-side completion hook
-must distribute that item once per participant, or the design must explicitly
-use one physical key for a shared cache. That choice is deferred to the
-implementation substage, but must not be hidden behind duplicated vanilla
-spawner rewards.
+not a reliable per-player key distributor. Stage 14B.2 deliberately uses one
+guaranteed corresponding key loot-table opportunity per completed standalone
+spawner. It adds no custom distribution bookkeeping. Per-participant key
+distribution, if still required by the locked progression contract, remains
+an explicit later implementation decision and is not silently approximated
+here.
+
+## 1.1 Implemented standalone configurations
+
+| Trial | Config ID | Spawn potentials (weight) | Base / per-player total | Base / per-player simultaneous | Interval | Reward |
+| --- | --- | --- | --- | --- | ---: | --- |
+| Patrol | `biomemakeover:mythas/mansion/patrol` | Pillager (4), Vindicator (1) | 6 / 2 | 2 / 1 | 20 ticks | `patrol_trial_key` |
+| Enforcer | `biomemakeover:mythas/mansion/enforcer` | Vindicator (5), Pillager (2) | 8 / 2 | 3 / 0.5 | 20 ticks | `enforcer_trial_key` |
+| Captain | `biomemakeover:mythas/mansion/captain` | Evoker (2), Vindicator (5), Pillager (3) | 10 / 1.5 | 3 / 0.5 | 20 ticks | `captain_trial_key` |
+
+All three use `spawn_range: 4`. Their reward lists contain exactly one
+weight-1 loot table and each loot table contains exactly one guaranteed key.
+They have no Fragment, Mansion Emerald Key, Manor Vault Key, or secondary
+loot reward. The current codec has no per-entity-type spawn cap; therefore
+Captain contains no Ravager potential, giving Ravagers a hard bound of zero
+rather than risking an unbounded repeated selection. Evoker presence supplies
+the elite Captain escalation without custom mob logic.
+
+The resources are unconditional data registrations. The Mythas config toggle
+does not remove them; later Mansion generation and activation will consult
+`mythas.enabled && mythas.mansion_trial_wing.enabled`.
 
 ## 2. Vanilla 1.21.10 Vault audit
 
