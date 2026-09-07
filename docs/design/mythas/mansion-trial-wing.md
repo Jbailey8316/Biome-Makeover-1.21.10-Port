@@ -154,6 +154,14 @@ If a key must be tied to one Mansion, use a documented current item component
 or a server-side issuance record rather than silently combining keys from
 different Mansions.
 
+Stage 14B.1 permanently establishes these eight IDs unconditionally:
+`biomemakeover:patrol_trial_key`, `biomemakeover:enforcer_trial_key`,
+`biomemakeover:captain_trial_key`, `biomemakeover:patrol_fragment`,
+`biomemakeover:enforcer_fragment`, `biomemakeover:captain_fragment`,
+`biomemakeover:mansion_emerald_key`, and `biomemakeover:manor_vault_key`.
+They intentionally remain outside the released creative tab and have no
+survival acquisition, recipes, loot, or interactions until later stages.
+
 The three fragments may be crafted in a shapeless recipe into one Mansion
 Emerald Key only when the implementation can prove Mansion identity is not
 lost. If fragments remain ordinary transferable items, the key is a physical

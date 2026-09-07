@@ -147,6 +147,16 @@ public final class BMItems {
     public static final Item SWAMP_CYPRESS_CHEST_BOAT = register("swamp_cypress_chest_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.SWAMP_CYPRESS_CHEST_BOAT, p.stacksTo(1)));
     public static final Item BLIGHTED_BALSA_BOAT = register("blighted_balsa_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.BLIGHTED_BALSA_BOAT, p.stacksTo(1)));
     public static final Item BLIGHTED_BALSA_CHEST_BOAT = register("blighted_balsa_chest_boat", p -> new net.minecraft.world.item.BoatItem(BMEntities.BLIGHTED_BALSA_CHEST_BOAT, p.stacksTo(1)));
+    // Mythas foundation items are always registered; future toggles control
+    // acquisition and behavior, never registry existence.
+    public static final Item PATROL_TRIAL_KEY = register("patrol_trial_key");
+    public static final Item ENFORCER_TRIAL_KEY = register("enforcer_trial_key");
+    public static final Item CAPTAIN_TRIAL_KEY = register("captain_trial_key");
+    public static final Item PATROL_FRAGMENT = register("patrol_fragment");
+    public static final Item ENFORCER_FRAGMENT = register("enforcer_fragment");
+    public static final Item CAPTAIN_FRAGMENT = register("captain_fragment");
+    public static final Item MANSION_EMERALD_KEY = register("mansion_emerald_key");
+    public static final Item MANOR_VAULT_KEY = register("manor_vault_key");
     public static final Item REFINED_POTTERY_SHERD = register("refined_pottery_sherd");
     public static final Item WORKER_POTTERY_SHERD = register("worker_pottery_sherd");
     public static final Item WHINNY_POTTERY_SHERD = register("whinny_pottery_sherd");

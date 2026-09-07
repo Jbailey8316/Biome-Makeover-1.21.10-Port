@@ -1,4 +1,12 @@
 {
+  "item.biomemakeover.patrol_trial_key": "Patrol Trial Key",
+  "item.biomemakeover.enforcer_trial_key": "Enforcer Trial Key",
+  "item.biomemakeover.captain_trial_key": "Captain Trial Key",
+  "item.biomemakeover.patrol_fragment": "Patrol Fragment",
+  "item.biomemakeover.enforcer_fragment": "Enforcer Fragment",
+  "item.biomemakeover.captain_fragment": "Captain Fragment",
+  "item.biomemakeover.mansion_emerald_key": "Mansion Emerald Key",
+  "item.biomemakeover.manor_vault_key": "Manor Vault Key",
   "advancements.biomemakeover.all_shrooms.description": "Collect every single mushroom",
   "advancements.biomemakeover.all_shrooms.title": "Mycophile",
   "advancements.biomemakeover.all_tapestries.description": "Collect Every Tapestry",

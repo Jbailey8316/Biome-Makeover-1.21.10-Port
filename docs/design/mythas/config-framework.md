@@ -23,11 +23,19 @@ file at:
 The file is located through Fabric Loader's config directory and parsed with
 the Gson library already supplied by Minecraft. Unknown JSON properties are
 preserved. Missing keys are added with safe defaults. A malformed document is
-left intact for inspection and the in-memory state becomes all-off; no
-enhancement defaults on after an error.
+logged, replaced with a usable all-off schema, and the in-memory state becomes
+all-off; no enhancement defaults on after an error.
 
 The server/integrated-server loads this configuration during mod
-initialization. It is therefore server-authoritative for future gameplay.
+initialization. It is therefore server-authoritative for future gameplay. On a
+dedicated server, the server file controls gameplay; the client file does not
+override it and does not need to match. A mismatch must not cause a registry
+error, disconnect, crash, or world corruption because future Mythas IDs remain
+registered on both sides regardless of toggle state. If a future
+server-controlled feature needs client-visible effective state, that state will
+be synchronized for the session rather than requiring players to copy the
+server JSON. Stage 14B.1 needs no configuration synchronization because its
+items have no toggle-dependent client behavior.
 There is no client config screen in this stage: the project has no existing
 config-screen integration, and adding a large UI dependency solely for this
 foundation is not justified. A future UI must clearly label the section
