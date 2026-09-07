@@ -161,7 +161,35 @@ group gate and can be used by one player to activate the local encounter.
 The Emerald Key is consumed on successful activation; failed or wrong-gate
 uses do not consume it.
 
-## 4. Multiplayer contract
+## 4. Locked multiplayer and item contract
+
+The following decisions supersede earlier deferred wording and are
+authoritative for implementation:
+
+- Patrol, Enforcer, and Captain are shared encounters and may be completed in
+  any order.
+- A successful trial targets one corresponding physical Trial Key per
+  participating player. Native Trial Spawner reward-ejection mechanics are
+  the first implementation choice. No custom progression database may be
+  introduced merely to distribute these keys.
+- Trial Keys and Fragments are physical, tradeable, droppable, storable, and
+  neither player-bound nor Mansion-instance-bound. They must not carry hidden
+  Mansion UUID components.
+- Each trial has one physical native Vault cache with personal vanilla
+  rewarded-player UUID history. Each player may claim its reward once; other
+  players may claim their own reward from the same cache.
+- Each cache guarantees its matching Fragment; the progression fragment is
+  not an RNG outcome.
+- The three exact Fragment types craft one generic physical Mansion Emerald
+  Key. It is consumed only after successful activation of one Mansion gate.
+- Each actual qualifying Adjudicator participant receives one physical Manor
+  Vault Key. The final native Vault's UUID history prevents repeat rewards.
+  This reward is additional to released Adjudicator loot.
+
+The implementation must stop for review if native ejection cannot meet the
+per-participant Trial Key target without prohibited bookkeeping or an
+unapproved fourth template. It must not silently reduce the target to one
+shared key.
 
 The recommended semantics are:
 
@@ -174,19 +202,20 @@ The recommended semantics are:
 2. Each Manor Cache is a native Vault, so each unique player may redeem its
    configured key once. The key is consumed per successful unlock.
 3. Trial keys are physical and tradeable. A player who missed a trial may use
-   a legitimately obtained key unless a later source/design decision adds a
-   Mansion-local participant restriction; no invisible global account gate is
-   required for trial caches.
+   a legitimately obtained key. No invisible global account gate or
+   Mansion-instance binding is required for trial caches.
 4. Any one player may gather all three fragments and craft the Mansion Emerald
    Key for the group. The physical key is consumed to activate that Mansion's
    gate.
 5. Only one Adjudicator run may be active for a Mansion-local gate/controller.
    The existing Adjudicator AI, phases, alliance, and released loot are
    untouched.
-6. The participant ledger records players who materially participated in the
-   activated run, using a bounded proximity/engagement window defined by the
-   later implementation. A late player who did not participate does not
-   receive a Manor Vault Key merely because they can reach the room.
+6. A small Mansion-local participant ledger records players who materially
+   participated in the activated run, using a bounded proximity/engagement
+   window defined by the later implementation. This ledger exists only for
+   boss-participant eligibility, not trial-key distribution. A late player
+   who did not participate does not receive a Manor Vault Key merely because
+   they can reach the room.
 7. Each eligible participant receives one Manor Vault Key for that Mansion
    and boss run. The final Vault's native UUID history prevents repeat reward.
 8. A player who joins after the fight and was not recorded as a participant
@@ -259,13 +288,16 @@ unchanged. If exactly three Mythas templates are eventually added, the
 inventory expectation becomes 171 total / 168 active / 3 released orphans,
 but that count is a future implementation invariant, not a change made here.
 
-## 7. Adjudicator gate recommendation
+## 7. Locked Adjudicator gate boundary
 
-Use a Mythas-only physical key gate immediately before the existing
-Adjudicator activation point. Prefer a small key-compatible gate block or
-Vault-like lock that consumes `mansion_emerald_key`, stores its open state in
-the Mansion-local instance, and does not alter `AdjudicatorEntity` combat,
-loot, phases, or alliance code.
+Gate encounter activation rather than merely placing an ordinary breakable
+locked door. A door-only solution is rejected because it can be bypassed by
+mining through Mansion walls. Use the least invasive Mythas-only external
+hook at the existing Adjudicator activation point: a physical key-compatible
+gate/controller consumes `mansion_emerald_key`, stores its open/activated
+state per Mansion, and controls whether the unchanged encounter is
+instantiated. Do not modify `AdjudicatorEntity` combat, phases, loot, or
+alliance code.
 
 The released boss room and its marker results remain intact. When Mythas is
 disabled before generation, no gate is installed and the frozen released
@@ -312,11 +344,9 @@ a later design stage.
 | Two Mansions | identity includes dimension and origin/signature; no global progression flag |
 | Creative/admin | retain vanilla administrative behavior; do not make creative a hidden reward path |
 
-The most important unresolved implementation decision is per-participant trial
-key issuance. Native Trial Spawner ejection is physical and completion-based;
-it should not be assumed to distribute one personalized reward to every
-player. That decision belongs in 14B.3 after a small prototype against the
-actual config/loot path.
+Native Trial Spawner ejection remains the first proof target for the locked
+per-participant Trial Key result. It must not be replaced with hidden player
+progression bookkeeping merely because the native path is inconvenient.
 
 ## 10. Stage 14A configuration dependency
 
@@ -330,7 +360,10 @@ registered regardless of the toggle so save data and network registries stay
 stable. The option is read when a new Mansion is generated and by the gate's
 activation/access checks. It must not retroactively rewrite existing worlds.
 
-## 11. Proposed implementation sequence
+## 11. Locked stage order and implementation sequence
+
+Stage 14A must precede 14B.1. Do not begin 14B.1 until the Stage 14A
+framework exposes the toggle and registration-safety contract.
 
 1. **14B.1 — Registry/data foundation:** register the eight restrained items,
    define translations/models/tags only as source/design requires, and add
@@ -360,13 +393,20 @@ No step above is implemented by Stage 14B.0. A later stage may split the
 foundation if the Stage 14A framework dictates a different registration
 boundary.
 
-## 12. Design-lock decisions and open gates
+## 12. Design-lock decisions and implementation gates
 
 Locked now:
 
 - enhancement is disabled by default and separate from released parity;
 - three independent trials, any order;
+- trials are shared multiplayer encounters;
 - physical keys/caches/fragments;
+- trial keys and fragments are generic, tradeable, and not Mansion-bound;
+- each cache guarantees its matching Fragment;
+- each trial targets one Trial Key per participant without custom bookkeeping
+  solely for key distribution;
+- the Emerald Key is generic and consumed on successful gate activation;
+- the Adjudicator is gated at encounter activation, not by an ordinary door;
 - native Trial Spawner and Vault reuse is preferred;
 - released Adjudicator behavior and loot remain unchanged;
 - progression is Mansion-local and restart-safe;
@@ -377,7 +417,8 @@ Locked now:
 
 Must be proven before implementation lock:
 
-- exact per-participant trial-key delivery mechanism;
+- proof that native Trial Spawner ejection meets the per-participant key
+  target without prohibited bookkeeping;
 - final trial counts, cooldowns, and reward tables;
 - stable Mansion identity persistence format;
 - exact underground anchor/Y/connector geometry and collision policy;
@@ -386,3 +427,7 @@ Must be proven before implementation lock:
 - native break/explosion/piston/hopper behavior for the chosen blocks;
 - final Manor reward contents and balance.
 
+The exact native ejection implementation, final trial settings, participant
+window, and gate block/controller are implementation gates. They may refine
+the locked contract but may not weaken its physical, generic, shared, or
+server-authoritative semantics without a new design review.
