@@ -41,10 +41,10 @@ All values default to `false`:
 {
   "mythas": {
     "enabled": false,
-    "mansion_trial_wing": false,
-    "decayed_shield_upgrade": false,
-    "dynamic_lightning_bugs": false,
-    "cosmetic_polish": false
+    "mansion_trial_wing": { "enabled": false },
+    "decayed_shield_upgrade": { "enabled": false },
+    "dynamic_lightning_bugs": { "enabled": false },
+    "cosmetic_polish": { "enabled": false }
   }
 }
 ```
@@ -57,7 +57,9 @@ The master setting is `mythas.enabled`. The initial feature settings are:
 - `mythas.cosmetic_polish.enabled`
 
 The JSON uses the final path component as the property name inside the
-`mythas` object. No Owl expansion or Toad revival toggle is included.
+`mythas` object, with each feature represented by an `enabled` child. A
+pre-R1 flat boolean child is accepted once and normalized to this schema. No
+Owl expansion or Toad revival toggle is included.
 
 ## Effective-state API
 

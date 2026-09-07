@@ -32,22 +32,23 @@ public final class MythasConfig {
             Path path = configPath();
             if (!Files.exists(path)) {
                 state = State.ALL_OFF;
-                save(path, new JsonObject(), true);
+                save(path, defaultDocument(), true);
                 return;
             }
             try {
                 JsonObject document = JsonParser.parseString(Files.readString(path, StandardCharsets.UTF_8)).getAsJsonObject();
                 JsonObject mythas = object(document, ROOT_KEY);
                 state = new State(readBoolean(mythas, "enabled", false),
-                    readBoolean(mythas, "mansion_trial_wing", false),
-                    readBoolean(mythas, "decayed_shield_upgrade", false),
-                    readBoolean(mythas, "dynamic_lightning_bugs", false),
-                    readBoolean(mythas, "cosmetic_polish", false));
+                    readFeatureBoolean(mythas, "mansion_trial_wing"),
+                    readFeatureBoolean(mythas, "decayed_shield_upgrade"),
+                    readFeatureBoolean(mythas, "dynamic_lightning_bugs"),
+                    readFeatureBoolean(mythas, "cosmetic_polish"));
                 ensureDefaults(mythas);
                 save(path, document, false);
             } catch (Exception exception) {
                 state = State.ALL_OFF;
                 BiomeMakeover.LOGGER.warn("Could not read {}; all Mythas enhancements remain disabled: {}", path, exception.getMessage());
+                save(path, defaultDocument(), true);
             }
         }
     }
@@ -85,17 +86,44 @@ public final class MythasConfig {
         return fallback;
     }
 
+    private static boolean readFeatureBoolean(JsonObject object, String key) {
+        if (!object.has(key)) return false;
+        if (object.get(key).isJsonObject()) return readBoolean(object.getAsJsonObject(key), "enabled", false);
+        // Accept the pre-R1 flat form once, then normalize it to the nested schema.
+        return readBoolean(object, key, false);
+    }
+
     private static void ensureDefaults(JsonObject mythas) {
         ensureBoolean(mythas, "enabled", false);
-        ensureBoolean(mythas, "mansion_trial_wing", false);
-        ensureBoolean(mythas, "decayed_shield_upgrade", false);
-        ensureBoolean(mythas, "dynamic_lightning_bugs", false);
-        ensureBoolean(mythas, "cosmetic_polish", false);
+        ensureFeature(mythas, "mansion_trial_wing");
+        ensureFeature(mythas, "decayed_shield_upgrade");
+        ensureFeature(mythas, "dynamic_lightning_bugs");
+        ensureFeature(mythas, "cosmetic_polish");
     }
 
     private static void ensureBoolean(JsonObject object, String key, boolean value) {
         if (!object.has(key) || !(object.get(key).isJsonPrimitive() && object.getAsJsonPrimitive(key).isBoolean()))
             object.add(key, new JsonPrimitive(value));
+    }
+
+    private static void ensureFeature(JsonObject object, String key) {
+        if (object.has(key) && object.get(key).isJsonObject()) {
+            ensureBoolean(object.getAsJsonObject(key), "enabled", false);
+            return;
+        }
+        boolean value = object.has(key) && object.get(key).isJsonPrimitive()
+            && object.getAsJsonPrimitive(key).isBoolean() && object.getAsJsonPrimitive(key).getAsBoolean();
+        JsonObject feature = new JsonObject();
+        feature.add("enabled", new JsonPrimitive(value));
+        object.add(key, feature);
+    }
+
+    private static JsonObject defaultDocument() {
+        JsonObject document = new JsonObject();
+        JsonObject mythas = new JsonObject();
+        document.add(ROOT_KEY, mythas);
+        ensureDefaults(mythas);
+        return document;
     }
 
     private static void save(Path path, JsonObject document, boolean announce) {

@@ -24,11 +24,15 @@ foreach ($literal in @(
 }
 
 $keys = @('enabled','mansion_trial_wing','decayed_shield_upgrade','dynamic_lightning_bugs','cosmetic_polish')
+if ($text -notmatch 'defaultDocument\(\)' -or $text -notmatch 'document\.add\(ROOT_KEY, mythas\)' -or $text -notmatch 'ensureDefaults\(mythas\)') { throw 'First-launch config does not serialize a complete default document' }
 foreach ($key in $keys) {
-    if ($text -notmatch [regex]::Escape("readBoolean(mythas, `"$key`", false)")) { throw "Mythas default is not safely OFF: $key" }
+    if ($key -eq 'enabled') {
+        if ($text -notmatch [regex]::Escape('readBoolean(mythas, "enabled", false)')) { throw 'Mythas master default is not safely OFF' }
+    } elseif ($text -notmatch [regex]::Escape("ensureFeature(mythas, `"$key`")")) {
+        throw "Mythas feature schema/default is missing: $key"
+    }
 }
-if ($text -match 'readBoolean\([^;]+,\s*true\s*\)') { throw 'Potential default-on Mythas configuration detected' }
-if ($text -match 'ensureBoolean\([^;]+,\s*true\s*\)') { throw 'Potential default-on Mythas configuration detected' }
+if ($text -match 'readBoolean\([^;]+,\s*true\s*\)' -or $text -match 'ensureBoolean\([^;]+,\s*true\s*\)') { throw 'Potential default-on Mythas configuration detected' }
 
 $allSource = (Get-ChildItem (Join-Path $Root 'src/main/java') -Recurse -Filter '*.java' | ForEach-Object { Get-Content $_.FullName -Raw }) -join "`n"
 foreach ($forbidden in @('TrialWingBlock','TrialSpawnerConfig','ManorCache','MansionEmeraldKey','dynamicLightningBugs')) {
