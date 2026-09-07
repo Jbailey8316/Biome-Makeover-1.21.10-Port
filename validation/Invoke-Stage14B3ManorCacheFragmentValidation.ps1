@@ -8,12 +8,13 @@ $ErrorActionPreference = 'Stop'
 $cacheRoot = Join-Path $Root 'src/main/resources/data/biomemakeover/vault/mythas/mansion/cache'
 $lootRoot = Join-Path $Root 'src/main/resources/data/biomemakeover/loot_table/mansion/cache'
 $recipePath = Join-Path $Root 'src/main/resources/data/biomemakeover/recipe/mansion_emerald_key.json'
+$advancementPath = Join-Path $Root 'src/main/resources/data/biomemakeover/advancement/recipes/misc/mansion_emerald_key.json'
 $expected = @{
     patrol = @{ key = 'patrol_trial_key'; fragment = 'patrol_fragment' }
     enforcer = @{ key = 'enforcer_trial_key'; fragment = 'enforcer_fragment' }
     captain = @{ key = 'captain_trial_key'; fragment = 'captain_fragment' }
 }
-foreach ($path in @($cacheRoot,$lootRoot,$recipePath,$Jar)) { if (!(Test-Path $path)) { throw "Missing Stage 14B.3 input: $path" } }
+foreach ($path in @($cacheRoot,$lootRoot,$recipePath,$advancementPath,$Jar)) { if (!(Test-Path $path)) { throw "Missing Stage 14B.3 input: $path" } }
 $cacheFiles = @(Get-ChildItem $cacheRoot -Filter '*.json' -File)
 if ($cacheFiles.Count -ne 3) { throw "Expected exactly three Manor Cache contracts; found $($cacheFiles.Count)" }
 $entries = @(jar tf $Jar)
@@ -35,6 +36,16 @@ if ($recipe.type -ne 'minecraft:crafting_shapeless' -or @($recipe.ingredients).C
 foreach ($fragment in @('patrol_fragment','enforcer_fragment','captain_fragment')) { if (@($recipe.ingredients | Where-Object { $_ -eq "biomemakeover:$fragment" }).Count -ne 1) { throw "Emerald Key recipe must contain exactly one $fragment" } }
 $recipeText = Get-Content $recipePath -Raw
 if ($recipeText -match 'trial_key|manor_vault_key') { throw 'Emerald Key recipe contains an unauthorized progression item' }
+$advancement = Get-Content $advancementPath -Raw | ConvertFrom-Json
+if (@($advancement.criteria.PSObject.Properties).Count -ne 3 -or @($advancement.requirements).Count -ne 1 -or @($advancement.requirements[0]).Count -ne 3 -or @($advancement.rewards.recipes).Count -ne 1 -or $advancement.rewards.recipes[0] -ne 'biomemakeover:mansion_emerald_key') { throw 'Emerald Key recipe-unlock advancement shape is incorrect' }
+foreach ($fragment in @('patrol','enforcer','captain')) {
+    $criterion = $advancement.criteria."has_${fragment}_fragment"
+    if ($null -eq $criterion -or $criterion.trigger -ne 'minecraft:inventory_changed' -or $criterion.conditions.items[0].items -ne "biomemakeover:${fragment}_fragment") { throw "Emerald Key unlock advancement is missing the $fragment fragment criterion" }
+}
+$required = @($advancement.requirements[0])
+if ((@($required | Where-Object { $_ -in @('has_patrol_fragment','has_enforcer_fragment','has_captain_fragment') })).Count -ne 3) { throw 'Emerald Key unlock advancement is not ANY-fragment logic' }
+if ((Get-Content $advancementPath -Raw) -match 'display') { throw 'Emerald Key unlock advancement must remain hidden' }
+if ($entries -notcontains 'data/biomemakeover/advancement/recipes/misc/mansion_emerald_key.json') { throw 'Missing packaged Emerald Key recipe-unlock advancement' }
 $java = @(git -c (('safe.directory=' + $Root.Replace('\','/'))) diff --name-only -- 'src/main/java/**')
 if ($java.Count -ne 0) { throw "Stage 14B.3 must not change Java gameplay code: $($java -join ', ')" }
 $mansionFiles = @(git -c (('safe.directory=' + $Root.Replace('\','/'))) diff --name-only -- 'src/main/resources/data/biomemakeover/structure/mansion/**')

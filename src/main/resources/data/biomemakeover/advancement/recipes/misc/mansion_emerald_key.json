@@ -1,0 +1,47 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_patrol_fragment": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "biomemakeover:patrol_fragment"
+          }
+        ]
+      }
+    },
+    "has_enforcer_fragment": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "biomemakeover:enforcer_fragment"
+          }
+        ]
+      }
+    },
+    "has_captain_fragment": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "biomemakeover:captain_fragment"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_patrol_fragment",
+      "has_enforcer_fragment",
+      "has_captain_fragment"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "biomemakeover:mansion_emerald_key"
+    ]
+  }
+}
